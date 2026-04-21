@@ -1,8 +1,10 @@
 {
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/landing.html"
-    }
+  "cleanUrls": true,
+  "routes": [
+    { "src": "/", "dest": "/landing.html" },
+    { "src": "/app", "dest": "/app.html" },
+    { "src": "/app.html", "dest": "/app.html" },
+    { "src": "/landing", "dest": "/landing.html" },
+    { "handle": "filesystem" }
   ]
 }
