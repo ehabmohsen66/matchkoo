@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>كيك أوف — توقّع. نافس. فُز.</title>
+  <meta name="description" content="أذكى منصة لتوقعات كرة القدم في العالم. نافس 2.4 مليون منبئ عبر 188 دوري. اكسب XP وتسلّق لوحات الصدارة وفُز.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green:   #29BF12;
+      --lime:    #ABFF4F;
+      --cyan:    #08BDBD;
+      --red:     #F21B3F;
+      --orange:  #FF9914;
+      --ink:     #0A0E1A;
+      --ink2:    #141826;
+      --white:   #FFFFFF;
+      --muted:   rgba(255,255,255,0.55);
+      --border:  rgba(255,255,255,0.08);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: var(--ink);
+      color: var(--white);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+    }
+    h1, h2, h3, .hero-stat-num, .stat-value, .scoring-xp, .mock-score, .mock-lb-rank {
+      font-family: 'Cairo', sans-serif;
+    }
+
+    /* ─── NAVBAR ─────────────────────────────────────── */
+    .nav {
+      position: fixed;
+      top: 16px; left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 48px);
+      max-width: 1200px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10,14,26,0.75);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 12px 20px;
+      z-index: 1000;
+      transition: all 0.3s;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      font-size: 1.15rem;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--green), var(--lime));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-cta { display: flex; gap: 10px; align-items: center; }
+    .lang-switch {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-decoration: none;
+      transition: all 0.2s;
+      background: transparent;
+      font-family: 'Cairo', sans-serif;
+    }
+    .lang-switch:hover { color: var(--white); border-color: rgba(255,255,255,0.25); }
+    .btn-ghost {
+      padding: 9px 20px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--white);
+      cursor: pointer;
+      background: transparent;
+      transition: all 0.2s;
+      text-decoration: none;
+      font-family: 'Cairo', sans-serif;
+    }
+    .btn-ghost:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.06); }
+    .btn-primary {
+      padding: 9px 22px;
+      border-radius: 100px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--green), var(--lime));
+      color: #000;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Cairo', sans-serif;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(41,191,18,0.4); }
+    .btn-primary-lg { padding: 16px 40px; font-size: 1.05rem; font-weight: 900; }
+    .btn-outline-lg {
+      padding: 15px 36px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 100px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--white);
+      cursor: pointer;
+      background: transparent;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Cairo', sans-serif;
+    }
+    .btn-outline-lg:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.05); }
+
+    /* ─── HERO ───────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg { position: absolute; inset: 0; z-index: 0; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.35; }
+    .blob-1 { width: 600px; height: 600px; background: var(--green); top: -200px; right: -200px; }
+    .blob-2 { width: 500px; height: 500px; background: var(--cyan); top: -100px; left: -150px; }
+    .blob-3 { width: 400px; height: 400px; background: var(--orange); bottom: -100px; right: 30%; }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 900px; }
+    .hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(41,191,18,0.12);
+      border: 1px solid rgba(41,191,18,0.3);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--lime);
+      letter-spacing: 0.5px;
+      margin-bottom: 28px;
+      font-family: 'Cairo', sans-serif;
+    }
+    .hero-kicker-dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse-dot 1.4s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.5); }
+    }
+    .hero-title {
+      font-family: 'Cairo', sans-serif;
+      font-size: clamp(2.6rem, 7vw, 5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 24px;
+    }
+    .hero-title .accent {
+      background: linear-gradient(135deg, var(--green) 0%, var(--lime) 50%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--muted);
+      line-height: 1.8;
+      max-width: 600px;
+      margin: 0 auto 40px;
+      font-weight: 400;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 64px;
+    }
+    .hero-stats { display: flex; gap: 48px; justify-content: center; flex-wrap: wrap; }
+    .hero-stat-item { text-align: center; }
+    .hero-stat-num {
+      font-family: 'Cairo', sans-serif;
+      font-size: 2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--white), rgba(255,255,255,0.7));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-stat-lbl {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .hero-stat-divider { width: 1px; height: 50px; background: var(--border); align-self: center; }
+
+    /* ─── LIVE TICKER ────────────────────────────────── */
+    .ticker-wrap {
+      background: rgba(255,255,255,0.04);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      padding: 14px 0;
+    }
+    .ticker-inner {
+      display: flex;
+      gap: 60px;
+      animation: ticker 32s linear infinite;
+      white-space: nowrap;
+    }
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+    .ticker-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      flex-shrink: 0;
+      font-family: 'Cairo', sans-serif;
+    }
+    .ticker-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--red);
+      color: #fff;
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 100px;
+    }
+    .ticker-score { font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 0.95rem; color: var(--white); }
+    .ticker-sep { width: 4px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 50%; }
+
+    /* ─── SECTIONS ───────────────────────────────────── */
+    .section { padding: 100px 24px; max-width: 1200px; margin: 0 auto; }
+    .section-tag {
+      display: inline-block;
+      background: rgba(8,189,189,0.12);
+      border: 1px solid rgba(8,189,189,0.25);
+      color: var(--cyan);
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+      font-family: 'Cairo', sans-serif;
+    }
+    .section-title {
+      font-family: 'Cairo', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .section-sub { font-size: 1rem; color: var(--muted); line-height: 1.8; max-width: 520px; font-weight: 400; }
+    .section-header { margin-bottom: 64px; }
+    .section-header.center { text-align: center; max-width: 700px; margin: 0 auto 64px; }
+    .section-header.center .section-sub { margin: 0 auto; }
+
+    /* Steps */
+    .steps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
+    .step-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      position: relative;
+      transition: all 0.3s;
+      cursor: default;
+    }
+    .step-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); transform: translateY(-4px); }
+    .step-num {
+      font-family: 'Cairo', sans-serif;
+      font-size: 4rem;
+      font-weight: 900;
+      line-height: 1;
+      position: absolute;
+      top: 20px; left: 24px;
+      color: rgba(255,255,255,0.06);
+    }
+    .step-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+    .step-icon.green { background: rgba(41,191,18,0.12); border: 1px solid rgba(41,191,18,0.2); }
+    .step-icon.cyan  { background: rgba(8,189,189,0.12);  border: 1px solid rgba(8,189,189,0.2); }
+    .step-icon.orange{ background: rgba(255,153,20,0.12); border: 1px solid rgba(255,153,20,0.2); }
+    .step-icon.red   { background: rgba(242,27,63,0.12);  border: 1px solid rgba(242,27,63,0.2); }
+    .step-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; font-family: 'Cairo', sans-serif; }
+    .step-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.8; }
+
+    /* Features two-col — in RTL the "flip" works as natural order */
+    .features-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .features-two-col.flip { direction: ltr; }
+    .features-two-col.flip > * { direction: rtl; }
+    .feature-list { display: flex; flex-direction: column; gap: 28px; }
+    .feature-item { display: flex; gap: 18px; }
+    .feature-item-icon {
+      width: 44px; height: 44px; flex-shrink: 0;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .feature-item-title { font-weight: 800; font-size: 0.95rem; margin-bottom: 6px; font-family: 'Cairo', sans-serif; }
+    .feature-item-desc { font-size: 0.88rem; color: var(--muted); line-height: 1.75; }
+
+    /* Mock cards */
+    .mock-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .mock-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--green));
+    }
+    .mock-league-tag { font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; font-weight: 700; margin-bottom: 16px; font-family: 'Cairo', sans-serif; }
+    .mock-match { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .mock-team { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
+    .mock-badge { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Cairo', sans-serif; font-size: 0.75rem; font-weight: 900; }
+    .mock-team-name { font-size: 0.78rem; font-weight: 700; font-family: 'Cairo', sans-serif; }
+    .mock-score { font-family: 'Cairo', sans-serif; font-size: 2rem; font-weight: 900; color: var(--white); text-align: center; }
+    .mock-bars { display: flex; flex-direction: column; gap: 10px; }
+    .mock-bar-row { display: flex; align-items: center; gap: 10px; font-size: 0.75rem; color: var(--muted); font-family: 'Cairo', sans-serif; }
+    .mock-bar-track { flex: 1; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); overflow: hidden; }
+    .mock-bar-fill-g { height: 100%; background: linear-gradient(90deg, var(--green), var(--lime)); border-radius: 3px; }
+    .mock-bar-fill-c { height: 100%; background: var(--cyan); border-radius: 3px; }
+    .mock-bar-fill-o { height: 100%; background: rgba(255,255,255,0.3); border-radius: 3px; }
+    .mock-live-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--red); color: #fff;
+      font-size: 0.68rem; font-weight: 800;
+      padding: 3px 10px; border-radius: 100px;
+      margin-bottom: 12px; font-family: 'Cairo', sans-serif;
+    }
+    .mock-live-dot { width: 5px; height: 5px; background: #fff; border-radius: 50%; animation: pulse-dot 1.2s ease-in-out infinite; }
+
+    /* Leaderboard mock */
+    .mock-lb { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; overflow: hidden; }
+    .mock-lb-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.07); font-size: 0.75rem; letter-spacing: 1px; color: var(--cyan); font-weight: 800; font-family: 'Cairo', sans-serif; }
+    .mock-lb-row { display: flex; align-items: center; gap: 14px; padding: 14px 24px; border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; }
+    .mock-lb-row:last-child { border-bottom: none; }
+    .mock-lb-row.you { background: rgba(41,191,18,0.07); border-right: 2px solid var(--green); }
+    .mock-lb-rank { font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 0.85rem; min-width: 28px; }
+    .mock-lb-avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+    .mock-lb-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .mock-lb-name { flex: 1; font-size: 0.85rem; font-weight: 700; font-family: 'Cairo', sans-serif; }
+    .mock-lb-xp { font-size: 0.8rem; color: var(--orange); font-weight: 800; font-family: 'Cairo', sans-serif; }
+    .mock-lb-badge { font-size: 0.62rem; padding: 2px 8px; border-radius: 100px; font-weight: 800; font-family: 'Cairo', sans-serif; }
+    .badge-gold { background: rgba(255,153,20,0.15); color: var(--orange); }
+    .badge-plat { background: rgba(8,189,189,0.15); color: var(--cyan); }
+    .badge-you  { background: rgba(41,191,18,0.15); color: var(--green); }
+
+    /* Stats bar */
+    .stats-bar {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 56px 40px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+    }
+    .stat-item { text-align: center; position: relative; }
+    .stat-item + .stat-item::before { content: ''; position: absolute; right: 0; top: 10%; height: 80%; width: 1px; background: var(--border); }
+    .stat-value {
+      font-family: 'Cairo', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--white), rgba(255,255,255,0.7));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-label { font-size: 0.85rem; color: var(--muted); font-weight: 500; font-family: 'Cairo', sans-serif; }
+
+    /* Scoring */
+    .scoring-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .scoring-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 18px; padding: 24px 20px; transition: all 0.2s; }
+    .scoring-card:hover { background: rgba(255,255,255,0.06); transform: translateY(-2px); }
+    .scoring-xp { font-family: 'Cairo', sans-serif; font-size: 1.5rem; font-weight: 900; margin-bottom: 6px; }
+    .scoring-action { font-size: 0.9rem; font-weight: 800; margin-bottom: 4px; font-family: 'Cairo', sans-serif; }
+    .scoring-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+    /* Testimonials */
+    .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .testimonial-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 20px; padding: 28px; transition: all 0.2s; }
+    .testimonial-card:hover { background: rgba(255,255,255,0.06); transform: translateY(-3px); }
+    .testimonial-stars { display: flex; gap: 4px; margin-bottom: 16px; }
+    .testimonial-text { font-size: 0.92rem; color: rgba(255,255,255,0.8); line-height: 1.8; margin-bottom: 20px; }
+    .testimonial-author { display: flex; align-items: center; gap: 12px; }
+    .testimonial-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: rgba(255,255,255,0.1); }
+    .testimonial-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .testimonial-name { font-weight: 800; font-size: 0.88rem; font-family: 'Cairo', sans-serif; }
+    .testimonial-role { font-size: 0.75rem; color: var(--muted); font-family: 'Cairo', sans-serif; }
+
+    /* FAQ */
+    .faq-list { display: flex; flex-direction: column; gap: 12px; max-width: 720px; margin: 0 auto; }
+    .faq-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .faq-q { padding: 20px 24px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; user-select: none; transition: background 0.2s; font-family: 'Cairo', sans-serif; }
+    .faq-q:hover { background: rgba(255,255,255,0.04); }
+    .faq-q svg { flex-shrink: 0; transition: transform 0.3s; color: var(--muted); margin-right: 0; margin-left: 0; }
+    .faq-item.open .faq-q svg { transform: rotate(180deg); }
+    .faq-a { padding: 0 24px; max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s; font-size: 0.9rem; color: var(--muted); line-height: 1.8; }
+    .faq-item.open .faq-a { max-height: 300px; padding-bottom: 20px; }
+
+    /* CTA */
+    .cta-section { position: relative; padding: 100px 24px; text-align: center; overflow: hidden; }
+    .cta-glow { position: absolute; width: 700px; height: 400px; background: radial-gradient(ellipse, rgba(41,191,18,0.18) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+    .cta-card { position: relative; max-width: 700px; margin: 0 auto; background: rgba(255,255,255,0.04); border: 1px solid rgba(41,191,18,0.2); border-radius: 32px; padding: 64px 40px; }
+    .cta-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--green), var(--cyan), transparent); border-radius: 32px 32px 0 0; }
+    .cta-title { font-family: 'Cairo', sans-serif; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; margin-bottom: 16px; }
+    .cta-sub { font-size: 1rem; color: var(--muted); margin-bottom: 36px; line-height: 1.7; }
+    .cta-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .cta-note { margin-top: 20px; font-size: 0.82rem; color: var(--muted); font-family: 'Cairo', sans-serif; }
+
+    /* Footer */
+    .footer { border-top: 1px solid var(--border); padding: 48px 24px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; }
+    .footer-brand-logo { display: flex; align-items: center; gap: 10px; font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 1.1rem; margin-bottom: 14px; }
+    .footer-brand-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.7; max-width: 240px; }
+    .footer-col-title { font-weight: 900; font-size: 0.82rem; margin-bottom: 16px; font-family: 'Cairo', sans-serif; color: rgba(255,255,255,0.7); }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-links a { font-size: 0.88rem; color: var(--muted); text-decoration: none; transition: color 0.2s; font-family: 'Cairo', sans-serif; }
+    .footer-links a:hover { color: var(--white); }
+    .footer-bottom { border-top: 1px solid var(--border); padding: 24px; text-align: center; font-size: 0.82rem; color: var(--muted); max-width: 1200px; margin: 0 auto; font-family: 'Cairo', sans-serif; }
+
+    /* Reveal */
+    .reveal { opacity: 0; transform: translateY(30px); transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* Responsive */
+    @media (max-width: 968px) {
+      .features-two-col { grid-template-columns: 1fr; gap: 48px; }
+      .features-two-col.flip { direction: rtl; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+      .stat-item + .stat-item::before { display: none; }
+      .footer { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .hero-title { font-size: 2.2rem; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .footer { grid-template-columns: 1fr; }
+      .hero-stats { gap: 24px; }
+      .hero-stat-divider { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── NAVBAR ──────────────────────────────────────── -->
+  <nav class="nav" id="navbar">
+    <a class="nav-logo" href="#">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+          <circle cx="12" cy="12" r="10" stroke="#000" stroke-width="1.5"/>
+          <path d="M12 4L13.8 9.5H19.5L15 12.8L16.8 18.3L12 15L7.2 18.3L9 12.8L4.5 9.5H10.2Z" fill="#000"/>
+        </svg>
+      </div>
+      كيك أوف
+    </a>
+    <ul class="nav-links">
+      <li><a href="#how">كيف يعمل</a></li>
+      <li><a href="#features">المميزات</a></li>
+      <li><a href="#scoring">النقاط</a></li>
+      <li><a href="#faq">الأسئلة</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="landing.html" class="lang-switch">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M7 2a1 1 0 011 1v1h3a1 1 0 110 2H9.578a18.87 18.87 0 01-1.724 4.78c.29.354.596.696.914 1.026a1 1 0 11-1.44 1.389c-.188-.196-.373-.396-.554-.6a19.098 19.098 0 01-3.107 3.567 1 1 0 01-1.334-1.49 17.087 17.087 0 003.13-3.733 18.992 18.992 0 01-1.487-3.754 1 1 0 111.924-.558c.207.713.451 1.412.73 2.09a17.68 17.68 0 001.352-4.72H4a1 1 0 010-2h3V3a1 1 0 011-1zm6 6a1 1 0 01.894.553l2.991 5.992a.869.869 0 01.02.037l.99 1.98a1 1 0 11-1.79.895L15.383 16h-4.764l-.724 1.447a1 1 0 11-1.788-.894l.99-1.98.019-.038 2.99-5.992A1 1 0 0113 8zm-1.382 6h2.764L13 11.236 11.618 14z" clip-rule="evenodd"/></svg>
+        EN
+      </a>
+      <a href="index.html" class="btn-ghost">تسجيل الدخول</a>
+      <a href="index.html" class="btn-primary">
+        العب مجاناً
+        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ─── HERO ────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+      <div class="hero-grid"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-kicker">
+        <div class="hero-kicker-dot"></div>
+        2.4 مليون منبئ نشط الآن
+      </div>
+      <h1 class="hero-title">
+        توقّع الكرة.<br>
+        <span class="accent">نافس. فُز.</span>
+      </h1>
+      <p class="hero-sub">
+        أذكى منصة لتوقعات كرة القدم في العالم. راهن بنقاط XP الخاصة بك عبر 188 دوري، تسلّق لوحات الصدارة العالمية، وأثبت أنك تفهم في الكرة الجميلة أكثر من أي شخص آخر.
+      </p>
+      <div class="hero-actions">
+        <a href="index.html" class="btn-primary btn-primary-lg">
+          ابدأ التوقع — مجاناً
+          <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/></svg>
+        </a>
+        <a href="#how" class="btn-outline-lg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+          اكتشف كيف يعمل
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat-item">
+          <div class="hero-stat-num">2.4M</div>
+          <div class="hero-stat-lbl">منبئ</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat-item">
+          <div class="hero-stat-num">188</div>
+          <div class="hero-stat-lbl">دوري</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat-item">
+          <div class="hero-stat-num">67.3%</div>
+          <div class="hero-stat-lbl">معدل الدقة</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat-item">
+          <div class="hero-stat-num">#1</div>
+          <div class="hero-stat-lbl">المركز أفريقياً</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── LIVE TICKER ───────────────────────────────── -->
+  <div class="ticker-wrap">
+    <div class="ticker-inner">
+      <div class="ticker-item"><span class="ticker-live"><span class="mock-live-dot"></span>مباشر</span><span>مان يونايتد</span><span class="ticker-score">1 – 2</span><span>أرسنال</span><span style="color:#29BF12;font-size:0.75rem;font-weight:800;">67'</span></div>
+      <div class="ticker-sep"></div>
+      <div class="ticker-item"><span class="ticker-live"><span class="mock-live-dot"></span>مباشر</span><span>ريال مدريد</span><span class="ticker-score">2 – 0</span><span>برشلونة</span><span style="color:#08BDBD;font-size:0.75rem;font-weight:800;">34'</span></div>
+      <div class="ticker-sep"></div>
+      <div class="ticker-item"><span style="color:#ABFF4F;font-size:0.75rem;font-weight:800;">انتهت</span><span>الأهلي</span><span class="ticker-score">2 – 0</span><span>الوداد</span></div>
+      <div class="ticker-sep"></div>
+      <div class="ticker-item"><span class="ticker-live"><span class="mock-live-dot"></span>مباشر</span><span>باريس سان جيرمان</span><span class="ticker-score">1 – 1</span><span>ليون</span><span style="color:#FF9914;font-size:0.75rem;font-weight:800;">78'</span></div>
+      <div class="ticker-sep"></div>
+      <div class="ticker-item"><span style="color:#ABFF4F;font-size:0.75rem;font-weight:800;">انتهت</span><span>بايرن ميونخ</span><span class="ticker-score">3 – 1</span><span>دورتموند</span></div>
+      <div class="ticker-sep"></div>
+      <div class="ticker-item"><span class="ticker-live"><span class="mock-live-dot"></span>مباشر</span><span>إنتر ميلان</span><span class="ticker-score">0 – 1</span><span>يوفنتوس</span><span style="color:#F21B3F;font-size:0.75rem;font-weight:800;">52'</span></div>
+      <div class="ticker-sep"></div>
+      <!-- Duplicate for seamless loop -->
+      <div class="ticker-item"><span class="ticker-live"><span class="mock-live-dot"></span>مباشر</span><span>مان يونايتد</span><span class="ticker-score">1 – 2</span><span>أرسنال</span><span style="color:#29BF12;font-size:0.75rem;font-weight:800;">67'</span></div>
+      <div class="ticker-sep"></div>
+      <div class="ticker-item"><span class="ticker-live"><span class="mock-live-dot"></span>مباشر</span><span>ريال مدريد</span><span class="ticker-score">2 – 0</span><span>برشلونة</span><span style="color:#08BDBD;font-size:0.75rem;font-weight:800;">34'</span></div>
+      <div class="ticker-sep"></div>
+      <div class="ticker-item"><span style="color:#ABFF4F;font-size:0.75rem;font-weight:800;">انتهت</span><span>الأهلي</span><span class="ticker-score">2 – 0</span><span>الوداد</span></div>
+      <div class="ticker-sep"></div>
+      <div class="ticker-item"><span class="ticker-live"><span class="mock-live-dot"></span>مباشر</span><span>باريس سان جيرمان</span><span class="ticker-score">1 – 1</span><span>ليون</span><span style="color:#FF9914;font-size:0.75rem;font-weight:800;">78'</span></div>
+      <div class="ticker-sep"></div>
+      <div class="ticker-item"><span style="color:#ABFF4F;font-size:0.75rem;font-weight:800;">انتهت</span><span>بايرن ميونخ</span><span class="ticker-score">3 – 1</span><span>دورتموند</span></div>
+      <div class="ticker-sep"></div>
+      <div class="ticker-item"><span class="ticker-live"><span class="mock-live-dot"></span>مباشر</span><span>إنتر ميلان</span><span class="ticker-score">0 – 1</span><span>يوفنتوس</span><span style="color:#F21B3F;font-size:0.75rem;font-weight:800;">52'</span></div>
+    </div>
+  </div>
+
+  <!-- ─── HOW IT WORKS ─────────────────────────────── -->
+  <div id="how" style="max-width:1200px;margin:0 auto;">
+    <div class="section">
+      <div class="section-header center reveal">
+        <div class="section-tag">كيف يعمل</div>
+        <h2 class="section-title">بسيط. إدمانيّ. مُجزٍ.</h2>
+        <p class="section-sub">أربع خطوات تفصلك عن قمة لوحة الصدارة العالمية. بدون رسوم. بدون شروط خفية.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card reveal reveal-delay-1">
+          <div class="step-num">١</div>
+          <div class="step-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#29BF12" stroke-width="2" width="22" height="22"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="step-title">أنشئ حسابك</div>
+          <div class="step-desc">سجّل في 30 ثانية. اختر دورياتك المفضلة وحدّد تفضيلات التوقع. مجاني للأبد.</div>
+        </div>
+        <div class="step-card reveal reveal-delay-2">
+          <div class="step-num">٢</div>
+          <div class="step-icon cyan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#08BDBD" stroke-width="2" width="22" height="22"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div class="step-title">اكتشف المباريات</div>
+          <div class="step-desc">تصفّح 188 دوري من كل القارات. صفّح حسب المنافسة والتاريخ ومستوى الصعوبة.</div>
+        </div>
+        <div class="step-card reveal reveal-delay-3">
+          <div class="step-num">٣</div>
+          <div class="step-icon orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#FF9914" stroke-width="2" width="22" height="22"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="step-title">قدّم توقعاتك</div>
+          <div class="step-desc">توقّع النتائج والأهداف الدقيقة والهدافين. حدّد مستوى ثقتك لمضاعفة نقاط XP.</div>
+        </div>
+        <div class="step-card reveal reveal-delay-4">
+          <div class="step-num">٤</div>
+          <div class="step-icon red">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#F21B3F" stroke-width="2" width="22" height="22"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <div class="step-title">تصعّد وفُز</div>
+          <div class="step-desc">اكسب XP وافتح الكؤوس وارتقِ في لوحات الصدارة. المكافآت اليومية تبقيك في المقدمة.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── FEATURE: Live Match ───────────────────────── -->
+  <div id="features" style="background:rgba(255,255,255,0.015);border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div class="section" style="max-width:1160px;margin:0 auto;">
+      <div class="features-two-col">
+        <div class="feature-list reveal">
+          <div><div class="section-tag">نبض المباراة المباشرة</div></div>
+          <h2 class="section-title">شاهد توقعاتك تتكشّف في الوقت الفعلي</h2>
+          <p class="section-sub" style="margin-bottom:32px;">تجربة المباريات الحية لدينا تعرض لك انقسامات توقعات المجتمع وعدادات الزخم والدردشة المباشرة — وكل ذلك أثناء سير المباراة.</p>
+          <div class="feature-item">
+            <div class="feature-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#29BF12" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div>
+              <div class="feature-item-title">بيانات توقعات المجتمع</div>
+              <div class="feature-item-desc">شاهد كيف صوّت 2.4 مليون منبئ على كل مباراة في أشرطة انقسام حقيقية.</div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#08BDBD" stroke-width="2" width="20" height="20"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div>
+              <div class="feature-item-title">مقياس الزخم</div>
+              <div class="feature-item-desc">أشرطة زخم مرئية تُظهر أي الفريقين يهيمن على الكرة والفرص.</div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#FF9914" stroke-width="2" width="20" height="20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div>
+              <div class="feature-item-title">دردشة المباراة</div>
+              <div class="feature-item-desc">تفاعل مباشرةً مع المجتمع العالمي. ناقش التكتيكات واحتفل بالأهداف.</div>
+            </div>
+          </div>
+        </div>
+        <div class="reveal reveal-delay-2">
+          <div class="mock-card">
+            <div class="mock-live-badge"><span class="mock-live-dot"></span> مباشر</div>
+            <div class="mock-league-tag">الدوري الإنجليزي الممتاز · الجولة 34</div>
+            <div class="mock-match">
+              <div class="mock-team">
+                <div class="mock-badge" style="background:#C8102E;color:#fff;">MU</div>
+                <div class="mock-team-name">مان يونايتد</div>
+              </div>
+              <div>
+                <div class="mock-score">1 – 2</div>
+                <div style="font-size:0.65rem;color:#F21B3F;text-align:center;font-weight:900;margin-top:4px;">67'</div>
+              </div>
+              <div class="mock-team">
+                <div class="mock-badge" style="background:#EF0107;color:#fff;">ARS</div>
+                <div class="mock-team-name">أرسنال</div>
+              </div>
+            </div>
+            <div style="font-size:0.68rem;color:rgba(255,255,255,0.4);margin-bottom:10px;font-weight:700;font-family:'Cairo',sans-serif;">توقعات المجتمع</div>
+            <div class="mock-bars">
+              <div class="mock-bar-row">
+                <span style="min-width:50px;">الفوز لـ 1</span>
+                <div class="mock-bar-track"><div class="mock-bar-fill-g" style="width:42%"></div></div>
+                <span>42%</span>
+              </div>
+              <div class="mock-bar-row">
+                <span style="min-width:50px;">تعادل</span>
+                <div class="mock-bar-track"><div class="mock-bar-fill-o" style="width:18%"></div></div>
+                <span>18%</span>
+              </div>
+              <div class="mock-bar-row">
+                <span style="min-width:50px;">الفوز لـ 2</span>
+                <div class="mock-bar-track"><div class="mock-bar-fill-c" style="width:40%"></div></div>
+                <span>40%</span>
+              </div>
+            </div>
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07);font-size:0.75rem;display:flex;justify-content:space-between;font-family:'Cairo',sans-serif;">
+              <span style="color:rgba(255,255,255,0.4);">24,891 توقع</span>
+              <span style="color:#29BF12;font-weight:800;">توقعك: الفوز للضيوف ✓</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── FEATURE: Leaderboards ────────────────────── -->
+  <div>
+    <div class="section" style="max-width:1160px;margin:0 auto;">
+      <div class="features-two-col flip">
+        <div class="reveal">
+          <div class="mock-lb">
+            <div class="mock-lb-header">لوحة الصدارة العالمية · هذا الأسبوع</div>
+            <div class="mock-lb-row">
+              <div class="mock-lb-rank" style="color:#FF9914;">🥇</div>
+              <div class="mock-lb-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=marcus" alt="Marcus"></div>
+              <div class="mock-lb-name">ماركوس ت. <span style="font-size:0.7rem;color:rgba(255,255,255,0.4);">🇩🇪</span></div>
+              <div class="mock-lb-badge badge-gold">أسطورة</div>
+              <div class="mock-lb-xp">142,880</div>
+            </div>
+            <div class="mock-lb-row">
+              <div class="mock-lb-rank" style="color:#94A3B8;">🥈</div>
+              <div class="mock-lb-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=alex" alt="Alex"></div>
+              <div class="mock-lb-name">أليكس ك. <span style="font-size:0.7rem;color:rgba(255,255,255,0.4);">🇧🇷</span></div>
+              <div class="mock-lb-badge badge-plat">ألماس</div>
+              <div class="mock-lb-xp">89,420</div>
+            </div>
+            <div class="mock-lb-row">
+              <div class="mock-lb-rank" style="color:#CD7F32;">🥉</div>
+              <div class="mock-lb-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=ahmed2" alt="Ahmed"></div>
+              <div class="mock-lb-name">أحمد س. <span style="font-size:0.7rem;color:rgba(255,255,255,0.4);">🇪🇬</span></div>
+              <div class="mock-lb-badge badge-gold">ذهب</div>
+              <div class="mock-lb-xp">71,600</div>
+            </div>
+            <div class="mock-lb-row">
+              <div class="mock-lb-rank" style="color:rgba(255,255,255,0.4);">#4</div>
+              <div class="mock-lb-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=yusuf" alt="Yusuf"></div>
+              <div class="mock-lb-name">يوسف أ. <span style="font-size:0.7rem;color:rgba(255,255,255,0.4);">🇳🇬</span></div>
+              <div class="mock-lb-badge badge-gold">ذهب</div>
+              <div class="mock-lb-xp">64,800</div>
+            </div>
+            <div class="mock-lb-row you">
+              <div class="mock-lb-rank" style="color:#29BF12;">#1,247</div>
+              <div class="mock-lb-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=kickoff" alt="أنت"></div>
+              <div class="mock-lb-name"><strong>أنت</strong> <span style="font-size:0.7rem;color:rgba(255,255,255,0.4);">🇪🇬</span></div>
+              <div class="mock-lb-badge badge-you">ذهب</div>
+              <div class="mock-lb-xp">12,450</div>
+            </div>
+          </div>
+        </div>
+        <div class="feature-list reveal reveal-delay-2">
+          <div><div class="section-tag">لوحات الصدارة</div></div>
+          <h2 class="section-title">أثبت أنك أفضل منبئ على وجه الأرض</h2>
+          <p class="section-sub" style="margin-bottom:32px;">تنافس عبر لوحات صدارة عالمية وقارية ووطنية وبين الأصدقاء. الدوريات الصغيرة تتيح لك التحدي الخاص مع مجموعتك.</p>
+          <div class="feature-item">
+            <div class="feature-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#29BF12" stroke-width="2" width="20" height="20"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <div>
+              <div class="feature-item-title">6 مستويات للصدارة</div>
+              <div class="feature-item-desc">عالمية، قارية، وطنية، الأصدقاء، الدوريات، والدوريات الصغيرة.</div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#08BDBD" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+              <div class="feature-item-title">دوريات صغيرة خاصة</div>
+              <div class="feature-item-desc">أنشئ دوريتك الخاصة برمز دعوة مخصص للأصدقاء والعائلة والزملاء.</div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#FF9914" stroke-width="2" width="20" height="20"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div>
+              <div class="feature-item-title">إعادة تعيين أسبوعية + مواسم</div>
+              <div class="feature-item-desc">التحديات الأسبوعية تُعاد كل يوم اثنين. كؤوس الموسم لأفضل المنافسين.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── STATS BAR ─────────────────────────────────── -->
+  <div style="padding:0 24px 80px;">
+    <div class="stats-bar reveal" style="max-width:1000px;margin:0 auto;">
+      <div class="stat-item">
+        <div class="stat-value">+2.4M</div>
+        <div class="stat-label">منبئ نشط</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">188</div>
+        <div class="stat-label">دوري حول العالم</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">+12.5M</div>
+        <div class="stat-label">توقع مُقدَّم</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">67.3%</div>
+        <div class="stat-label">متوسط دقة القمة</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SCORING ────────────────────────────────────── -->
+  <div id="scoring" style="background:rgba(255,255,255,0.015);border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div class="section" style="max-width:1160px;margin:0 auto;">
+      <div class="section-header center reveal">
+        <div class="section-tag">نظام النقاط</div>
+        <h2 class="section-title">كل توقع صحيح يُدرّ XP</h2>
+        <p class="section-sub">نظام XP متعدد الطبقات يكافئ الدقة والثقة والاتساق. كلما كان توقعك أجرأ، كانت المكافأة أكبر.</p>
+      </div>
+      <div class="scoring-grid">
+        <div class="scoring-card reveal reveal-delay-1">
+          <div class="scoring-xp" style="color:#29BF12;">+100 XP</div>
+          <div class="scoring-action">نتيجة صحيحة</div>
+          <div class="scoring-desc">توقّع الفائز الصحيح أو التعادل واكسب XP الأساسي.</div>
+        </div>
+        <div class="scoring-card reveal reveal-delay-2">
+          <div class="scoring-xp" style="color:#ABFF4F;">+500 XP</div>
+          <div class="scoring-action">نتيجة دقيقة</div>
+          <div class="scoring-desc">أصِب الرقم الدقيق للهدافين واحصل على مكافأة ضخمة.</div>
+        </div>
+        <div class="scoring-card reveal reveal-delay-3">
+          <div class="scoring-xp" style="color:#08BDBD;">×1.4 – ×2.0</div>
+          <div class="scoring-action">مضاعف الثقة</div>
+          <div class="scoring-desc">اضبط مستوى ثقتك بين 50-100% لمضاعفة الـ XP المكتسب.</div>
+        </div>
+        <div class="scoring-card reveal reveal-delay-4">
+          <div class="scoring-xp" style="color:#FF9914;">+300 XP</div>
+          <div class="scoring-action">أول هداف</div>
+          <div class="scoring-desc">توقّع اللاعب الذي سيسجل الهدف الأول بدقة.</div>
+        </div>
+        <div class="scoring-card reveal reveal-delay-1">
+          <div class="scoring-xp" style="color:#F21B3F;">×2 XP</div>
+          <div class="scoring-action">مكافأة السلسلة</div>
+          <div class="scoring-desc">التوقعات الصحيحة المتتالية تضاعف نقاط XP الخاصة بك.</div>
+        </div>
+        <div class="scoring-card reveal reveal-delay-2">
+          <div class="scoring-xp" style="color:#ABFF4F;">+250 XP</div>
+          <div class="scoring-action">مكافأة الدوران اليومي</div>
+          <div class="scoring-desc">أدِر العجلة كل يوم للحصول على XP إضافي وقدرات تعزيز.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TESTIMONIALS ──────────────────────────────── -->
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="section">
+      <div class="section-header center reveal">
+        <div class="section-tag">المجتمع</div>
+        <h2 class="section-title">موثوق به من 2.4 مليون منبئ</h2>
+        <p class="section-sub">من المشجعين المتعصبين إلى المشاهدين العاديين — الجميع لديه فرصة للوصول إلى القمة.</p>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card reveal reveal-delay-1">
+          <div class="testimonial-stars">
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+          </div>
+          <div class="testimonial-text">«جرّبت كل تطبيقات الكرة الخيالية ولا شيء يقارن بـ كيك أوف. ميزة نبض المباراة المباشرة تجعل مشاهدة المباريات أكثر إثارة بعشر مرات.»</div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=marcus1" alt="ماركوس"></div>
+            <div>
+              <div class="testimonial-name">ماركوس ت.</div>
+              <div class="testimonial-role">🇩🇪 المركز #1 عالمياً · أسطورة</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card reveal reveal-delay-2">
+          <div class="testimonial-stars">
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+          </div>
+          <div class="testimonial-text">«دوري توقعات كأس أمم أفريقيا 2026 مع أصدقائي المصريين يجعلنا نتبادل الرسائل الصوتية قبل كل مباراة. إدمان حقيقي!»</div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=ahmed1" alt="أحمد"></div>
+            <div>
+              <div class="testimonial-name">أحمد م.</div>
+              <div class="testimonial-role">🇪🇬 المركز #38 أفريقياً · ذهب</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card reveal reveal-delay-3">
+          <div class="testimonial-stars">
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+            <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
+          </div>
+          <div class="testimonial-text">«دقة 78.4% هذا الموسم. آلية مضاعف الثقة عبقرية — تعاقب الغرور وتكافئ الجرأة المدروسة.»</div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=sofia1" alt="سوفيا"></div>
+            <div>
+              <div class="testimonial-name">سوفيا ل.</div>
+              <div class="testimonial-role">🇫🇷 المركز #12 أوروبياً · ذهب</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── FAQ ───────────────────────────────────────── -->
+  <div id="faq" style="background:rgba(255,255,255,0.015);border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div class="section" style="max-width:1160px;margin:0 auto;">
+      <div class="section-header center reveal">
+        <div class="section-tag">الأسئلة الشائعة</div>
+        <h2 class="section-title">لديك أسئلة؟</h2>
+      </div>
+      <div class="faq-list reveal">
+        <div class="faq-item open">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            هل كيك أوف مجاني تماماً؟
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a">نعم — كيك أوف مجاني 100%. لا اشتراكات، ولا مشتريات داخل التطبيق، ولا مستويات مدفوعة. كل الميزات بما فيها بيانات المباريات الحية ولوحات الصدارة والدوريات الصغيرة متاحة لجميع المستخدمين مجاناً.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            كيف يعمل نظام XP والمستويات؟
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a">كل توقع صحيح يكسبك XP. الكمية تعتمد على نوع التوقع (النتيجة، الرقم الدقيق، أول هداف) ومستوى ثقتك (50-100%) وما إذا كنت على سلسلة فوز. يتراكم XP لتقدمك عبر المستويات: برونز ← فضة ← ذهب ← بلاتين ← ألماس ← أسطورة.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            ما هي الدوريات المدعومة؟
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a">188 دوري عبر 6 قارات — بما فيها الدوري الإنجليزي، الإسبانية، الإيطالي، الألماني، الفرنسي، دوري أبطال أوروبا، دوري أبطال أفريقيا، كأس أمم أفريقيا، الدوري المصري، الدوري السعودي، MLS، الدوري البرازيلي، الدوري الياباني، وكل مباريات كأس العالم ودوري الأمم الأوروبية.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            ما هي الدوريات الصغيرة؟
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a">الدوريات الصغيرة هي منافسات خاصة تنشئها وتدعو إليها أصدقاءك أو زملاءك. تختار أي المنافسات تُحتسب، ونمط التسجيل (XP العادي أو النقاط البسيطة)، والمدة. شارك رمز الدعوة وتنافس وجهاً لوجه.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            هل المنصة متوفرة باللغة العربية؟
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a">نعم! كيك أوف يدعم العربية بالكامل مع تخطيط من اليمين إلى اليسار (RTL). تدعم المنصة أيضاً الإنجليزية والألمانية والإسبانية والفرنسية. اختر لغتك من قائمة التفضيلات وتكيّف الواجهة فوراً.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CTA ───────────────────────────────────────── -->
+  <section class="cta-section">
+    <div class="cta-glow"></div>
+    <div class="cta-card reveal">
+      <div class="hero-kicker" style="margin:0 auto 24px;display:inline-flex;">
+        <div class="hero-kicker-dot"></div>
+        مجاني · لا بطاقة ائتمان مطلوبة
+      </div>
+      <h2 class="cta-title">مستعد لإثبات أنك تفهم في الكرة؟</h2>
+      <p class="cta-sub">انضم إلى 2.4 مليون منبئ اليوم. توقعك الأول يستغرق 30 ثانية فقط.</p>
+      <div class="cta-actions">
+        <a href="index.html" class="btn-primary btn-primary-lg">
+          ابدأ التوقع مجاناً
+          <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/></svg>
+        </a>
+      </div>
+      <div class="cta-note">✓ مجاني للأبد &nbsp;&nbsp; ✓ 188 دوري &nbsp;&nbsp; ✓ مجتمع 2.4 مليون</div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─────────────────────────────────────── -->
+  <footer>
+    <div class="footer">
+      <div>
+        <div class="footer-brand-logo">
+          <div class="nav-logo-icon" style="width:28px;height:28px;background:linear-gradient(135deg,#29BF12,#ABFF4F);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><circle cx="12" cy="12" r="10" stroke="#000" stroke-width="1.5"/><path d="M12 4L13.8 9.5H19.5L15 12.8L16.8 18.3L12 15L7.2 18.3L9 12.8L4.5 9.5H10.2Z" fill="#000"/></svg>
+          </div>
+          كيك أوف
+        </div>
+        <div class="footer-brand-desc">أذكى منصة لتوقعات كرة القدم في العالم. نافس، اكسب، وارتقِ.</div>
+      </div>
+      <div>
+        <div class="footer-col-title">المنصة</div>
+        <ul class="footer-links">
+          <li><a href="index.html">لوحة التحكم</a></li>
+          <li><a href="index.html">اكتشف المباريات</a></li>
+          <li><a href="index.html">لوحة الصدارة</a></li>
+          <li><a href="index.html">الدوريات الصغيرة</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">الشركة</div>
+        <ul class="footer-links">
+          <li><a href="#">من نحن</a></li>
+          <li><a href="#">المدونة</a></li>
+          <li><a href="#">الوظائف</a></li>
+          <li><a href="#">مجموعة الصحافة</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">قانوني</div>
+        <ul class="footer-links">
+          <li><a href="#">سياسة الخصوصية</a></li>
+          <li><a href="#">شروط الخدمة</a></li>
+          <li><a href="#">سياسة الكوكيز</a></li>
+          <li><a href="#">تواصل معنا</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2025 كيك أوف. جميع الحقوق محفوظة. مبني لعشاق الكرة، من عشاق الكرة.
+    </div>
+  </footer>
+
+  <script>
+    function toggleFaq(el) {
+      const item = el.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => observer.observe(el));
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      nav.style.background = window.scrollY > 60 ? 'rgba(10,14,26,0.95)' : 'rgba(10,14,26,0.75)';
+    });
+  </script>
+</body>
+</html>

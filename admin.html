@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KickOff — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css?v=5">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    /* Admin specific overrides */
+    body { background-color: var(--bg-body); }
+    .admin-layout { display: flex; min-height: 100vh; }
+    .admin-main { flex: 1; padding: 32px; margin-left: var(--sidebar-w); }
+    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    .data-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.85rem; }
+    .data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    .data-table th { background: var(--bg-card3); color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .data-table tr:hover { background: var(--bg-card2); }
+    .action-btn { background: var(--bg-card3); border: 1px solid var(--border); padding: 4px 10px; border-radius: 4px; color: var(--text-primary); cursor: pointer; font-size: 0.75rem; }
+    .action-btn.resolve { border-color: var(--green); color: var(--green); }
+    .action-btn.danger { border-color: var(--red); color: var(--red); }
+    .stat-card { background: linear-gradient(135deg, rgba(0,232,122,0.1), rgba(0,0,0,0)); border: 1px solid var(--green); }
+  </style>
+</head>
+<body>
+  <!-- Dynamic Glowing Background -->
+  <div class="dynamic-bg" id="dynamic-bg"></div>
+
+  <!-- ─── SIDEBAR ─────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="20" r="18" stroke="#00E87A" stroke-width="2"/>
+          <path d="M20 6 L23 14 L31 14 L25 19 L27 27 L20 22 L13 27 L15 19 L9 14 L17 14 Z" fill="#00E87A"/>
+        </svg>
+      </div>
+      <span class="logo-text">KO Admin</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Overview</span>
+      </button>
+      <button class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>Matches</span>
+      </button>
+      <button class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span>Users</span>
+      </button>
+      <a href="index.html" class="nav-item" style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Exit Admin</span>
+      </a>
+    </nav>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-header">
+      <div>
+        <h1 class="page-title">Platform Overview</h1>
+        <p class="page-sub">System status and live metrics</p>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-num" style="color:var(--green)">14.2K</div>
+        <div class="stat-card-lbl">Active Users Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num">381</div>
+        <div class="stat-card-lbl">Live Matches</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num">2.4M</div>
+        <div class="stat-card-lbl">Predictions Placed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num">82.1%</div>
+        <div class="stat-card-lbl">Server Health</div>
+      </div>
+    </div>
+
+    <section class="content-section" style="margin-top: 32px">
+      <div class="section-header">
+        <h2 class="section-title">Matches Pending Resolution</h2>
+        <button class="see-all-btn">+ Add Match</button>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>League</th>
+              <th>Match</th>
+              <th>Status</th>
+              <th>Predictions</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>#M-4019</td>
+              <td>Premier League</td>
+              <td>Man United vs Arsenal</td>
+              <td><span style="color:var(--red)">89' LIVE</span></td>
+              <td>24,891</td>
+              <td>
+                <button class="action-btn resolve">Resolve Score</button>
+              </td>
+            </tr>
+            <tr>
+              <td>#M-4018</td>
+              <td>La Liga</td>
+              <td>Real Madrid vs Barcelona</td>
+              <td><span style="color:var(--red)">55' LIVE</span></td>
+              <td>58,123</td>
+              <td>
+                <button class="action-btn resolve">Resolve Score</button>
+              </td>
+            </tr>
+            <tr>
+              <td>#M-4017</td>
+              <td>Serie A</td>
+              <td>AC Milan vs Juventus</td>
+              <td><span style="color:var(--text-muted)">Ended 1-1</span></td>
+              <td>12,400</td>
+              <td>
+                <button class="action-btn resolve">Distribute XP</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
