@@ -1,0 +1,7 @@
+{
+  "buildCommand": "prisma generate && next build",
+  "framework": "nextjs",
+  "env": {
+    "NEXTAUTH_URL": "https://kickoff.vercel.app"
+  }
+}
