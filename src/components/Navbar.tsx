@@ -12,6 +12,11 @@ export default function Navbar() {
     await signOut({ callbackUrl: "/" });
   };
 
+  // Hide the global Navbar on the homepage to allow the original design's glassy navbar to show
+  if (pathname === "/") {
+    return null;
+  }
+
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
