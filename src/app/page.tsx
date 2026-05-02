@@ -24,11 +24,11 @@ export default function Home() {
       <li><a href="#faq">FAQ</a></li>
     </ul>
     <div className="nav-cta">
-      <a href="landing-ar.html" style={{"padding": "7px 14px", "border": "1px solid rgba(255,255,255,0.1)", "borderRadius": "100px", "fontSize": "0.8rem", "fontWeight": "700", "color": "rgba(255,255,255,0.5)", "textDecoration": "none", "transition": "all 0.2s", "display": "inline-flex", "alignItems": "center", "gap": "5px"}}  >
+      <a href="#" style={{"padding": "7px 14px", "border": "1px solid rgba(255,255,255,0.1)", "borderRadius": "100px", "fontSize": "0.8rem", "fontWeight": "700", "color": "rgba(255,255,255,0.5)", "textDecoration": "none", "transition": "all 0.2s", "display": "inline-flex", "alignItems": "center", "gap": "5px"}}  >
         🌐 AR
       </a>
-      <a href="/app" className="btn-ghost">Sign In</a>
-      <a href="/app" className="btn-primary">
+      <a href="/login" className="btn-ghost">Sign In</a>
+      <a href="/register" className="btn-primary">
         Play Free
         <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd"/></svg>
       </a>
@@ -56,7 +56,7 @@ export default function Home() {
         The world's most intelligent football prediction platform. Stake your XP across 188 leagues, climb global leaderboards, and prove you know the beautiful game better than anyone.
       </p>
       <div className="hero-actions">
-        <a href="/app" className="btn-primary btn-primary-lg">
+        <a href="/register" className="btn-primary btn-primary-lg">
           Start Predicting — It's Free
           <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd"/></svg>
         </a>
@@ -518,7 +518,7 @@ export default function Home() {
       </h2>
       <p className="cta-sub">Join 2.4 million predictors today. Your first prediction takes 30 seconds.</p>
       <div className="cta-actions">
-        <a href="/app" className="btn-primary btn-primary-lg">
+        <a href="/register" className="btn-primary btn-primary-lg">
           Start Predicting Free
           <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd"/></svg>
         </a>
@@ -545,10 +545,10 @@ export default function Home() {
       <div>
         <div className="footer-col-title">Platform</div>
         <ul className="footer-links">
-          <li><a href="/app">Dashboard</a></li>
-          <li><a href="/app">Discover Matches</a></li>
-          <li><a href="/app">Leaderboard</a></li>
-          <li><a href="/app">Mini Leagues</a></li>
+          <li><a href="/dashboard">Dashboard</a></li>
+          <li><a href="/dashboard">Discover Matches</a></li>
+          <li><a href="/dashboard">Leaderboard</a></li>
+          <li><a href="/dashboard">Mini Leagues</a></li>
         </ul>
       </div>
       <div>
