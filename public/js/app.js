@@ -933,12 +933,17 @@ function _applyMatchData(m) {
       if (pHome > pAway) selectResult('home', document.getElementById('rb-home'));
       else if (pHome < pAway) selectResult('away', document.getElementById('rb-away'));
       else selectResult('draw', document.getElementById('rb-draw'));
+
+      const scorerInput = document.getElementById('scorer-select');
+      if (scorerInput) scorerInput.value = m.userPrediction?.firstGoalScorer ?? '';
     } else {
       // Clear previous inputs
       const hs = document.getElementById('score-home-input');
       const as = document.getElementById('score-away-input');
+      const scorerInput = document.getElementById('scorer-select');
       if (hs) hs.value = '';
       if (as) as.value = '';
+      if (scorerInput) scorerInput.value = '';
       document.querySelectorAll('.result-btn').forEach(b => b.classList.remove('selected-result'));
       state.selectedResult = null;
     }
