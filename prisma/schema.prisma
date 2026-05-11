@@ -1,5 +1,4 @@
 // This file configures how Prisma connects to the database.
-// For LOCAL dev: uses SQLite (file:./dev.db) - set in .env
 // For PRODUCTION (Vercel): uses Vercel Postgres (Neon) - set DATABASE_URL in Vercel env vars
 
 generator client {
@@ -20,31 +19,95 @@ model User {
   image         String?
   password      String?
   role          String    @default("USER") // USER or ADMIN
-  accounts      Account[]
-  sessions      Session[]
-  registrations Registration[]
-  tournamentsCreated Tournament[] @relation("AdminTournaments")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  xp            Int       @default(0)
+  referredById  String?
+  referredBy    User?     @relation("Referrals", fields: [referredById], references: [id])
+  referrals     User[]    @relation("Referrals")
+
+  accounts          Account[]
+  sessions          Session[]
+  registrations     Registration[]
+  tournamentsCreated Tournament[]       @relation("AdminTournaments")
+  predictions       Prediction[]
+  miniLeaguesCreated MiniLeague[]      @relation("MiniLeagueCreator")
+  miniLeagueMemberships MiniLeagueMember[]
+  clubVotes         ClubVote[]
+  dailySpins        DailySpin[]
+  challengeRewards  ChallengeReward[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Tournament {
-  id              String   @id @default(cuid())
-  name            String
-  game            String
-  description     String
-  status          String   @default("UPCOMING") // UPCOMING, ONGOING, COMPLETED
-  prizePool       String   @default("$0")
-  maxPlayers      Int      @default(100)
-  startDate       DateTime
-  
+  id               String   @id @default(cuid())
+  name             String
+  game             String
+  description      String
+  type             String   @default("League") // League or Cup
+  status           String   @default("UPCOMING") // UPCOMING, ONGOING, COMPLETED
+  prizePool        String   @default("$0")
+  prizes           String?  // Rich text prizes description set by admin
+  maxPlayers       Int      @default(100)
+  startDate        DateTime
+  registrationMode String   @default("OPEN") // OPEN or INVITE_ONLY
+  inviteCode       String?  // required when INVITE_ONLY
+
   createdByUserId String
   createdByUser   User     @relation("AdminTournaments", fields: [createdByUserId], references: [id])
-  
-  registrations   Registration[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+
+  registrations Registration[]
+  matches       Match[]
+  miniLeagues   MiniLeague[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Match {
+  id           String     @id @default(cuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  externalId        String?  @unique  // API-Football fixture ID e.g. "apif-123456"
+  homeTeam          String
+  awayTeam          String
+  homeLogo          String?
+  awayLogo          String?
+  matchDate         DateTime
+  round             String   @default("Round 1")
+  status            String   @default("UPCOMING") // UPCOMING, LIVE, COMPLETED
+
+  // Actual results (set by admin or auto-sync after match)
+  homeScore         Int?
+  awayScore         Int?
+  firstGoalScorer   String?
+
+  predictions Prediction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Prediction {
+  id              String  @id @default(cuid())
+  userId          String
+  matchId         String
+
+  homeScore       Int     // predicted scoreline
+  awayScore       Int
+  firstGoalScorer String?
+  confidence      Int     @default(50)  // 50–100
+  isDouble        Boolean @default(false) // double XP joker (one per round)
+  xpEarned        Int?    // populated after match result
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, matchId])
 }
 
 model Registration {
@@ -52,13 +115,40 @@ model Registration {
   userId       String
   tournamentId String
   status       String     @default("REGISTERED") // REGISTERED, CHECKED_IN, ELIMINATED, WINNER
-  
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  
-  createdAt    DateTime   @default(now())
-  
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
   @@unique([userId, tournamentId])
+}
+
+model MiniLeague {
+  id           String  @id @default(cuid())
+  name         String
+  code         String  @unique
+  tournamentId String?
+  createdById  String
+
+  tournament Tournament? @relation(fields: [tournamentId], references: [id])
+  createdBy  User        @relation("MiniLeagueCreator", fields: [createdById], references: [id])
+  members    MiniLeagueMember[]
+
+  createdAt DateTime @default(now())
+}
+
+model MiniLeagueMember {
+  id           String @id @default(cuid())
+  miniLeagueId String
+  userId       String
+
+  miniLeague MiniLeague @relation(fields: [miniLeagueId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  joinedAt DateTime @default(now())
+
+  @@unique([miniLeagueId, userId])
 }
 
 model Account {
@@ -95,3 +185,55 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+model ClubVote {
+  id        String   @id @default(cuid())
+  userId    String
+  clubName  String
+  country   String
+  continent String   @default("world")
+  votedDate String   // YYYY-MM-DD — one vote per club per day
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, clubName, votedDate])
+}
+
+model Referral {
+  id          String   @id @default(cuid())
+  referrerId  String
+  referredId  String   @unique
+  xpAwarded   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model DailySpin {
+  id         String   @id @default(cuid())
+  userId     String
+  spinDate   String   // YYYY-MM-DD
+  prize      String   // label of the prize won
+  xpAwarded  Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, spinDate])
+}
+
+model ChallengeReward {
+  id           String   @id @default(cuid())
+  userId       String
+  weekStart    DateTime
+  challengeKey String   // e.g. "speed_demon"
+  xpAwarded    Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, weekStart, challengeKey])
+}
+

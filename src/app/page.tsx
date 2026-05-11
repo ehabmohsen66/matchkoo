@@ -1,5 +1,7 @@
 import './landing.css';
 import Link from 'next/link';
+import MatchkooLogo from '@/components/MatchkooLogo';
+import ScrollReveal from '@/components/ScrollReveal';
 
 export default function Home() {
   return (
@@ -9,13 +11,7 @@ export default function Home() {
   {/*  ─── NAVBAR ──────────────────────────────────────────  */}
   <nav className="nav" id="navbar">
     <a className="nav-logo" href="#">
-      <div className="nav-logo-icon">
-        <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-          <circle cx="12" cy="12" r="10" stroke="#000" strokeWidth="1.5"/>
-          <path d="M12 4L13.8 9.5H19.5L15 12.8L16.8 18.3L12 15L7.2 18.3L9 12.8L4.5 9.5H10.2Z" fill="#000"/>
-        </svg>
-      </div>
-      KickOff
+      <MatchkooLogo height={32} />
     </a>
     <ul className="nav-links">
       <li><a href="#how">How It Works</a></li>
@@ -24,8 +20,9 @@ export default function Home() {
       <li><a href="#faq">FAQ</a></li>
     </ul>
     <div className="nav-cta">
-      <a href="#" style={{"padding": "7px 14px", "border": "1px solid rgba(255,255,255,0.1)", "borderRadius": "100px", "fontSize": "0.8rem", "fontWeight": "700", "color": "rgba(255,255,255,0.5)", "textDecoration": "none", "transition": "all 0.2s", "display": "inline-flex", "alignItems": "center", "gap": "5px"}}  >
-        🌐 AR
+      <a href="/ar" style={{"padding": "7px 14px", "border": "1px solid rgba(255,255,255,0.15)", "borderRadius": "100px", "fontSize": "0.8rem", "fontWeight": "700", "color": "rgba(255,255,255,0.7)", "textDecoration": "none", "transition": "all 0.2s", "display": "inline-flex", "alignItems": "center", "gap": "5px"}}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+        عربي
       </a>
       <a href="/login" className="btn-ghost">Sign In</a>
       <a href="/register" className="btn-primary">
@@ -53,7 +50,7 @@ export default function Home() {
         <span className="accent">Compete. Win.</span>
       </h1>
       <p className="hero-sub">
-        The world's most intelligent football prediction platform. Stake your XP across 188 leagues, climb global leaderboards, and prove you know the beautiful game better than anyone.
+        Matchkoo — the world's most intelligent football prediction platform. Stake your XP across 188 leagues, climb global leaderboards, and prove you know the beautiful game better than anyone.
       </p>
       <div className="hero-actions">
         <a href="/register" className="btn-primary btn-primary-lg">
@@ -411,7 +408,7 @@ export default function Home() {
             <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
             <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
           </div>
-          <div className="testimonial-text">"I've tried every fantasy football app and nothing compares to KickOff. The live match pulse feature makes watching games 10x more intense."</div>
+          <div className="testimonial-text">"I've tried every football prediction app and nothing compares to Matchkoo. The live match pulse feature makes watching games 10x more intense."</div>
           <div className="testimonial-author">
             <div className="testimonial-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=marcus1" alt="Marcus" /></div>
             <div>
@@ -428,7 +425,7 @@ export default function Home() {
             <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
             <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1"/></svg>
           </div>
-          <div className="testimonial-text">"The AFCON 2026 predictions league with my Egyptian friends has us sending voice notes before every match. Complete addiction."</div>
+          <div className="testimonial-text">"The AFCON 2026 predictions league with my Egyptian friends has us sending voice notes before every match. Matchkoo is complete addiction."</div>
           <div className="testimonial-author">
             <div className="testimonial-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=ahmed1" alt="Ahmed" /></div>
             <div>
@@ -468,10 +465,10 @@ export default function Home() {
       <div className="faq-list reveal">
         <div className="faq-item open">
           <div className="faq-q" >
-            Is KickOff completely free to use?
+            Is Matchkoo completely free to use?
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
-          <div className="faq-a">Yes — KickOff is 100% free. No subscription, no in-app purchases, no premium tiers. Every feature including live match data, leaderboards, and mini leagues is available to all users at no cost.</div>
+          <div className="faq-a">Yes — Matchkoo is 100% free. No subscription, no in-app purchases, no premium tiers. Every feature including live match data, leaderboards, and mini leagues is available to all users at no cost.</div>
         </div>
         <div className="faq-item">
           <div className="faq-q" >
@@ -499,7 +496,7 @@ export default function Home() {
             Can I predict in multiple languages?
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
-          <div className="faq-a">Yes. KickOff currently supports English, Arabic (with full RTL layout), German, Spanish, and French. Select your language from the preferences menu and the entire interface adapts instantly.</div>
+          <div className="faq-a">Yes. Matchkoo currently supports English, Arabic (with full RTL layout), German, Spanish, and French. Select your language from the preferences menu and the entire interface adapts instantly.</div>
         </div>
       </div>
     </div>
@@ -532,23 +529,17 @@ export default function Home() {
     <div className="footer">
       <div className="footer-brand">
         <div className="footer-brand-logo">
-          <div className="nav-logo-icon" style={{"width": "28px", "height": "28px"}}>
-            <svg viewBox="0 0 24 24" fill="none" width="14" height="14">
-              <circle cx="12" cy="12" r="10" stroke="#000" strokeWidth="1.5"/>
-              <path d="M12 4L13.8 9.5H19.5L15 12.8L16.8 18.3L12 15L7.2 18.3L9 12.8L4.5 9.5H10.2Z" fill="#000"/>
-            </svg>
-          </div>
-          KickOff
+          <MatchkooLogo height={28} />
         </div>
         <div className="footer-brand-desc">The world's most intelligent football prediction platform. Compete, earn, and rise.</div>
       </div>
       <div>
         <div className="footer-col-title">Platform</div>
         <ul className="footer-links">
-          <li><a href="/dashboard">Dashboard</a></li>
-          <li><a href="/dashboard">Discover Matches</a></li>
-          <li><a href="/dashboard">Leaderboard</a></li>
-          <li><a href="/dashboard">Mini Leagues</a></li>
+          <li><a href="/app">Dashboard</a></li>
+          <li><a href="/app">Discover Matches</a></li>
+          <li><a href="/app">Leaderboard</a></li>
+          <li><a href="/app">Mini Leagues</a></li>
         </ul>
       </div>
       <div>
@@ -571,11 +562,25 @@ export default function Home() {
       </div>
     </div>
     <div className="footer-bottom">
-      © 2025 KickOff. All rights reserved. Built for football fans, by football fans.
+      © 2025 Matchkoo. All rights reserved. Built for football fans, by football fans.
     </div>
   </footer>
 
-  
+  {/* Scroll reveal + FAQ accordion */}
+  <ScrollReveal />
+  <script dangerouslySetInnerHTML={{ __html: `
+    (function() {
+      // FAQ accordion
+      document.querySelectorAll('.faq-q').forEach(function(q) {
+        q.addEventListener('click', function() {
+          var item = q.closest('.faq-item');
+          var isOpen = item.classList.contains('open');
+          document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove('open'); });
+          if (!isOpen) item.classList.add('open');
+        });
+      });
+    })();
+  `}} />
 
     </div>
   );

@@ -72,6 +72,8 @@ function initHome() {
   renderFixturesList();
   renderMiniLeaderboard();
   loadHomeWidgets();
+  initChallenges();
+  _checkDailySpinStatus();
 }
 
 async function loadHomeWidgets() {
@@ -110,6 +112,50 @@ async function loadHomeWidgets() {
       clubEl.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:12px">No votes this week yet. <button onclick="navigate(&apos;vote&apos;)" style="background:none;border:none;color:var(--green);cursor:pointer;font-weight:700">Cast a vote!</button></div>';
     }
   } catch(e) { if (clubEl) clubEl.innerHTML = ''; }
+}
+
+// ── Weekly Challenges (real backend) ─────────────────────────────
+async function initChallenges() {
+  try {
+    const res = await fetch('/api/challenges');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    // Update reset timer
+    const timerEl = document.querySelector('.challenge-timer');
+    if (timerEl && data.resetIn) timerEl.textContent = 'Resets in ' + data.resetIn;
+
+    // Update each challenge card
+    const cards = document.querySelectorAll('.challenge-card');
+    data.challenges.forEach(c => {
+      cards.forEach(card => {
+        const nameEl = card.querySelector('.challenge-name');
+        if (!nameEl || nameEl.textContent.trim() !== c.name) return;
+
+        // Progress bar fill
+        const pct = Math.min(100, Math.round((c.progress / c.goal) * 100));
+        const fillEl = card.querySelector('.progress-fill');
+        if (fillEl) fillEl.style.width = pct + '%';
+
+        // Progress text (the <span> inside .challenge-progress)
+        const progSpan = card.querySelector('.challenge-progress > span');
+        if (progSpan) progSpan.textContent = c.progress + '/' + c.goal;
+
+        // Completed state — green card glow
+        if (c.completed) {
+          card.style.border = '1px solid rgba(60,184,46,0.5)';
+          card.style.background = 'rgba(60,184,46,0.07)';
+          const rewardEl = card.querySelector('.challenge-reward');
+          if (rewardEl) rewardEl.textContent = '\u2713 Done';
+        }
+
+        // Just completed this load \u2014 toast with XP!
+        if (c.justCompleted) {
+          showNotification('\uD83C\uDF89 ' + c.name + ' complete! +' + c.xp + ' XP', 'success');
+        }
+      });
+    });
+  } catch(e) {}
 }
 
 
@@ -713,22 +759,66 @@ function openLeaguePage(id) {
   showNotification(`Opening ${DATA.miniLeagues.find(ml => ml.id === id)?.name}...`, 'info');
 }
 
-function createLeague() {
+async function createLeague() {
   const name = document.getElementById('league-name-input').value.trim();
   if (!name) {
     document.getElementById('league-name-input').style.borderColor = 'var(--red)';
     return;
   }
-  const code = 'KO-' + name.replace(/\s/g, '').toUpperCase().slice(0, 6) + '-' + Math.floor(1000 + Math.random() * 9000);
-  closeCreateLeague();
-  showNotification(`League created! Invite code: ${code}`, 'success');
+  const code = 'KO-' + name.replace(/\s/g,'').toUpperCase().slice(0,6) + '-' + Math.floor(1000+Math.random()*9000);
+  try {
+    const res = await fetch('/api/tournaments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name, game: 'Football', description: 'Mini League',
+        prizePool: 'TBD', maxPlayers: 100, startDate: new Date().toISOString(),
+        type: 'League', registrationMode: 'INVITE_ONLY', inviteCode: code,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      closeCreateLeague();
+      showNotification('League created! Invite code: ' + code, 'success');
+      initMiniLeagues();
+    } else {
+      showNotification(data.message || 'Could not create league', 'error');
+    }
+  } catch(e) {
+    showNotification('Network error creating league', 'error');
+  }
 }
 
 function joinLeague() {
-  const code = document.getElementById('join-code-input').value.trim();
-  if (!code) return;
-  showNotification(`Joining league with code ${code}...`, 'info');
-  document.getElementById('join-code-input').value = '';
+  const code = document.getElementById('join-code-input').value.trim().toUpperCase();
+  if (!code) { showNotification('Enter an invite code first', 'warning'); return; }
+
+  // Find the tournament by invite code
+  fetch('/api/tournaments')
+    .then(r => r.ok ? r.json() : [])
+    .then(tournaments => {
+      const match = tournaments.find(t => (t.inviteCode || '').toUpperCase() === code);
+      if (!match) {
+        showNotification('Invalid invite code — no league found', 'error');
+        return;
+      }
+      return fetch('/api/tournaments/' + match.id + '/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inviteCode: code }),
+      }).then(r => r.json()).then(data => {
+        if (data.message && data.message.toLowerCase().includes('already')) {
+          showNotification('You are already in this league!', 'info');
+        } else if (data.id || data.userId) {
+          document.getElementById('join-code-input').value = '';
+          showNotification('✅ Joined ' + match.name + '!', 'success');
+          initMiniLeagues();
+        } else {
+          showNotification(data.message || 'Could not join league', 'error');
+        }
+      });
+    })
+    .catch(() => showNotification('Network error joining league', 'error'));
 }
 
 // ─── PROFILE PAGE ────────────────────────────────────────────────
@@ -1125,7 +1215,7 @@ function drawWheel(angle) {
   ctx.fillText('⚽', cx, cy);
 }
 
-function spinWheel() {
+async function spinWheel() {
   if (state.spinDone) return;
   state.spinDone = true;
 
@@ -1161,12 +1251,46 @@ function spinWheel() {
       document.getElementById('spin-result-text').textContent = `You won ${prize.label}!`;
       document.getElementById('xp-counter').textContent = prize.label.includes('XP') ? prize.label : prize.label + ' unlocked!';
       document.getElementById('xp-counter').style.color = prize.textColor;
-      btn.textContent = 'Tomorrow!';
+      btn.textContent = 'Come back tomorrow!';
       floatXP(prize.label, document.getElementById('bonus-modal-overlay'));
+
+      // Award real XP in DB
+      const xpMatch = prize.label.match(/(\d+)\s*XP/);
+      const xpAmount = xpMatch ? parseInt(xpMatch[1]) : 0;
+      fetch('/api/daily-spin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prize: prize.label, xp: xpAmount }),
+      }).then(r => r.json()).then(d => {
+        if (d.xpAwarded) {
+          // Update XP display in sidebar
+          const xpEls = document.querySelectorAll('.user-xp, #profile-xp');
+          xpEls.forEach(el => {
+            const cur = parseInt((el.textContent || '0').replace(/\D/g, '')) || 0;
+            el.textContent = (cur + d.xpAwarded).toLocaleString() + ' XP';
+          });
+        }
+      }).catch(() => {});
     }
   }
 
   requestAnimationFrame(animate);
+}
+
+async function _checkDailySpinStatus() {
+  try {
+    const res = await fetch('/api/daily-spin');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.spunToday) {
+      // Already spun — disable button and show message
+      state.spinDone = true;
+      const btn = document.getElementById('spin-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Come back tomorrow!'; }
+      const bannerBtn = document.querySelector('#daily-bonus-banner button');
+      if (bannerBtn) bannerBtn.textContent = '🎡 Spin Again Tomorrow';
+    }
+  } catch(e) {}
 }
 
 // ─── MINI LEAGUES MODALS ─────────────────────────────────────────

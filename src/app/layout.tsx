@@ -4,8 +4,8 @@ import AuthProvider from "@/components/AuthProvider";
 import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "KickOff",
-  description: "Your ultimate esports and gaming platform.",
+  title: "Matchkoo — The Intelligent Football Prediction Platform",
+  description: "Join 2.4M predictors on Matchkoo. Predict football results, earn XP, compete across 188 leagues and climb global leaderboards.",
 };
 
 export default function RootLayout({

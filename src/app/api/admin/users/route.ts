@@ -1,28 +1,34 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
-export async function GET() {
-  try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session || session.user?.role !== "ADMIN") {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
-    }
+function adminOnly(session: any) {
+  return !session || session.user?.role !== "ADMIN";
+}
 
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: 'desc' }
-    });
-    return NextResponse.json(users);
-  } catch (error) {
-    return NextResponse.json({ message: "Failed to fetch users" }, { status: 500 });
+// GET /api/admin/users
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (adminOnly(session)) return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+
+  const users = await prisma.user.findMany({
+    select: { id: true, name: true, email: true, role: true, xp: true, createdAt: true, _count: { select: { registrations: true, predictions: true } } },
+    orderBy: { createdAt: "desc" },
+  });
+  return NextResponse.json(users);
+}
+
+// PATCH /api/admin/users  — update role
+export async function PATCH(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (adminOnly(session)) return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+
+  const { userId, role } = await req.json();
+  if (!userId || !["USER", "ADMIN"].includes(role)) {
+    return NextResponse.json({ message: "Invalid payload" }, { status: 400 });
   }
+
+  const user = await prisma.user.update({ where: { id: userId }, data: { role } });
+  return NextResponse.json({ id: user.id, role: user.role });
 }

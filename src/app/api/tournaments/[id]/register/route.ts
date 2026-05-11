@@ -9,26 +9,29 @@ export async function POST(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session || !session.user) {
+    if (!session?.user) {
       return NextResponse.json({ message: "Must be logged in to register" }, { status: 401 });
     }
 
     const { id: tournamentId } = await params;
-    const userId = session.user.id;
+    const userId = (session.user as any).id;
+    const body = await req.json().catch(() => ({}));
+    const { inviteCode } = body;
 
-    // Check if tournament exists
     const tournament = await prisma.tournament.findUnique({
       where: { id: tournamentId },
-      include: {
-        _count: {
-          select: { registrations: true }
-        }
-      }
+      include: { _count: { select: { registrations: true } } },
     });
 
     if (!tournament) {
       return NextResponse.json({ message: "Tournament not found" }, { status: 404 });
+    }
+
+    // Enforce invite-only
+    if (tournament.registrationMode === "INVITE_ONLY") {
+      if (!inviteCode || inviteCode.trim().toLowerCase() !== tournament.inviteCode?.trim().toLowerCase()) {
+        return NextResponse.json({ message: "Invalid invite code. This league requires an invitation." }, { status: 403 });
+      }
     }
 
     // Check capacity
@@ -36,17 +39,13 @@ export async function POST(
       return NextResponse.json({ message: "Tournament is full" }, { status: 400 });
     }
 
-    // Register
     const registration = await prisma.registration.create({
-      data: {
-        userId,
-        tournamentId,
-      }
+      data: { userId, tournamentId },
     });
 
     return NextResponse.json(registration, { status: 201 });
   } catch (error: any) {
-    if (error.code === 'P2002') {
+    if (error.code === "P2002") {
       return NextResponse.json({ message: "Already registered for this tournament" }, { status: 400 });
     }
     console.error("Failed to register:", error);

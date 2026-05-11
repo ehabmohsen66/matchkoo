@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" fill="none">
+  <!-- Green checkmark/arrow accent on M -->
+  <path d="M18 30 L28 44 L44 20" stroke="#3CB82E" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- MATCH text in white italic bold -->
+  <text x="8" y="62" font-family="'Russo One', Impact, sans-serif" font-size="52" font-style="italic" fill="white" letter-spacing="-1">MATCH</text>
+  
+  <!-- KOO text in green -->
+  <text x="172" y="62" font-family="'Russo One', Impact, sans-serif" font-size="52" font-style="italic" fill="#3CB82E" letter-spacing="-1">KOO</text>
+  
+  <!-- Chat bubble dot inside second O -->
+  <circle cx="296" cy="52" r="4" fill="#0A0E1A"/>
+</svg>

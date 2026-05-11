@@ -6,9 +6,9 @@
 
 ---
 
-**Project:** Matchkoo (formerly KickOff)
-**Generated:** 2026-05-10
-**Category:** Sports Prediction Platform
+**Project:** Matchkoo
+**Generated:** 2026-05-10 13:56:29
+**Category:** Gaming
 
 ---
 
@@ -18,16 +18,13 @@
 
 | Role | Hex | CSS Variable |
 |------|-----|--------------|
-| Primary | `#3CB82E` | `--color-primary` |
-| Secondary | `#6FE840` | `--color-secondary` |
-| CTA/Accent | `#3CB82E` | `--color-cta` |
-| Background | `#0A0E1A` | `--color-background` |
-| Surface | `#141826` | `--color-surface` |
-| Text | `#FFFFFF` | `--color-text` |
-| Muted | `rgba(255,255,255,0.55)` | `--color-muted` |
-| Border | `rgba(255,255,255,0.08)` | `--color-border` |
+| Primary | `#7C3AED` | `--color-primary` |
+| Secondary | `#A78BFA` | `--color-secondary` |
+| CTA/Accent | `#F43F5E` | `--color-cta` |
+| Background | `#0F0F23` | `--color-background` |
+| Text | `#E2E8F0` | `--color-text` |
 
-**Color Notes:** Matchkoo brand green (#3CB82E) from logo + lime accent (#6FE840). Dark ink background for premium gaming feel.
+**Color Notes:** Neon purple + rose action
 
 ### Typography
 
@@ -71,7 +68,7 @@
 ```css
 /* Primary Button */
 .btn-primary {
-  background: #F97316;
+  background: #F43F5E;
   color: white;
   padding: 12px 24px;
   border-radius: 8px;
@@ -88,8 +85,8 @@
 /* Secondary Button */
 .btn-secondary {
   background: transparent;
-  color: #0EA5E9;
-  border: 2px solid #0EA5E9;
+  color: #7C3AED;
+  border: 2px solid #7C3AED;
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 600;
@@ -102,7 +99,7 @@
 
 ```css
 .card {
-  background: #F0F9FF;
+  background: #0F0F23;
   border-radius: 12px;
   padding: 24px;
   box-shadow: var(--shadow-md);
@@ -128,9 +125,9 @@
 }
 
 .input:focus {
-  border-color: #0EA5E9;
+  border-color: #7C3AED;
   outline: none;
-  box-shadow: 0 0 0 3px #0EA5E920;
+  box-shadow: 0 0 0 3px #7C3AED20;
 }
 ```
 
@@ -156,28 +153,31 @@
 
 ## Style Guidelines
 
-**Style:** Social Proof-Focused
+**Style:** Retro-Futurism
 
-**Keywords:** Testimonials prominent, client logos displayed, case studies sections, reviews/ratings, user avatars, success metrics, credibility markers
+**Keywords:** Vintage sci-fi, 80s aesthetic, neon glow, geometric patterns, CRT scanlines, pixel art, cyberpunk, synthwave
 
-**Best For:** B2B SaaS, professional services, premium products, e-commerce conversion pages, established brands
+**Best For:** Gaming, entertainment, music platforms, tech brands, artistic projects, nostalgic, cyberpunk
 
-**Key Effects:** Testimonial carousel animations, logo grid fade-in, stat counter animations (number count-up), review star ratings
+**Key Effects:** CRT scanlines (::before overlay), neon glow (text-shadow+box-shadow), glitch effects (skew/offset keyframes)
 
 ### Page Pattern
 
-**Pattern Name:** App Store Style Landing
+**Pattern Name:** Horizontal Scroll Journey
 
-- **Conversion Strategy:** Show real screenshots. Include ratings (4.5+ stars). QR code for mobile. Platform-specific CTAs.
-- **CTA Placement:** Download buttons prominent (App Store + Play Store) throughout
-- **Section Order:** 1. Hero with device mockup, 2. Screenshots carousel, 3. Features with icons, 4. Reviews/ratings, 5. Download CTAs
+- **Conversion Strategy:** Immersive product discovery. High engagement. Keep navigation visible.
+28,Bento Grid Showcase,bento,  grid,  features,  modular,  apple-style,  showcase", 1. Hero, 2. Bento Grid (Key Features), 3. Detail Cards, 4. Tech Specs, 5. CTA, Floating Action Button or Bottom of Grid, Card backgrounds: #F5F5F7 or Glass. Icons: Vibrant brand colors. Text: Dark., Hover card scale (1.02), video inside cards, tilt effect, staggered reveal, Scannable value props. High information density without clutter. Mobile stack.
+29,Interactive 3D Configurator,3d,  configurator,  customizer,  interactive,  product", 1. Hero (Configurator), 2. Feature Highlight (synced), 3. Price/Specs, 4. Purchase, Inside Configurator UI + Sticky Bottom Bar, Neutral studio background. Product: Realistic materials. UI: Minimal overlay., Real-time rendering, material swap animation, camera rotate/zoom, light reflection, Increases ownership feeling. 360 view reduces return rates. Direct add-to-cart.
+30,AI-Driven Dynamic Landing,ai,  dynamic,  personalized,  adaptive,  generative", 1. Prompt/Input Hero, 2. Generated Result Preview, 3. How it Works, 4. Value Prop, Input Field (Hero) + 'Try it' Buttons, Adaptive to user input. Dark mode for compute feel. Neon accents., Typing text effects, shimmering generation loaders, morphing layouts, Immediate value demonstration. 'Show, don't tell'. Low friction start.
+- **CTA Placement:** Floating Sticky CTA or End of Horizontal Track
+- **Section Order:** 1. Intro (Vertical), 2. The Journey (Horizontal Track), 3. Detail Reveal, 4. Vertical Footer
 
 ---
 
 ## Anti-Patterns (Do NOT Use)
 
-- ❌ Complex navigation
-- ❌ Hidden contact info
+- ❌ Minimalist design
+- ❌ Static assets
 
 ### Additional Forbidden Patterns
 
