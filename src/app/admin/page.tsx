@@ -1,177 +1,487 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-export default function AdminDashboard() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  
-  const [name, setName] = useState("");
-  const [game, setGame] = useState("Valorant");
-  const [description, setDescription] = useState("");
-  const [prizePool, setPrizePool] = useState("$1000");
-  const [maxPlayers, setMaxPlayers] = useState(64);
-  const [startDate, setStartDate] = useState("");
-  
-  const [tournaments, setTournaments] = useState([]);
-  const [users, setUsers] = useState([]);
+// ─── Types ───────────────────────────────────────────────
+type Tournament = { id: string; name: string; game: string; type: string; status: string; prizePool: string; prizes?: string; maxPlayers: number; startDate: string; registrationMode: string; inviteCode?: string; description: string; _count?: { registrations: number; matches: number } };
+type Match = { id: string; tournamentId: string; homeTeam: string; awayTeam: string; matchDate: string; round: string; status: string; homeScore?: number; awayScore?: number; firstGoalScorer?: string; tournament: { name: string; type: string } };
+type User = { id: string; name: string; email: string; role: string; xp: number; createdAt: string; _count: { registrations: number; predictions: number } };
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    } else if (session?.user?.role !== "ADMIN") {
-      router.push("/dashboard");
-    } else {
-      fetchTournaments();
-      fetchUsers();
-    }
-  }, [session, status, router]);
+// ─── Shared styles ────────────────────────────────────────
+const card: React.CSSProperties = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "20px 22px", marginBottom: 14 };
+const inputStyle: React.CSSProperties = { width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "9px 14px", color: "#fff", fontSize: "0.85rem", fontFamily: "inherit", boxSizing: "border-box" };
+const btnGreen: React.CSSProperties = { padding: "9px 20px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#3CB82E,#6FE840)", color: "#000", fontWeight: 800, fontSize: "0.8rem", cursor: "pointer" };
+const btnGhost: React.CSSProperties = { padding: "7px 16px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.12)", background: "transparent", color: "rgba(255,255,255,0.6)", fontSize: "0.78rem", cursor: "pointer" };
+const label: React.CSSProperties = { fontSize: "0.65rem", color: "rgba(255,255,255,0.4)", fontWeight: 700, letterSpacing: "0.08em", display: "block", marginBottom: 6 };
+const sectionTitle: React.CSSProperties = { fontFamily: "'Russo One',sans-serif", fontSize: "1rem", marginBottom: 16, color: "#fff" };
+const tag = (c: string): React.CSSProperties => ({ display: "inline-block", padding: "2px 10px", borderRadius: 100, fontSize: "0.65rem", fontWeight: 700, background: c === "ADMIN" ? "rgba(139,92,246,0.15)" : "rgba(60,184,46,0.12)", color: c === "ADMIN" ? "#A78BFA" : "#6FE840" });
 
-  const fetchTournaments = async () => {
-    const res = await fetch("/api/tournaments");
-    if (res.ok) setTournaments(await res.json());
+// ─── Tab Button ───────────────────────────────────────────
+function Tab({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button onClick={onClick} style={{ padding: "10px 20px", fontSize: "0.82rem", fontWeight: 700, border: "none", borderBottom: active ? "2px solid #3CB82E" : "2px solid transparent", background: "transparent", color: active ? "#fff" : "rgba(255,255,255,0.35)", cursor: "pointer" }}>
+      {children}
+    </button>
+  );
+}
+
+// ─── Tournaments Tab ──────────────────────────────────────
+function TournamentsTab() {
+  const [list, setList] = useState<Tournament[]>([]);
+  const [form, setForm] = useState({ name: "", game: "Football", type: "League", description: "", prizePool: "", prizes: "", maxPlayers: 100, startDate: "", registrationMode: "OPEN", inviteCode: "" });
+  const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState<Tournament | null>(null);
+
+  const load = useCallback(async () => {
+    const r = await fetch("/api/tournaments"); if (r.ok) setList(await r.json());
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const create = async (e: React.FormEvent) => {
+    e.preventDefault(); setSaving(true);
+    const r = await fetch("/api/tournaments", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, maxPlayers: Number(form.maxPlayers) }) });
+    if (r.ok) { load(); setForm({ name: "", game: "Football", type: "League", description: "", prizePool: "", prizes: "", maxPlayers: 100, startDate: "", registrationMode: "OPEN", inviteCode: "" }); }
+    setSaving(false);
   };
 
-  const fetchUsers = async () => {
-    const res = await fetch("/api/admin/users");
-    if (res.ok) setUsers(await res.json());
+  const patch = async (id: string, data: Partial<Tournament>) => {
+    await fetch(`/api/admin/tournaments/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+    load();
   };
 
-  const handleCreateTournament = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const res = await fetch("/api/tournaments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, game, description, prizePool, maxPlayers, startDate }),
-    });
-    
-    if (res.ok) {
-      alert("Tournament created successfully!");
-      fetchTournaments();
-    } else {
-      alert("Failed to create tournament.");
-    }
+  const del = async (id: string) => {
+    if (!confirm("Delete this tournament?")) return;
+    await fetch(`/api/admin/tournaments/${id}`, { method: "DELETE" }); load();
   };
 
-  if (status === "loading" || !session) return <div className="text-center py-20">Loading...</div>;
+  const F = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
   return (
-    <div className="py-10">
-      <header>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-3xl font-bold leading-tight text-gray-900 font-heading">
-            Admin Area
-          </h1>
-          <span className="bg-cta text-white px-3 py-1 rounded-full text-sm font-bold">
-            Admin Privileges Active
-          </span>
-        </div>
-      </header>
-      
-      <main>
-        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-8 space-y-8">
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Create Tournament Form */}
-            <div className="card">
-              <h2 className="text-xl font-heading text-primary mb-4 border-b pb-2">Create New Tournament</h2>
-              <form onSubmit={handleCreateTournament} className="space-y-4">
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr", gap: 24 }}>
+      {/* Create form */}
+      <div>
+        <h3 style={sectionTitle}>{editing ? "Edit Competition" : "Create Competition"}</h3>
+        <form onSubmit={create} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div><label style={label}>NAME</label><input required style={inputStyle} value={form.name} onChange={e => F("name", e.target.value)} /></div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div><label style={label}>TYPE</label>
+              <select style={inputStyle} value={form.type} onChange={e => F("type", e.target.value)}>
+                <option>League</option><option>Cup</option>
+              </select>
+            </div>
+            <div><label style={label}>GAME / SPORT</label><input style={inputStyle} value={form.game} onChange={e => F("game", e.target.value)} /></div>
+          </div>
+          <div><label style={label}>DESCRIPTION</label><textarea style={{ ...inputStyle, minHeight: 60 }} value={form.description} onChange={e => F("description", e.target.value)} /></div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div><label style={label}>PRIZE POOL</label><input style={inputStyle} value={form.prizePool} onChange={e => F("prizePool", e.target.value)} placeholder="e.g. $5,000" /></div>
+            <div><label style={label}>MAX PLAYERS</label><input type="number" style={inputStyle} value={form.maxPlayers} onChange={e => F("maxPlayers", e.target.value)} /></div>
+          </div>
+          <div><label style={label}>PRIZES DETAIL (shown to users)</label><textarea style={{ ...inputStyle, minHeight: 60 }} placeholder="1st: $2,000 trophy&#10;2nd: $1,000&#10;3rd: $500" value={form.prizes} onChange={e => F("prizes", e.target.value)} /></div>
+          <div><label style={label}>START DATE</label><input required type="datetime-local" style={inputStyle} value={form.startDate} onChange={e => F("startDate", e.target.value)} /></div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div><label style={label}>REGISTRATION</label>
+              <select style={inputStyle} value={form.registrationMode} onChange={e => F("registrationMode", e.target.value)}>
+                <option value="OPEN">Open</option><option value="INVITE_ONLY">Invite Only</option>
+              </select>
+            </div>
+            {form.registrationMode === "INVITE_ONLY" && (
+              <div><label style={label}>INVITE CODE</label><input style={inputStyle} value={form.inviteCode} onChange={e => F("inviteCode", e.target.value)} placeholder="e.g. MK2025" /></div>
+            )}
+          </div>
+          <button type="submit" style={{ ...btnGreen, marginTop: 4 }} disabled={saving}>{saving ? "Creating…" : "Create Competition"}</button>
+        </form>
+      </div>
+
+      {/* List */}
+      <div>
+        <h3 style={sectionTitle}>All Competitions ({list.length})</h3>
+        <div style={{ maxHeight: 600, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
+          {list.map(t => (
+            <div key={t.id} style={card}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Tournament Name</label>
-                  <input type="text" required className="input mt-1" value={name} onChange={e => setName(e.target.value)} />
+                  <div style={{ fontWeight: 700, fontSize: "0.9rem" }}>{t.name}</div>
+                  <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.4)", marginTop: 3 }}>
+                    {t.type} · {t.game} · {t._count?.registrations ?? 0} joined · {t._count?.matches ?? 0} matches
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Game</label>
-                  <select className="input mt-1" value={game} onChange={e => setGame(e.target.value)}>
-                    <option value="Valorant">Valorant</option>
-                    <option value="League of Legends">League of Legends</option>
-                    <option value="CS2">CS2</option>
-                    <option value="Apex Legends">Apex Legends</option>
-                    <option value="EAFC 24">EAFC 24</option>
+                <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                  {/* Status cycle */}
+                  <select value={t.status} onChange={e => patch(t.id, { status: e.target.value })}
+                    style={{ ...btnGhost, paddingRight: 6, fontSize: "0.72rem" }}>
+                    <option value="UPCOMING">Upcoming</option><option value="ONGOING">Ongoing</option><option value="COMPLETED">Completed</option>
                   </select>
+                  <button onClick={() => del(t.id)} style={{ ...btnGhost, color: "#F87171", borderColor: "rgba(248,113,113,0.25)" }}>Del</button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Description</label>
-                  <textarea className="input mt-1" value={description} onChange={e => setDescription(e.target.value)} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Prize Pool</label>
-                    <input type="text" className="input mt-1" value={prizePool} onChange={e => setPrizePool(e.target.value)} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Max Players</label>
-                    <input type="number" className="input mt-1" value={maxPlayers} onChange={e => setMaxPlayers(Number(e.target.value))} />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Start Date</label>
-                  <input type="datetime-local" required className="input mt-1" value={startDate} onChange={e => setStartDate(e.target.value)} />
-                </div>
-                <button type="submit" className="btn-primary w-full">Deploy Tournament</button>
-              </form>
+              </div>
+              <div style={{ marginTop: 10, fontSize: "0.72rem", color: "rgba(255,255,255,0.35)" }}>
+                Prize: <b style={{ color: "#6FE840" }}>{t.prizePool}</b> · {t.registrationMode} · Starts {new Date(t.startDate).toLocaleDateString("en-GB")}
+              </div>
+              {t.prizes && <div style={{ marginTop: 6, fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", whiteSpace: "pre-line" }}>{t.prizes}</div>}
             </div>
-
-            {/* Active Tournaments */}
-            <div className="card">
-              <h2 className="text-xl font-heading text-secondary mb-4 border-b pb-2">Active Tournaments</h2>
-              <ul className="divide-y divide-gray-200 overflow-y-auto max-h-[500px]">
-                {tournaments.length === 0 ? <p className="text-gray-500 py-4">No tournaments created yet.</p> : null}
-                {tournaments.map((t: any) => (
-                  <li key={t.id} className="py-4">
-                    <div className="flex justify-between">
-                      <div>
-                        <h4 className="font-bold text-gray-900">{t.name}</h4>
-                        <p className="text-sm text-gray-500">{t.game} • {t.status}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-primary font-bold">{t.prizePool}</p>
-                        <p className="text-xs text-gray-500">{t._count?.registrations || 0} / {t.maxPlayers} players</p>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* User Directory */}
-          <div className="card">
-            <h2 className="text-xl font-heading text-text-dark mb-4 border-b pb-2">User Directory</h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user: any) => (
-                    <tr key={user.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
+          ))}
         </div>
-      </main>
+      </div>
+    </div>
+  );
+}
+
+// ─── Sync Fixtures Tab ───────────────────────────────────
+function SyncTab() {
+  const [status, setStatus] = useState<any>(null);
+  const [loading, setLoading] = useState("");
+  const [result, setResult] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/sync-fixtures").then(r => r.ok ? r.json() : null).then(setStatus);
+  }, []);
+
+  const sync = async (mode: string, leagueId?: number) => {
+    setLoading(mode); setResult(null);
+    const body: any = { mode };
+    if (leagueId) body.leagueId = leagueId;
+    const r = await fetch("/api/admin/sync-fixtures", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    setResult(data); setLoading("");
+    fetch("/api/admin/sync-fixtures").then(r => r.ok ? r.json() : null).then(setStatus);
+  };
+
+  const POPULAR_LEAGUES = [
+    { id: 39, name: "Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
+    { id: 140, name: "La Liga", flag: "🇪🇸" },
+    { id: 135, name: "Serie A", flag: "🇮🇹" },
+    { id: 78, name: "Bundesliga", flag: "🇩🇪" },
+    { id: 61, name: "Ligue 1", flag: "🇫🇷" },
+    { id: 2, name: "Champions League", flag: "⭐" },
+    { id: 3, name: "Europa League", flag: "🟠" },
+    { id: 12, name: "CAF Champions League", flag: "🌍" },
+    { id: 20, name: "CAF Confederation Cup", flag: "🌍" },
+    { id: 233, name: "Egyptian Premier", flag: "🇪🇬" },
+    { id: 307, name: "Saudi Pro League", flag: "🇸🇦" },
+    { id: 253, name: "MLS", flag: "🇺🇸" },
+  ];
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 24 }}>
+      <div>
+        <h3 style={sectionTitle}>📡 Sync Real Fixtures</h3>
+        <div style={{ ...card, display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>QUICK SYNC</div>
+          <button style={btnGreen} disabled={!!loading} onClick={() => sync("today")}>
+            {loading === "today" ? "Syncing..." : "⚡ Sync Today"}
+          </button>
+          <button style={{ ...btnGhost, textAlign: "left" }} disabled={!!loading} onClick={() => sync("week")}>
+            {loading === "week" ? "Syncing..." : "📅 Sync Next 7 Days"}
+          </button>
+          <button style={{ ...btnGhost, textAlign: "left" }} disabled={!!loading} onClick={() => sync("month")}>
+            {loading === "month" ? "Syncing..." : "🗓️ Sync Next 30 Days"}
+          </button>
+          <button style={{ ...btnGhost, textAlign: "left", borderColor: "rgba(255,153,20,0.3)", color: "#ff9914" }} disabled={!!loading} onClick={() => sync("update-live")}>
+            {loading === "update-live" ? "Updating..." : "🔴 Update Live Scores"}
+          </button>
+        </div>
+
+        <h3 style={{ ...sectionTitle, marginTop: 20 }}>Sync by League</h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {POPULAR_LEAGUES.map(l => (
+            <button key={l.id} style={{ ...btnGhost, textAlign: "left" }} disabled={!!loading}
+              onClick={() => sync("league", l.id)}>
+              {loading === `league-${l.id}` ? "Syncing..." : `${l.flag} ${l.name}`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h3 style={sectionTitle}>📊 DB Status</h3>
+        {status && (
+          <div style={card}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              {[
+                { label: "Total Matches", value: status.total, color: "#fff" },
+                { label: "Upcoming", value: status.upcoming, color: "#6FE840" },
+                { label: "Live", value: status.live, color: "#ff4444" },
+                { label: "Completed", value: status.completed, color: "rgba(255,255,255,0.4)" },
+              ].map(s => (
+                <div key={s.label} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: "14px 16px" }}>
+                  <div style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>{s.label}</div>
+                  <div style={{ fontSize: "1.4rem", fontWeight: 800, color: s.color }}>{s.value}</div>
+                </div>
+              ))}
+            </div>
+            {status.lastSync && (
+              <div style={{ marginTop: 12, fontSize: "0.72rem", color: "rgba(255,255,255,0.3)" }}>
+                Last sync: {new Date(status.lastSync).toLocaleString("en-GB")}
+              </div>
+            )}
+          </div>
+        )}
+
+        {result && (
+          <div style={{ ...card, borderColor: result.error ? "rgba(255,68,68,0.3)" : "rgba(60,184,46,0.3)", marginTop: 16 }}>
+            <div style={{ fontWeight: 700, color: result.error ? "#ff4444" : "#6FE840", marginBottom: 8 }}>
+              {result.error ? `❌ Error: ${result.error}` : "✅ Sync Complete"}
+            </div>
+            {!result.error && (
+              <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.6)", lineHeight: 1.8 }}>
+                <div>📥 Fetched: <b style={{ color: "#fff" }}>{result.total}</b> fixtures</div>
+                <div>✨ Created: <b style={{ color: "#6FE840" }}>{result.created}</b> new</div>
+                <div>🔄 Updated: <b style={{ color: "#ff9914" }}>{result.updated}</b></div>
+                <div>⏩ Skipped: <b style={{ color: "rgba(255,255,255,0.4)" }}>{result.skipped}</b></div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Matches Tab ──────────────────────────────────────────
+function MatchesTab() {
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [selT, setSelT] = useState("");
+  const [form, setForm] = useState({ homeTeam: "", awayTeam: "", matchDate: "", round: "Round 1" });
+  const [saving, setSaving] = useState(false);
+  const [resultId, setResultId] = useState<string | null>(null);
+  const [result, setResult] = useState({ homeScore: 0, awayScore: 0, firstGoalScorer: "" });
+
+  useEffect(() => { fetch("/api/tournaments").then(r => r.ok ? r.json() : []).then(setTournaments); }, []);
+  useEffect(() => {
+    if (!selT) return;
+    fetch(`/api/matches?tournamentId=${selT}`).then(r => r.ok ? r.json() : []).then(setMatches);
+  }, [selT]);
+
+  const createMatch = async (e: React.FormEvent) => {
+    e.preventDefault(); setSaving(true);
+    await fetch("/api/matches", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, tournamentId: selT }) });
+    fetch(`/api/matches?tournamentId=${selT}`).then(r => r.ok ? r.json() : []).then(setMatches);
+    setForm({ homeTeam: "", awayTeam: "", matchDate: "", round: "Round 1" });
+    setSaving(false);
+  };
+
+  const setMatchResult = async (id: string) => {
+    await fetch(`/api/admin/matches/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...result, status: "COMPLETED" }) });
+    fetch(`/api/matches?tournamentId=${selT}`).then(r => r.ok ? r.json() : []).then(setMatches);
+    setResultId(null);
+  };
+
+  const delMatch = async (id: string) => {
+    await fetch(`/api/admin/matches/${id}`, { method: "DELETE" });
+    setMatches(ms => ms.filter(m => m.id !== id));
+  };
+
+  const F = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr", gap: 24 }}>
+      <div>
+        <h3 style={sectionTitle}>Add Match</h3>
+        <div style={{ marginBottom: 14 }}>
+          <label style={label}>SELECT COMPETITION</label>
+          <select style={inputStyle} value={selT} onChange={e => setSelT(e.target.value)}>
+            <option value="">-- Choose --</option>
+            {tournaments.map(t => <option key={t.id} value={t.id}>{t.type}: {t.name}</option>)}
+          </select>
+        </div>
+        {selT && (
+          <form onSubmit={createMatch} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div><label style={label}>HOME TEAM</label><input required style={inputStyle} value={form.homeTeam} onChange={e => F("homeTeam", e.target.value)} /></div>
+              <div><label style={label}>AWAY TEAM</label><input required style={inputStyle} value={form.awayTeam} onChange={e => F("awayTeam", e.target.value)} /></div>
+            </div>
+            <div><label style={label}>MATCH DATE</label><input required type="datetime-local" style={inputStyle} value={form.matchDate} onChange={e => F("matchDate", e.target.value)} /></div>
+            <div><label style={label}>ROUND</label><input style={inputStyle} value={form.round} onChange={e => F("round", e.target.value)} placeholder="Round 1, Quarter-final…" /></div>
+            <button type="submit" style={btnGreen} disabled={saving}>{saving ? "Adding…" : "Add Match"}</button>
+          </form>
+        )}
+      </div>
+
+      <div>
+        <h3 style={sectionTitle}>Matches {selT ? `(${matches.length})` : "— select a competition"}</h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 560, overflowY: "auto" }}>
+          {matches.map(m => (
+            <div key={m.id} style={{ ...card, marginBottom: 0 }}>
+              {resultId === m.id ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ fontWeight: 700, fontSize: "0.85rem", marginBottom: 4 }}>Set Result: {m.homeTeam} vs {m.awayTeam}</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div><label style={label}>{m.homeTeam} SCORE</label><input type="number" min={0} style={inputStyle} value={result.homeScore} onChange={e => setResult(r => ({ ...r, homeScore: Number(e.target.value) }))} /></div>
+                    <div><label style={label}>{m.awayTeam} SCORE</label><input type="number" min={0} style={inputStyle} value={result.awayScore} onChange={e => setResult(r => ({ ...r, awayScore: Number(e.target.value) }))} /></div>
+                  </div>
+                  <div><label style={label}>FIRST GOALSCORER</label><input style={inputStyle} value={result.firstGoalScorer} onChange={e => setResult(r => ({ ...r, firstGoalScorer: e.target.value }))} /></div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => setMatchResult(m.id)} style={btnGreen}>Save & Award XP</button>
+                    <button onClick={() => setResultId(null)} style={btnGhost}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: "0.85rem" }}>{m.homeTeam} vs {m.awayTeam}</div>
+                    <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.35)", marginTop: 3 }}>
+                      {m.round} · {new Date(m.matchDate).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      {m.status === "COMPLETED" && <span style={{ color: "#6FE840", marginLeft: 8 }}>{m.homeScore}–{m.awayScore}</span>}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    {m.status !== "COMPLETED" && (
+                      <button onClick={() => { setResultId(m.id); setResult({ homeScore: 0, awayScore: 0, firstGoalScorer: "" }); }} style={btnGhost}>Set Result</button>
+                    )}
+                    <button onClick={() => delMatch(m.id)} style={{ ...btnGhost, color: "#F87171", borderColor: "rgba(248,113,113,0.2)" }}>Del</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Users Tab ────────────────────────────────────────────
+function UsersTab() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [search, setSearch] = useState("");
+
+  const load = useCallback(async () => {
+    const r = await fetch("/api/admin/users"); if (r.ok) setUsers(await r.json());
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const toggleRole = async (u: User) => {
+    const newRole = u.role === "ADMIN" ? "USER" : "ADMIN";
+    if (!confirm(`Set ${u.name} to ${newRole}?`)) return;
+    await fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: u.id, role: newRole }) });
+    load();
+  };
+
+  const filtered = users.filter(u => u.name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h3 style={{ ...sectionTitle, marginBottom: 0 }}>Users ({users.length})</h3>
+        <input style={{ ...inputStyle, width: 240 }} placeholder="Search by name or email…" value={search} onChange={e => setSearch(e.target.value)} />
+      </div>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem" }}>
+          <thead>
+            <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              {["Name", "Email", "Role", "XP", "Competitions", "Predictions", "Joined", "Action"].map(h => (
+                <th key={h} style={{ textAlign: "left", padding: "8px 12px", fontSize: "0.65rem", fontWeight: 700, color: "rgba(255,255,255,0.35)", letterSpacing: "0.08em" }}>{h.toUpperCase()}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(u => (
+              <tr key={u.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <td style={{ padding: "10px 12px", fontWeight: 600 }}>{u.name}</td>
+                <td style={{ padding: "10px 12px", color: "rgba(255,255,255,0.5)" }}>{u.email}</td>
+                <td style={{ padding: "10px 12px" }}><span style={tag(u.role)}>{u.role}</span></td>
+                <td style={{ padding: "10px 12px", color: "#6FE840", fontWeight: 700 }}>{u.xp.toLocaleString()}</td>
+                <td style={{ padding: "10px 12px", color: "rgba(255,255,255,0.5)" }}>{u._count.registrations}</td>
+                <td style={{ padding: "10px 12px", color: "rgba(255,255,255,0.5)" }}>{u._count.predictions}</td>
+                <td style={{ padding: "10px 12px", color: "rgba(255,255,255,0.35)", fontSize: "0.75rem" }}>{new Date(u.createdAt).toLocaleDateString("en-GB")}</td>
+                <td style={{ padding: "10px 12px" }}>
+                  <button onClick={() => toggleRole(u)} style={{ ...btnGhost, fontSize: "0.72rem", padding: "5px 12px" }}>
+                    {u.role === "ADMIN" ? "Demote" : "Make Admin"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─── Stats Overview ───────────────────────────────────────
+function StatsTab() {
+  const [stats, setStats] = useState<any>(null);
+  useEffect(() => {
+    Promise.all([fetch("/api/tournaments").then(r => r.json()), fetch("/api/admin/users").then(r => r.json())])
+      .then(([ts, us]) => setStats({ tournaments: ts.length, users: us.length, totalXP: us.reduce((s: number, u: User) => s + u.xp, 0), upcoming: ts.filter((t: Tournament) => t.status === "UPCOMING").length }));
+  }, []);
+
+  const metrics = stats ? [
+    { label: "Total Competitions", value: stats.tournaments, color: "#6FE840" },
+    { label: "Upcoming", value: stats.upcoming, color: "#FBBF24" },
+    { label: "Registered Users", value: stats.users, color: "#818CF8" },
+    { label: "Total XP Awarded", value: stats.totalXP.toLocaleString(), color: "#F472B6" },
+  ] : [];
+
+  return (
+    <div>
+      <h3 style={sectionTitle}>Platform Overview</h3>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 30 }}>
+        {metrics.map(m => (
+          <div key={m.label} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "20px 22px" }}>
+            <div style={{ fontSize: "1.8rem", fontWeight: 800, color: m.color, fontFamily: "'Russo One',sans-serif" }}>{m.value}</div>
+            <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.35)", fontWeight: 600, letterSpacing: "0.06em", marginTop: 4 }}>{m.label.toUpperCase()}</div>
+          </div>
+        ))}
+      </div>
+      <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.85rem" }}>Use the tabs above to manage competitions, matches, results, and users.</p>
+    </div>
+  );
+}
+
+// ─── Main Admin Page ──────────────────────────────────────
+export default function AdminPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [tab, setTab] = useState<"overview" | "competitions" | "matches" | "sync" | "users">("overview");
+
+  useEffect(() => {
+    if (status === "unauthenticated") router.push("/login");
+    else if (session && session.user?.role !== "ADMIN") router.push("/dashboard");
+  }, [session, status, router]);
+
+  if (status === "loading" || !session) return <div style={{ color: "#fff", padding: 40, background: "#0A0E1A", minHeight: "100vh" }}>Loading…</div>;
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#0A0E1A", color: "#fff", fontFamily: "'Chakra Petch',sans-serif" }}>
+      {/* Header */}
+      <div style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "24px 24px 0" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <div>
+              <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#3CB82E", letterSpacing: "0.12em", marginBottom: 4 }}>MATCHKOO</div>
+              <h1 style={{ fontFamily: "'Russo One',sans-serif", fontSize: "1.6rem", margin: 0 }}>Admin Panel</h1>
+            </div>
+            <span style={{ background: "rgba(139,92,246,0.12)", color: "#A78BFA", padding: "4px 14px", borderRadius: 100, fontSize: "0.72rem", fontWeight: 700 }}>
+              {session.user?.name} · ADMIN
+            </span>
+          </div>
+          <div style={{ display: "flex" }}>
+            <Tab active={tab === "overview"} onClick={() => setTab("overview")}>Overview</Tab>
+            <Tab active={tab === "competitions"} onClick={() => setTab("competitions")}>Competitions</Tab>
+            <Tab active={tab === "matches"} onClick={() => setTab("matches")}>Matches &amp; Results</Tab>
+            <Tab active={tab === "sync"} onClick={() => setTab("sync")}>📡 Sync Fixtures</Tab>
+            <Tab active={tab === "users"} onClick={() => setTab("users")}>Users</Tab>
+          </div>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
+        {tab === "overview"      && <StatsTab />}
+        {tab === "competitions"  && <TournamentsTab />}
+        {tab === "matches"       && <MatchesTab />}
+        {tab === "sync"          && <SyncTab />}
+        {tab === "users"         && <UsersTab />}
+      </div>
     </div>
   );
 }

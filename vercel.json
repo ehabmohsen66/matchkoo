@@ -1,7 +1,16 @@
 {
-  "buildCommand": "prisma generate && next build",
   "framework": "nextjs",
-  "env": {
-    "NEXTAUTH_URL": "https://kickoff.vercel.app"
-  }
+  "buildCommand": "prisma generate && next build",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
+  "crons": [
+    {
+      "path": "/api/cron/sync-fixtures",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/update-live",
+      "schedule": "* * * * *"
+    }
+  ]
 }
