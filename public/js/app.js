@@ -926,6 +926,21 @@ function _applyMatchData(m) {
       const as = document.getElementById('score-away-input');
       if (hs) hs.value = m.userPrediction?.homeScore ?? '';
       if (as) as.value = m.userPrediction?.awayScore ?? '';
+      
+      // Auto-select result button
+      const pHome = m.userPrediction?.homeScore ?? 0;
+      const pAway = m.userPrediction?.awayScore ?? 0;
+      if (pHome > pAway) selectResult('home', document.getElementById('rb-home'));
+      else if (pHome < pAway) selectResult('away', document.getElementById('rb-away'));
+      else selectResult('draw', document.getElementById('rb-draw'));
+    } else {
+      // Clear previous inputs
+      const hs = document.getElementById('score-home-input');
+      const as = document.getElementById('score-away-input');
+      if (hs) hs.value = '';
+      if (as) as.value = '';
+      document.querySelectorAll('.result-btn').forEach(b => b.classList.remove('selected-result'));
+      state.selectedResult = null;
     }
   }
 }
@@ -982,14 +997,17 @@ async function openRealMatchDetail(matchId) {
 }
 
 async function submitPrediction() {
-  if (!state.selectedResult) {
-    showNotification('Please pick a match result first!', 'warning');
+  const homeScoreInput = document.getElementById('score-home-input').value;
+  const awayScoreInput = document.getElementById('score-away-input').value;
+
+  if (homeScoreInput === '' || awayScoreInput === '') {
+    showNotification('Please enter an exact scoreline prediction!', 'warning');
     return;
   }
 
-  const confidence = parseInt(document.getElementById('confidence-slider').value);
-  const homeScore  = parseInt(document.getElementById('score-home-input').value);
-  const awayScore  = parseInt(document.getElementById('score-away-input').value);
+  const confidence = parseInt(document.getElementById('confidence-slider').value) || 50;
+  const homeScore  = parseInt(homeScoreInput);
+  const awayScore  = parseInt(awayScoreInput);
   const scorer     = document.getElementById('scorer-select').value;
 
   // Use the real match ID stored on the current fixture if available
