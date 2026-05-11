@@ -71,6 +71,77 @@ function initHome() {
   renderFixturesList();
   renderMiniLeaderboard();
   loadHomeWidgets();
+  renderLiveNow();
+}
+
+// ─── LIVE NOW ────────────────────────────────────────────────────
+async function renderLiveNow() {
+  const container = document.getElementById('live-now-cards');
+  if (!container) return;
+
+  try {
+    const data = await fetch('/api/matches/live').then(r => r.ok ? r.json() : { live: [] });
+    const matches = data.live || [];
+
+    if (matches.length === 0) {
+      container.innerHTML =
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:36px 24px;' +
+        'color:rgba(255,255,255,0.3);text-align:center;">' +
+          '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+            '<circle cx="12" cy="12" r="10"/>' +
+            '<path d="M12 6v6l4 2"/>' +
+          '</svg>' +
+          '<div style="font-size:0.9rem;font-weight:700;">No live matches right now</div>' +
+          '<div style="font-size:0.75rem;">Check back at kick-off time</div>' +
+        '</div>';
+      return;
+    }
+
+    const mkAbbr = t => t.split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase();
+
+    container.innerHTML = matches.slice(0, 5).map(m => {
+      const homeAbbr = mkAbbr(m.homeTeam);
+      const awayAbbr = mkAbbr(m.awayTeam);
+      const homeLogo = m.homeLogo
+        ? '<img src="' + m.homeLogo + '" width="40" height="40" style="border-radius:50%;border:1.5px solid rgba(255,255,255,0.1)" onerror="this.style.display=\'none\'">'
+        : '<svg viewBox="0 0 40 40" fill="none" width="40" height="40"><circle cx="20" cy="20" r="18" fill="rgba(255,255,255,0.1)"/><text x="20" y="25" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="sans-serif">' + homeAbbr + '</text></svg>';
+      const awayLogo = m.awayLogo
+        ? '<img src="' + m.awayLogo + '" width="40" height="40" style="border-radius:50%;border:1.5px solid rgba(255,255,255,0.1)" onerror="this.style.display=\'none\'">'
+        : '<svg viewBox="0 0 40 40" fill="none" width="40" height="40"><circle cx="20" cy="20" r="18" fill="rgba(255,255,255,0.1)"/><text x="20" y="25" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="sans-serif">' + awayAbbr + '</text></svg>';
+
+      const minuteLabel = m.minute ? m.minute + "'" : 'LIVE';
+      const matchId = m.externalId ? m.externalId.replace('apif-', '') : '';
+
+      return '<div class="match-card live-card" style="cursor:pointer" onclick="' +
+          (matchId ? 'openRealMatchDetail(\'' + m.id + '\')' : '') + '">' +
+        '<div class="match-card-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+          '<span class="match-league">' + (m.league || 'Live') + '</span>' +
+          '<span class="match-minute live-badge">' + minuteLabel + '</span>' +
+        '</div>' +
+        '<div class="match-teams">' +
+          '<div class="team-block">' +
+            '<div class="team-badge">' + homeLogo + '</div>' +
+            '<span class="team-name">' + m.homeTeam + '</span>' +
+            '<span class="team-score">' + (m.homeScore ?? 0) + '</span>' +
+          '</div>' +
+          '<div class="vs-block">VS</div>' +
+          '<div class="team-block team-block-right">' +
+            '<span class="team-score">' + (m.awayScore ?? 0) + '</span>' +
+            '<span class="team-name">' + m.awayTeam + '</span>' +
+            '<div class="team-badge">' + awayLogo + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="card-footer-meta">' +
+          '<span class="picker-count">Live match</span>' +
+          '<span class="your-pick" style="color:var(--red);font-weight:800;">🔴 LIVE</span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+  } catch(e) {
+    container.innerHTML =
+      '<div style="color:rgba(255,255,255,0.25);font-size:0.8rem;padding:24px;">Could not load live matches</div>';
+  }
 }
 
 async function loadHomeWidgets() {
