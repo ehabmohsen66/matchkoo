@@ -129,7 +129,7 @@ async function renderLiveMatches() {
     });
 
     if (!liveMatches.length) {
-      container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:20px 0;">No active matches in supported leagues right now.</div>';
+      container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:20px 0;">No live matches right now. Check back during match time!</div>';
       return;
     }
 
@@ -182,7 +182,7 @@ async function renderFixturesList() {
         return isActive && d >= today && d < tomorrow; 
     });
     if (!todays.length) {
-      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;">No fixtures today. Check Discover for upcoming matches.</div>';
+      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:0.88rem;">No matches scheduled today in your leagues. Check Discover for upcoming fixtures.</div>';
       return;
     }
     container.innerHTML = todays.map(m => {
@@ -418,13 +418,13 @@ function _renderRealFixtures(container, matches, leagueName) {
   }).join('');
 }
 
-/** No real DB fixtures yet — show a clean "coming soon" message, never generate fake teams */
+/** No real DB fixtures yet — show a clean empty state */
 function _renderMockFixtures(container, leagueName) {
   container.innerHTML = 
     '<div style="text-align:center;padding:64px 24px;">' +
-      '<div style="font-size:2.5rem;margin-bottom:16px">📅</div>' +
-      '<div style="font-weight:800;font-size:1.1rem;color:#fff;margin-bottom:8px">Fixtures Syncing Soon</div>' +
-      '<div style="color:rgba(255,255,255,0.4);font-size:0.85rem;line-height:1.6">Real ' + leagueName + ' fixtures will appear here once synced.<br>Check back soon or ask an admin to sync from the Admin Panel.</div>' +
+      '<div style="font-size:2.5rem;margin-bottom:16px">📭</div>' +
+      '<div style="font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:8px">No Upcoming Fixtures</div>' +
+      '<div style="color:rgba(255,255,255,0.4);font-size:0.85rem;">No ' + leagueName + ' matches are scheduled yet.<br>Check back soon — fixtures update daily.</div>' +
     '</div>';
 }
 
