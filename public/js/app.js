@@ -68,6 +68,7 @@ function toggleMobileSidebar() {
 
 // ─── HOME PAGE ───────────────────────────────────────────────────
 function initHome() {
+  renderLiveMatches();
   renderFixturesList();
   renderMiniLeaderboard();
   loadHomeWidgets();
@@ -111,6 +112,59 @@ async function loadHomeWidgets() {
   } catch(e) { if (clubEl) clubEl.innerHTML = ''; }
 }
 
+
+async function renderLiveMatches() {
+  const container = document.getElementById('live-now-cards');
+  if (!container) return;
+  
+  try {
+    const matches = await fetch('/api/matches').then(r => r.ok ? r.json() : []);
+    
+    // Exact names of the active leagues
+    const ACTIVE_LEAGUES = ['premier league', 'la liga', 'uefa champions league', 'egyptian premier league', 'fifa world cup'];
+    
+    const liveMatches = matches.filter(m => {
+      const tName = (m.tournament?.name || '').toLowerCase().replace(/ \d{4}$/, '').trim();
+      return ACTIVE_LEAGUES.includes(tName) && m.status === 'LIVE';
+    });
+
+    if (!liveMatches.length) {
+      container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:20px 0;">No active matches in supported leagues right now.</div>';
+      return;
+    }
+
+    container.innerHTML = liveMatches.map(m => {
+      const matchId = m.id;
+      const min = m.minute ? m.minute + "'" : '';
+      return '<div class="match-card live-card" onclick="openRealMatchDetail(\'' + matchId + '\')">' +
+        '<div class="match-card-header">' +
+          '<span class="match-league">' + (m.tournament?.name || 'Match') + '</span>' +
+          '<span class="match-minute live-badge">' + min + '</span>' +
+        '</div>' +
+        '<div class="match-teams">' +
+          '<div class="team-block">' +
+            '<div class="team-badge" style="background:#1a3a5c;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px">' +
+              (m.homeLogo ? '<img src="'+m.homeLogo+'" width="40" height="40" style="border-radius:50%">' : m.homeTeam.substring(0,3).toUpperCase()) +
+            '</div>' +
+            '<span class="team-name">' + m.homeTeam + '</span>' +
+            '<span class="team-score">' + (m.homeScore ?? 0) + '</span>' +
+          '</div>' +
+          '<div class="vs-block">VS</div>' +
+          '<div class="team-block team-block-right">' +
+            '<span class="team-score">' + (m.awayScore ?? 0) + '</span>' +
+            '<span class="team-name">' + m.awayTeam + '</span>' +
+            '<div class="team-badge" style="background:#3a1a2a;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px">' +
+              (m.awayLogo ? '<img src="'+m.awayLogo+'" width="40" height="40" style="border-radius:50%">' : m.awayTeam.substring(0,3).toUpperCase()) +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:20px 0;">Failed to load live matches.</div>';
+  }
+}
+
 async function renderFixturesList() {
   const container = document.getElementById('fixtures-list');
   if (!container) return;
@@ -119,7 +173,14 @@ async function renderFixturesList() {
     const matches = await fetch('/api/matches').then(r => r.ok ? r.json() : []);
     const today = new Date(); today.setHours(0,0,0,0);
     const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+2);
-    const todays = matches.filter(m => { const d=new Date(m.matchDate); return d>=today && d<tomorrow; });
+    
+    // Only show matches from active leagues
+    const todays = matches.filter(m => { 
+        const d = new Date(m.matchDate);
+        const tName = (m.tournament?.name || '').toLowerCase().replace(/ \d{4}$/, '').trim();
+        const isActive = ACTIVE_LEAGUE_NAMES.includes(tName);
+        return isActive && d >= today && d < tomorrow; 
+    });
     if (!todays.length) {
       container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;">No fixtures today. Check Discover for upcoming matches.</div>';
       return;
@@ -223,9 +284,10 @@ const ACTIVE_LEAGUE_NAMES = [
 
 function _isLeagueActive(l) {
   if (l.comingSoon === true) return false;
-  // Real DB tournaments injected by backend_api: check name against whitelist
+  // Real DB tournaments injected by backend_api: check name against exact whitelist
   if (l._realId || /^[0-9a-f-]{20,}$/i.test(l.id)) {
-    return ACTIVE_LEAGUE_NAMES.some(n => l.name.toLowerCase().includes(n) || n.includes(l.name.toLowerCase()));
+    const cleanName = (l.name || '').toLowerCase().replace(/ \\d{4}$/, '').trim();
+    return ACTIVE_LEAGUE_NAMES.includes(cleanName);
   }
   return true; // static leagues gated by comingSoon flag in data.js
 }
