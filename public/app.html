@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="KickOff — The world's #1 football prediction and social gaming platform. Predict matches, earn XP, climb global leaderboards, and compete with friends.">
+  <title>KickOff — Football Prediction Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Russo+One&family=Cairo:wght@400;600;700;800&family=Noto+Kufi+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.v6.css">
+  <link rel="stylesheet" href="css/animations.css?v=6">
+  <script type="importmap">
+  {
+    "imports": {
+      "framer-motion": "https://esm.sh/framer-motion@11.11.0"
+    }
+  }
+  </script>
+  <script type="module" src="js/motion.js"></script>
+</head>
+<body data-page="home">
+  <!-- Dynamic Glowing Background -->
+  <div class="dynamic-bg" id="dynamic-bg"></div>
+
+  <!-- ─── SIDEBAR NAV ─────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo" onclick="navigate('home')" style="cursor:pointer;padding:8px 12px 16px;">
+      <img src="/matchkoo-logo.png" alt="Matchkoo" style="height:90px;object-fit:contain;max-width:150px;display:block;"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div style="display:none;align-items:center;gap:8px">
+        <svg viewBox="0 0 32 32" fill="none" width="34" height="34"><circle cx="16" cy="16" r="14" stroke="#29bf12" stroke-width="2"/><path d="M16 5L18.5 12H26L20 16.5L22.5 23.5L16 19L9.5 23.5L12 16.5L6 12H13.5Z" fill="#29bf12"/></svg>
+        <span style="font-family:'Russo One',sans-serif;font-size:1.15rem;color:#fff;letter-spacing:1.5px">MATCHKOO</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-page="home" onclick="navigate('home')" id="nav-home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" data-page="discover" onclick="navigate('discover')" id="nav-discover">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>Discover</span>
+      </button>
+      <button class="nav-item" data-page="predictions" onclick="navigate('predictions')" id="nav-predictions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>Predictions</span>
+      </button>
+      <button class="nav-item" data-page="leaderboard" onclick="navigate('leaderboard')" id="nav-leaderboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Leaderboard</span>
+      </button>
+      <button class="nav-item" data-page="minileague" onclick="navigate('minileague')" id="nav-minileague">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Mini Leagues</span>
+      </button>
+      <button class="nav-item" data-page="profile" onclick="navigate('profile')" id="nav-profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </button>
+      <button class="nav-item" data-page="vote" onclick="navigate('vote')" id="nav-vote">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span>Vote</span>
+      </button>
+      <a href="/admin" class="nav-item admin-link admin-only" id="nav-admin" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        <span>Admin</span>
+      </a>
+
+      <div class="sidebar-lang">
+        <select id="lang-select-desktop" class="lang-select" onchange="changeLanguage(this.value)">
+          <option value="en">🇺🇸 EN</option>
+          <option value="ar">🇸🇦 AR</option>
+          <option value="de">🇩🇪 DE</option>
+          <option value="es">🇪🇸 ES</option>
+          <option value="fr">🇫🇷 FR</option>
+        </select>
+      </div>
+    </nav>
+
+    <div class="sidebar-user" onclick="navigate('profile')" style="cursor:pointer;">
+      <div class="user-avatar-sm">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=kickoff" alt="User avatar">
+        <div class="level-badge-sm gold">G</div>
+      </div>
+      <div class="user-info-sm">
+        <div class="user-name-sm">Ihab</div>
+        <div class="user-xp-sm">12,450 XP</div>
+      </div>
+      <div class="streak-indicator">
+        <svg viewBox="0 0 24 24" fill="#ff9914" width="16" height="16"><path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z"/></svg>
+        <span>7</span>
+      </div>
+    </div>
+
+    <!-- Sign Out button -->
+    <button
+      onclick="event.stopPropagation(); handleSignOut()"
+      id="sidebar-signout-btn"
+      style="
+        display: flex; align-items: center; gap: 10px;
+        width: calc(100% - 24px); margin: 0 12px 16px;
+        padding: 10px 14px; border-radius: 12px;
+        background: rgba(242,27,63,0.08); border: 1px solid rgba(242,27,63,0.18);
+        color: rgba(255,255,255,0.55); font-size: 0.8rem; font-weight: 700;
+        cursor: pointer; font-family: inherit; text-align: left;
+        transition: all 0.2s;
+      "
+      onmouseover="this.style.background='rgba(242,27,63,0.18)';this.style.color='#F21B3F'"
+      onmouseout="this.style.background='rgba(242,27,63,0.08)';this.style.color='rgba(255,255,255,0.55)'"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      <span id="signout-label">Sign Out</span>
+    </button>
+  </aside>
+
+
+  <!-- ─── MOBILE TOP BAR ───────────────────────────────────────────── -->
+  <header class="mobile-header">
+    <div class="mobile-header-left">
+      <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" id="mobile-menu-btn" aria-label="Toggle menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <select id="lang-select-mobile" class="lang-select lang-select-sm" onchange="changeLanguage(this.value)">
+        <option value="en">EN</option>
+        <option value="ar">AR</option>
+        <option value="de">DE</option>
+        <option value="es">ES</option>
+        <option value="fr">FR</option>
+      </select>
+    </div>
+    <div class="mobile-logo" onclick="navigate('home')" style="cursor:pointer">
+      <img src="/matchkoo-logo.png" alt="Matchkoo" style="height:36px;object-fit:contain;"
+           onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\'font-family:Russo One,sans-serif;color:#fff;font-size:0.95rem;letter-spacing:1px\'>MATCHKOO</span>')">
+    </div>
+    <div class="mobile-streak">
+      <svg viewBox="0 0 24 24" fill="#ff9914" width="16" height="16"><path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z"/></svg>
+      <span>7</span>
+    </div>
+  </header>
+
+  <!-- ─── MAIN CONTENT ─────────────────────────────────────────────── -->
+  <main class="main-content" id="main-content">
+
+    <!-- ════════════════ HOME PAGE ════════════════ -->
+    <div class="page" id="page-home">
+      <!-- Hero Stats Strip -->
+      <div class="hero-strip">
+        <div class="hero-stat">
+          <span class="stat-num">2.4M</span>
+          <span class="stat-lbl">Predictors</span>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+          <span class="stat-num">188</span>
+          <span class="stat-lbl">Leagues</span>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+          <span class="stat-num">#1,247</span>
+          <span class="stat-lbl">Your Rank</span>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat streak-stat">
+          <svg viewBox="0 0 24 24" fill="#ff9914" width="18" height="18"><path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z"/></svg>
+          <span class="stat-num fire">7</span>
+          <span class="stat-lbl">Streak · 2× XP</span>
+        </div>
+      </div>
+
+      <!-- Daily Bonus Banner -->
+      <div class="daily-bonus-banner" id="daily-bonus-banner" onclick="openDailyBonus()">
+        <div class="bonus-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="28" height="28"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="bonus-text">
+          <div class="bonus-title">Daily Bonus Ready!</div>
+          <div class="bonus-sub">Spin to win XP & prediction boosts</div>
+        </div>
+        <button class="bonus-cta">Spin Now</button>
+        <button class="bonus-close" onclick="event.stopPropagation(); closeDailyBonus()" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Section: Featured Live Matches -->
+      <section class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="live-dot"></span> Live Now
+          </h2>
+          <button class="see-all-btn" onclick="navigate('discover')">See all</button>
+        </div>
+        <div class="match-cards-scroll">
+          <!-- Live Match Card -->
+          <div class="match-card live-card" onclick="openMatchDetail('live1')">
+            <div class="match-card-header">
+              <span class="match-league">Premier League</span>
+              <span class="match-minute live-badge" id="live1-minute">67'</span>
+            </div>
+            <div class="match-teams">
+              <div class="team-block">
+                <div class="team-badge">
+                  <svg viewBox="0 0 40 40" fill="none" width="40" height="40">
+                    <circle cx="20" cy="20" r="18" fill="#C8102E"/>
+                    <text x="20" y="25" text-anchor="middle" fill="white" font-size="12" font-weight="bold" font-family="sans-serif">MU</text>
+                  </svg>
+                </div>
+                <span class="team-name">Man United</span>
+                <span class="team-score" id="live1-home-score">1</span>
+              </div>
+              <div class="vs-block">VS</div>
+              <div class="team-block team-block-right">
+                <span class="team-score">2</span>
+                <span class="team-name">Arsenal</span>
+                <div class="team-badge">
+                  <svg viewBox="0 0 40 40" fill="none" width="40" height="40">
+                    <circle cx="20" cy="20" r="18" fill="#EF0107"/>
+                    <text x="20" y="25" text-anchor="middle" fill="white" font-size="12" font-weight="bold" font-family="sans-serif">ARS</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="community-bar-wrap">
+              <div class="community-bar">
+                <div class="bar-home" style="width:42%" aria-label="42%"></div>
+                <div class="bar-draw" style="width:18%" aria-label="18%"></div>
+                <div class="bar-away" style="width:40%" aria-label="40%"></div>
+              </div>
+              <div class="bar-labels"><span>Home</span><span>Draw</span><span>Away</span></div>
+            </div>
+            <div class="card-footer-meta">
+              <span class="picker-count">24,891 predictions</span>
+              <span class="your-pick correct-pick">Your pick: Away ✓</span>
+            </div>
+          </div>
+
+          <!-- Live Match Card 2 -->
+          <div class="match-card live-card" onclick="openMatchDetail('live2')">
+            <div class="match-card-header">
+              <span class="match-league">La Liga</span>
+              <span class="match-minute live-badge" id="live2-minute">34'</span>
+            </div>
+            <div class="match-teams">
+              <div class="team-block">
+                <div class="team-badge badge-rm">
+                  <svg viewBox="0 0 40 40" fill="none" width="40" height="40">
+                    <circle cx="20" cy="20" r="18" fill="#FEBE10"/>
+                    <text x="20" y="25" text-anchor="middle" fill="#00529F" font-size="11" font-weight="bold" font-family="sans-serif">RM</text>
+                  </svg>
+                </div>
+                <span class="team-name">Real Madrid</span>
+                <span class="team-score" id="live2-home-score">2</span>
+              </div>
+              <div class="vs-block">VS</div>
+              <div class="team-block team-block-right">
+                <span class="team-score" id="live2-away-score">0</span>
+                <span class="team-name">Barcelona</span>
+                <div class="team-badge">
+                  <svg viewBox="0 0 40 40" fill="none" width="40" height="40">
+                    <circle cx="20" cy="20" r="18" fill="#A50044"/>
+                    <text x="20" y="25" text-anchor="middle" fill="#EDBB00" font-size="11" font-weight="bold" font-family="sans-serif">FCB</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="community-bar-wrap">
+              <div class="community-bar">
+                <div class="bar-home" style="width:55%" aria-label="55%"></div>
+                <div class="bar-draw" style="width:20%" aria-label="20%"></div>
+                <div class="bar-away" style="width:25%" aria-label="25%"></div>
+              </div>
+              <div class="bar-labels"><span>Home</span><span>Draw</span><span>Away</span></div>
+            </div>
+            <div class="card-footer-meta">
+              <span class="picker-count">58,123 predictions</span>
+              <span class="your-pick">No prediction</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Today's Fixtures -->
+      <section class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">Today's Fixtures</h2>
+          <button class="see-all-btn" onclick="navigate('discover')">See all</button>
+        </div>
+        <div class="fixtures-list" id="fixtures-list">
+          <!-- Injected by JS -->
+        </div>
+      </section>
+
+      <!-- Section: Weekly Challenges -->
+      <section class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="18" height="18"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Weekly Challenges
+          </h2>
+          <span class="challenge-timer">Resets in 3d 14h</span>
+        </div>
+        <div class="challenges-grid">
+          <div class="challenge-card">
+            <div class="challenge-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#29bf12" stroke-width="2" width="24" height="24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="challenge-info">
+              <div class="challenge-name">Speed Demon</div>
+              <div class="challenge-desc">Predict 5 matches within 1 hr of kickoff</div>
+              <div class="challenge-progress">
+                <div class="progress-bar"><div class="progress-fill" style="width:60%"></div></div>
+                <span>3/5</span>
+              </div>
+            </div>
+            <div class="challenge-reward">+500 XP</div>
+          </div>
+          <div class="challenge-card">
+            <div class="challenge-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="24" height="24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="challenge-info">
+              <div class="challenge-name">Scoreline Sniper</div>
+              <div class="challenge-desc">Get 3 correct exact scorelines this week</div>
+              <div class="challenge-progress">
+                <div class="progress-bar"><div class="progress-fill" style="width:33%"></div></div>
+                <span>1/3</span>
+              </div>
+            </div>
+            <div class="challenge-reward">+750 XP</div>
+          </div>
+          <div class="challenge-card">
+            <div class="challenge-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#abff4f" stroke-width="2" width="24" height="24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="challenge-info">
+              <div class="challenge-name">World Traveller</div>
+              <div class="challenge-desc">Submit predictions in 4 different leagues</div>
+              <div class="challenge-progress">
+                <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
+                <span>3/4</span>
+              </div>
+            </div>
+            <div class="challenge-reward">+400 XP</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Widget: Top Predictors -->
+      <section class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">🏅 Top Predictors</h2>
+          <button class="see-all-btn" onclick="navigate('leaderboard')">See all</button>
+        </div>
+        <div id="home-top-predictors" style="display:flex;flex-direction:column;gap:8px">
+          <div style="text-align:center;color:var(--text-muted);padding:20px;font-size:0.85rem">Loading...</div>
+        </div>
+      </section>
+
+      <!-- Widget: Top Clubs -->
+      <section class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">❤️ Top Clubs This Week</h2>
+          <button class="see-all-btn" onclick="navigate('vote')">Vote</button>
+        </div>
+        <div id="home-top-clubs" style="display:flex;flex-wrap:wrap;gap:8px">
+          <div style="color:var(--text-muted);font-size:0.85rem;padding:12px">Loading...</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ════════════════ DISCOVER PAGE ════════════════ -->
+    <div class="page hidden" id="page-discover">
+      <div class="page-header-block">
+        <h1 class="page-title">Discover Matches</h1>
+        <p class="page-sub">Browse leagues/Cups across every continent</p>
+      </div>
+
+      <!-- Continent Selector -->
+      <div class="continent-grid" id="continent-grid">
+        <button class="continent-card active-continent" onclick="selectContinent('europe')" id="cont-europe">
+          <div class="continent-emoji">🌍</div>
+          <span>Europe</span>
+          <div class="continent-count">48 leagues</div>
+        </button>
+        <button class="continent-card" onclick="selectContinent('africa')" id="cont-africa">
+          <div class="continent-emoji">🌍</div>
+          <span>Africa</span>
+          <div class="continent-count">32 leagues</div>
+        </button>
+        <button class="continent-card" onclick="selectContinent('americas')" id="cont-americas">
+          <div class="continent-emoji">🌎</div>
+          <span>Americas</span>
+          <div class="continent-count">28 leagues</div>
+        </button>
+        <button class="continent-card" onclick="selectContinent('asia')" id="cont-asia">
+          <div class="continent-emoji">🌏</div>
+          <span>Asia</span>
+          <div class="continent-count">35 leagues</div>
+        </button>
+        <button class="continent-card" onclick="selectContinent('oceania')" id="cont-oceania">
+          <div class="continent-emoji">🌏</div>
+          <span>Oceania</span>
+          <div class="continent-count">8 leagues</div>
+        </button>
+        <button class="continent-card world-card" onclick="selectContinent('world')" id="cont-world">
+          <div class="continent-emoji">🌐</div>
+          <span>World Cup / Intl</span>
+          <div class="continent-count">Special</div>
+        </button>
+      </div>
+
+      <!-- League List -->
+      <div class="leagues-section" id="leagues-section">
+        <h3 class="sub-section-title" id="leagues-title">European Leagues</h3>
+        <div class="leagues-grid" id="leagues-grid">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+
+      <!-- Fixtures for Selected League -->
+      <div class="league-fixtures-section hidden" id="league-fixtures-section">
+        <div class="section-header">
+          <button class="back-btn" onclick="backToLeagues()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Back
+          </button>
+          <h3 class="league-fixtures-title" id="league-fixtures-title">Premier League Fixtures</h3>
+        </div>
+
+        <!-- Prizes Section (shown only if admin configured prizes) -->
+        <div id="league-prizes-section" style="display:none;background:linear-gradient(135deg,rgba(255,153,20,0.08),rgba(60,184,46,0.08));border:1px solid rgba(255,153,20,0.2);border-radius:14px;padding:16px;margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:1.2rem">🏆</span>
+            <span style="font-size:0.75rem;font-weight:800;color:#ff9914;letter-spacing:1.5px;text-transform:uppercase">Prize Pool</span>
+          </div>
+          <pre id="league-prizes-content" style="margin:0;font-family:inherit;font-size:0.82rem;color:rgba(255,255,255,0.75);white-space:pre-wrap;line-height:1.6"></pre>
+        </div>
+
+        <div class="fixtures-full-list" id="fixtures-full-list">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════════════ PREDICTIONS PAGE ════════════════ -->
+    <div class="page hidden" id="page-predictions">
+      <div class="page-header-block">
+        <h1 class="page-title">My Predictions</h1>
+        <div class="pred-stats-row">
+          <div class="pred-stat-pill">
+            <span class="psp-label">Accuracy</span>
+            <span class="psp-value">67.3%</span>
+          </div>
+          <div class="pred-stat-pill">
+            <span class="psp-label">Correct</span>
+            <span class="psp-value correct-color">847</span>
+          </div>
+          <div class="pred-stat-pill">
+            <span class="psp-label">Total</span>
+            <span class="psp-value">1,259</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-tabs" id="pred-filter-tabs">
+        <button class="filter-tab active" onclick="filterPreds('upcoming')">Upcoming</button>
+        <button class="filter-tab" onclick="filterPreds('correct')">Correct</button>
+        <button class="filter-tab" onclick="filterPreds('wrong')">Wrong</button>
+        <button class="filter-tab" onclick="filterPreds('all')">All Time</button>
+      </div>
+
+      <div class="predictions-list" id="predictions-list">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
+    <!-- ════════════════ LEADERBOARD PAGE ════════════════ -->
+    <div class="page hidden" id="page-leaderboard">
+      <div class="page-header-block">
+        <h1 class="page-title">Leaderboard</h1>
+      </div>
+
+      <div class="lb-scope-tabs">
+        <button class="lb-tab active" onclick="setLBScope('global')" id="lb-global">🌍 Global</button>
+        <button class="lb-tab" onclick="setLBScope('continental')" id="lb-continental">🌍 Africa</button>
+        <button class="lb-tab" onclick="setLBScope('league')" id="lb-league">🏆 League</button>
+        <button class="lb-tab" onclick="setLBScope('friends')" id="lb-friends">👥 Friends</button>
+        <button class="lb-tab" onclick="setLBScope('myleagues')" id="lb-myleagues">⭐ My Leagues</button>
+      </div>
+
+      <div class="lb-time-tabs">
+        <button class="time-tab active" onclick="setTimePeriod('week')">This Week</button>
+        <button class="time-tab" onclick="setTimePeriod('month')">This Month</button>
+        <button class="time-tab" onclick="setTimePeriod('alltime')">All Time</button>
+      </div>
+
+      <!-- Top 3 Podium -->
+      <div class="podium-section">
+        <div class="podium-row">
+          <div class="podium-card rank2">
+            <div class="podium-avatar">
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=alex" alt="Alex">
+              <div class="level-badge silver">S</div>
+            </div>
+            <div class="podium-name">Alex K.</div>
+            <div class="podium-flag">🇧🇷</div>
+            <div class="podium-xp">89,420 XP</div>
+            <div class="podium-block rank2-block">
+              <span class="rank-num">#2</span>
+            </div>
+          </div>
+          <div class="podium-card rank1">
+            <div class="crown-icon">
+              <svg viewBox="0 0 24 24" fill="#ff9914" width="30" height="30"><path d="M2 20h20l-2-10-6 5-2-8-2 8-6-5-2 10z"/></svg>
+            </div>
+            <div class="podium-avatar">
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=marcus" alt="Marcus">
+              <div class="level-badge legend">L</div>
+            </div>
+            <div class="podium-name">Marcus T.</div>
+            <div class="podium-flag">🇩🇪</div>
+            <div class="podium-xp">142,880 XP</div>
+            <div class="podium-block rank1-block">
+              <span class="rank-num">#1</span>
+            </div>
+          </div>
+          <div class="podium-card rank3">
+            <div class="podium-avatar">
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=sofia" alt="Sofia">
+              <div class="level-badge gold">G</div>
+            </div>
+            <div class="podium-name">Sofia L.</div>
+            <div class="podium-flag">🇫🇷</div>
+            <div class="podium-xp">76,150 XP</div>
+            <div class="podium-block rank3-block">
+              <span class="rank-num">#3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Your Rank Banner -->
+      <div class="your-rank-banner">
+        <div class="yrb-left">
+          <span class="yrb-rank">#1,247</span>
+          <span class="yrb-label">Your Rank</span>
+        </div>
+        <div class="yrb-center">
+          <div class="user-avatar-sm">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=kickoff" alt="You">
+            <div class="level-badge-sm gold">G</div>
+          </div>
+          <div>
+            <div class="yrb-name">You (Ihab)</div>
+            <div class="yrb-xp">12,450 XP · 67.3% acc</div>
+          </div>
+        </div>
+        <div class="yrb-right">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="20" height="20"><polyline points="18 15 12 9 6 15"/></svg>
+          <span>↑142 today</span>
+        </div>
+      </div>
+
+      <div class="leaderboard-table" id="leaderboard-table">
+        <!-- Injected by JS -->
+      </div>
+
+      <!-- My Leagues Ranks (shown only when myleagues tab active) -->
+      <div id="my-leagues-ranks" style="display:none">
+        <div style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:16px 0 12px">My Rank Per League / Cup</div>
+        <div id="my-leagues-ranks-list">
+          <div style="text-align:center;color:var(--text-muted);padding:32px">Loading your league ranks...</div>
+        </div>
+        <div style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:16px 0 12px;margin-top:8px;border-top:1px solid rgba(255,255,255,0.06)">My Mini Leagues</div>
+        <div id="my-minileagues-ranks-list">
+          <div style="text-align:center;color:var(--text-muted);padding:32px">No mini leagues joined yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ MINI LEAGUES PAGE ════════════════ -->
+    <div class="page hidden" id="page-minileague">
+      <div class="page-header-block">
+        <h1 class="page-title">Mini Leagues</h1>
+        <button class="create-league-btn" onclick="openCreateLeague()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Create League
+        </button>
+      </div>
+
+      <div class="my-leagues-grid" id="my-leagues-grid">
+        <!-- Injected by JS -->
+      </div>
+
+      <div class="join-league-section">
+        <h3 class="sub-section-title">Join a League</h3>
+        <div class="join-input-row">
+          <input type="text" class="join-input" placeholder="Enter invite code (e.g. KO-ALPHA-7821)" id="join-code-input">
+          <button class="join-btn" onclick="joinLeague()">Join</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ PROFILE PAGE ════════════════ -->
+    <div class="page hidden" id="page-profile">
+      <!-- Profile Hero -->
+      <div class="profile-hero">
+        <div class="profile-avatar-wrap">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=kickoff" alt="Profile avatar" class="profile-avatar">
+          <div class="level-badge-lg gold">GOLD</div>
+        </div>
+        <div class="profile-info">
+          <h1 class="profile-name">Ihab Mohamed</h1>
+          <div class="profile-meta">
+            <span class="profile-flag">🇪🇬 Egypt</span>
+            <span class="profile-global-rank">#1,247 Global</span>
+            <span class="profile-cont-rank">#89 Africa</span>
+          </div>
+          <div class="profile-bio">Football prediction enthusiast. Premier League fanatic. CAF Champions League specialist.</div>
+          <div class="xp-progress-wrap">
+            <div class="xp-label-row">
+              <span>Gold → Platinum</span>
+              <span>12,450 / 20,000 XP</span>
+            </div>
+            <div class="xp-bar"><div class="xp-fill" style="width:62.25%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><polyline points="22 4 12 14.01 9 11.01"/><polyline points="22 4 12 14.01 9 11.01"/><line x1="22" y1="4" x2="12" y2="14.01"/></svg>
+          </div>
+          <div class="stat-card-num">67.3%</div>
+          <div class="stat-card-lbl">Accuracy</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon orange">
+            <svg viewBox="0 0 24 24" fill="#ff9914" width="22" height="22"><path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z"/></svg>
+          </div>
+          <div class="stat-card-num">7</div>
+          <div class="stat-card-lbl">Current Streak</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="22" height="22"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+          </div>
+          <div class="stat-card-num">23</div>
+          <div class="stat-card-lbl">Best Streak</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#abff4f" stroke-width="2" width="22" height="22"><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </div>
+          <div class="stat-card-num">847</div>
+          <div class="stat-card-lbl">Correct Preds</div>
+        </div>
+      </div>
+
+      <!-- Trophy Cabinet -->
+      <section class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">Trophy Cabinet</h2>
+          <span class="trophy-count">12 / 45</span>
+        </div>
+        <div class="trophies-grid" id="trophies-grid">
+          <!-- Injected by JS -->
+        </div>
+      </section>
+
+      <!-- Boosts Inventory -->
+      <section class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">Boost Inventory</h2>
+        </div>
+        <div class="boosts-grid">
+          <div class="boost-card" onclick="useBoost('double-xp')">
+            <div class="boost-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="28" height="28"><path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z"/></svg>
+            </div>
+            <div class="boost-name">Double XP</div>
+            <div class="boost-desc">2× XP on next correct prediction</div>
+            <div class="boost-qty">×3</div>
+          </div>
+          <div class="boost-card" onclick="useBoost('scoreline-shield')">
+            <div class="boost-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#29bf12" stroke-width="2" width="28" height="28"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="boost-name">Scoreline Shield</div>
+            <div class="boost-desc">Near-miss still earns full XP</div>
+            <div class="boost-qty">×1</div>
+          </div>
+          <div class="boost-card" onclick="useBoost('wildcard')">
+            <div class="boost-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#abff4f" stroke-width="2" width="28" height="28"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="boost-name">Wildcard</div>
+            <div class="boost-desc">Cancel any prediction before kickoff</div>
+            <div class="boost-qty">×2</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Accuracy by league -->
+      <section class="content-section">
+        <h2 class="section-title">Accuracy by League</h2>
+        <div class="league-accuracy-list" id="league-accuracy-list">
+          <!-- Injected by JS -->
+        </div>
+      </section>
+    </div>
+
+    <!-- ════════════════ VOTE YOUR TEAM PAGE ════════════════ -->
+    <div class="page hidden" id="page-vote">
+      <div class="page-header-block">
+        <h1 class="page-title">❤️ Vote Your Team</h1>
+        <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:4px">Vote once per day per club · Earn +50 XP each vote</p>
+      </div>
+
+      <!-- Club Voting Section -->
+      <div style="background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:24px;border:1px solid rgba(255,255,255,0.06)">
+        <div style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px">Browse & Vote by League</div>
+        <div id="vote-leagues-container">
+          <div style="text-align:center;color:var(--text-muted);padding:32px">Loading clubs...</div>
+        </div>
+      </div>
+
+      <!-- Club Leaderboard -->
+      <div style="background:var(--bg-card);border-radius:16px;padding:20px;border:1px solid rgba(255,255,255,0.06)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase">🏆 Top Clubs</div>
+          <div style="display:flex;gap:6px">
+            <button id="vote-tab-weekly" class="vote-period-tab" onclick="loadClubLeaderboard('weekly')"
+              style="font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:rgba(255,255,255,0.5);cursor:pointer">Weekly</button>
+            <button id="vote-tab-monthly" class="vote-period-tab" onclick="loadClubLeaderboard('monthly')"
+              style="font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:rgba(255,255,255,0.5);cursor:pointer">Monthly</button>
+            <button id="vote-tab-alltime" class="vote-period-tab active" onclick="loadClubLeaderboard('alltime')"
+              style="font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid var(--green);background:rgba(60,184,46,0.1);color:var(--green);cursor:pointer">All Time</button>
+          </div>
+        </div>
+        <div id="club-leaderboard-list">
+          <div style="text-align:center;color:var(--text-muted);padding:32px">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ─── MATCH DETAIL MODAL ─────────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="match-modal-overlay" onclick="closeMatchModal()">
+    <div class="modal-sheet" onclick="event.stopPropagation()" id="match-modal">
+      <div class="modal-drag-handle"></div>
+      <div class="modal-header">
+        <div class="modal-league-tag" id="modal-league-tag">Premier League</div>
+        <button class="modal-close-btn" onclick="closeMatchModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Match Header in Modal -->
+      <div class="modal-match-header">
+        <div class="modal-team">
+          <div class="modal-badge" id="modal-home-badge">
+            <svg viewBox="0 0 60 60" fill="none" width="60" height="60" id="modal-home-svg">
+              <circle cx="30" cy="30" r="28" fill="#C8102E"/>
+              <text x="30" y="37" text-anchor="middle" fill="white" font-size="16" font-weight="bold" font-family="sans-serif">MU</text>
+            </svg>
+          </div>
+          <div class="modal-team-name" id="modal-home-name">Man United</div>
+        </div>
+        <div class="modal-center">
+          <div class="modal-score" id="modal-score">1 – 2</div>
+          <div class="modal-status" id="modal-status">67' LIVE</div>
+          <div class="modal-venue" id="modal-venue">Old Trafford</div>
+        </div>
+        <div class="modal-team modal-team-right">
+          <div class="modal-badge" id="modal-away-badge">
+            <svg viewBox="0 0 60 60" fill="none" width="60" height="60" id="modal-away-svg">
+              <circle cx="30" cy="30" r="28" fill="#EF0107"/>
+              <text x="30" y="37" text-anchor="middle" fill="white" font-size="16" font-weight="bold" font-family="sans-serif">ARS</text>
+            </svg>
+          </div>
+          <div class="modal-team-name" id="modal-away-name">Arsenal</div>
+        </div>
+      </div>
+
+      <!-- Live Pulse (shown during live matches) -->
+      <div class="live-pulse-section" id="live-pulse-section">
+        <div class="pulse-title">
+          <span class="live-dot"></span> Live Pulse
+        </div>
+        <div class="momentum-meter">
+          <span class="mm-label">Man United</span>
+          <div class="mm-bar">
+            <div class="mm-home" style="width:42%"></div>
+            <div class="mm-away" style="width:40%"></div>
+          </div>
+          <span class="mm-label">Arsenal</span>
+        </div>
+        <div class="vote-dist">
+          <div class="vd-item"><span class="vd-pct home-pct">42%</span><span>Home Win</span></div>
+          <div class="vd-item"><span class="vd-pct draw-pct">18%</span><span>Draw</span></div>
+          <div class="vd-item"><span class="vd-pct away-pct">40%</span><span>Away Win</span></div>
+        </div>
+        <div class="live-chat-section">
+          <div class="live-chat-header">Match Chat</div>
+          <div class="live-chat-feed" id="live-chat-feed">
+            <div class="chat-msg"><span class="chat-user">🇧🇷 Alex K.</span><span class="chat-text">Arsenal holding strong! 🔴</span></div>
+            <div class="chat-msg"><span class="chat-user">🇩🇪 Marcus T.</span><span class="chat-text">Rashford needs to step up</span></div>
+            <div class="chat-msg"><span class="chat-user">🇫🇷 Sofia L.</span><span class="chat-text">I called 2-1 away! 🎯</span></div>
+            <div class="chat-msg you-msg"><span class="chat-user">🇪🇬 You</span><span class="chat-text">Let's go Arsenal!</span></div>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" class="chat-input" placeholder="React to the match..." id="chat-input">
+            <button class="chat-send" onclick="sendChatMsg()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prediction Form (shown for upcoming matches) -->
+      <div class="prediction-form hidden" id="prediction-form">
+        <h3 class="pred-form-title">Make Your Predictions</h3>
+
+        <!-- Match Result -->
+        <div class="pred-section">
+          <div class="pred-section-header">
+            <span class="pred-section-title">Match Result</span>
+            <span class="pred-xp-badge">100 XP</span>
+          </div>
+          <div class="result-buttons" id="result-buttons">
+            <button class="result-btn" onclick="selectResult('home', this)" id="rb-home">Home Win</button>
+            <button class="result-btn" onclick="selectResult('draw', this)" id="rb-draw">Draw</button>
+            <button class="result-btn" onclick="selectResult('away', this)" id="rb-away">Away Win</button>
+          </div>
+          <div class="confidence-wrap">
+            <span class="conf-label">Confidence</span>
+            <div class="conf-slider-wrap">
+              <input type="range" class="conf-slider" id="confidence-slider" min="50" max="100" value="70" oninput="updateConfidence(this.value)">
+              <span class="conf-value" id="conf-value">70% (×1.4)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exact Scoreline -->
+        <div class="pred-section">
+          <div class="pred-section-header">
+            <span class="pred-section-title">Exact Scoreline</span>
+            <span class="pred-xp-badge xp-high">500 XP</span>
+          </div>
+          <div class="scoreline-input">
+            <input type="number" class="score-input" id="score-home-input" min="0" max="20" value="1" onchange="updateScoreline()">
+            <span class="score-dash">—</span>
+            <input type="number" class="score-input" id="score-away-input" min="0" max="20" value="2" onchange="updateScoreline()">
+          </div>
+        </div>
+
+        <!-- First Goalscorer -->
+        <div class="pred-section">
+          <div class="pred-section-header">
+            <span class="pred-section-title">First Goalscorer</span>
+            <span class="pred-xp-badge xp-highest">300 XP</span>
+          </div>
+          <select class="scorer-select" id="scorer-select">
+            <option value="">Select a player...</option>
+            <optgroup label="Man United">
+              <option value="rashford">Marcus Rashford</option>
+              <option value="hojlund">Rasmus Hojlund</option>
+              <option value="fernandes">Bruno Fernandes</option>
+              <option value="garnacho">Alejandro Garnacho</option>
+            </optgroup>
+            <optgroup label="Arsenal">
+              <option value="saka">Bukayo Saka</option>
+              <option value="havertz">Kai Havertz</option>
+              <option value="martinelli">Gabriel Martinelli</option>
+              <option value="odegaard">Martin Odegaard</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <!-- Both Teams to Score & Total Goals -->
+        <div class="pred-row-2col">
+          <div class="pred-section pred-half">
+            <div class="pred-section-header">
+              <span class="pred-section-title">Both Teams Score</span>
+              <span class="pred-xp-badge">75 XP</span>
+            </div>
+            <div class="toggle-group">
+              <button class="toggle-btn active-toggle" onclick="toggleBTTS('yes', this)">Yes</button>
+              <button class="toggle-btn" onclick="toggleBTTS('no', this)">No</button>
+            </div>
+          </div>
+          <div class="pred-section pred-half">
+            <div class="pred-section-header">
+              <span class="pred-section-title">Total Goals</span>
+              <span class="pred-xp-badge">75 XP</span>
+            </div>
+            <div class="toggle-group">
+              <button class="toggle-btn active-toggle" onclick="toggleGoals('over', this)">Over 2.5</button>
+              <button class="toggle-btn" onclick="toggleGoals('under', this)">Under 2.5</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="submit-prediction-btn" onclick="submitPrediction()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="22 4 12 14.01 9 11.01"/><line x1="22" y1="4" x2="12" y2="14.01"/></svg>
+          Lock In Predictions
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── DAILY BONUS SPIN MODAL ──────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="bonus-modal-overlay" onclick="closeBonusModal()">
+    <div class="bonus-modal" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="closeBonusModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="bonus-modal-title">Daily Bonus Spin</div>
+      <div class="wheel-wrap">
+        <div class="wheel-pointer">▼</div>
+        <canvas id="spin-wheel" width="280" height="280"></canvas>
+      </div>
+      <button class="spin-btn" id="spin-btn" onclick="spinWheel()">SPIN!</button>
+      <div class="spin-result hidden" id="spin-result">
+        <div class="spin-result-icon">🎉</div>
+        <div class="spin-result-text" id="spin-result-text">You won 250 XP!</div>
+        <div class="xp-counter" id="xp-counter">+250 XP</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CREATE LEAGUE MODAL ────────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="create-league-modal">
+    <div class="modal-sheet create-league-sheet" onclick="event.stopPropagation()">
+      <div class="modal-drag-handle"></div>
+      <div class="modal-header">
+        <h3 class="create-league-title">Create Mini League</h3>
+        <button class="modal-close-btn" onclick="closeCreateLeague()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="create-league-form">
+        <div class="form-group">
+          <label class="form-label">League Name</label>
+          <input type="text" class="form-input" placeholder="e.g. Office Fantasy PL 2025" id="league-name-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Competitions to Include</label>
+          <div class="comp-checkboxes">
+            <label class="comp-check"><input type="checkbox" checked> Premier League</label>
+            <label class="comp-check"><input type="checkbox"> La Liga</label>
+            <label class="comp-check"><input type="checkbox"> Champions League</label>
+            <label class="comp-check"><input type="checkbox"> AFCON 2026</label>
+            <label class="comp-check"><input type="checkbox"> World Cup 2026</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Scoring Mode</label>
+          <div class="scoring-options">
+            <label class="score-option active-option">
+              <input type="radio" name="scoring" value="global" checked>
+              <div>
+                <div class="score-opt-title">Global Rules</div>
+                <div class="score-opt-desc">Full XP system with streaks & confidence</div>
+              </div>
+            </label>
+            <label class="score-option">
+              <input type="radio" name="scoring" value="simple">
+              <div>
+                <div class="score-opt-title">Simple Points</div>
+                <div class="score-opt-desc">3pts result · 5pts exact scoreline</div>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration</label>
+          <select class="form-input">
+            <option>Full Season 2025/26</option>
+            <option>AFCON 2026</option>
+            <option>World Cup 2026</option>
+            <option>January Window (Custom)</option>
+          </select>
+        </div>
+        <button class="submit-prediction-btn" onclick="createLeague()">
+          Create & Get Invite Link
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── XP CELEBRATION OVERLAY ─────────────────────────────────── -->
+  <div class="celebration-overlay hidden" id="celebration-overlay">
+    <div class="celebration-content">
+      <div class="celebration-icon">⚽</div>
+      <div class="celebration-title">Correct Prediction!</div>
+      <div class="xp-earned-badge" id="xp-earned-badge">+500 XP</div>
+      <div class="celebration-confetti" id="confetti-container"></div>
+    </div>
+  </div>
+
+  <!-- ─── MOBILE NAV BAR ──────────────────────────────────────────── -->
+  <nav class="mobile-nav">
+    <button class="mobile-nav-item active" onclick="navigate('home')" id="mnav-home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="mobile-nav-item" onclick="navigate('discover')" id="mnav-discover">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Discover</span>
+    </button>
+    <button class="mobile-nav-item" onclick="navigate('predictions')" id="mnav-predictions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span>Predict</span>
+    </button>
+    <button class="mobile-nav-item" onclick="navigate('leaderboard')" id="mnav-leaderboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Ranks</span>
+    </button>
+    <button class="mobile-nav-item" onclick="navigate('minileague')" id="mnav-minileague">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Leagues</span>
+    </button>
+    <button class="mobile-nav-item" onclick="navigate('vote')" id="mnav-vote">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <span>Vote</span>
+    </button>
+    <button class="mobile-nav-item" onclick="navigate('profile')" id="mnav-profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profile</span>
+    </button>
+  </nav>
+
+  <div class="auth-modal-overlay hidden" id="auth-modal-overlay" onclick="closeAuthModal()">
+    <div class="auth-modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="create-league-title" id="auth-title">Join KickOff</h3>
+        <button class="modal-close-btn" onclick="closeAuthModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="auth-form-wrap">
+        <button class="google-auth-btn" onclick="continueWithGoogle()">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+        <div class="auth-divider"><span>OR</span></div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" placeholder="player@kickoff.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" placeholder="••••••••">
+        </div>
+        <button class="submit-prediction-btn">Sign In / Register</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/backend_api.js?v=2.4"></script>
+  <script src="js/teams_db.js?v=2.4"></script>
+  <script src="js/data.js?v=2.4"></script>
+  <script src="js/i18n.js?v=2.4"></script>
+  <script src="js/app.js?v=2.4"></script>
+</body>
+</html>

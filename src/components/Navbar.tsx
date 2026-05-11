@@ -3,91 +3,73 @@
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import MatchkooLogo from "@/components/MatchkooLogo";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
 
-  const handleLogout = async () => {
-    await signOut({ callbackUrl: "/" });
-  };
+  // Landing pages have their own custom pill nav
+  if (pathname === "/" || pathname === "/ar") return null;
 
-  // Hide the global Navbar on the homepage to allow the original design's glassy navbar to show
-  if (pathname === "/") {
-    return null;
-  }
+  // The full app lives at /app — don't show this navbar there either
+  if (pathname === "/app") return null;
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="font-heading text-2xl text-primary font-bold mr-6">
-                KICK<span className="text-cta">OFF</span>
-              </Link>
-              <Link
-                  href="/tournaments"
-                  className={`${
-                    pathname === "/tournaments"
-                      ? "border-primary text-gray-900"
-                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-16`}
-                >
-                  Tournaments
-              </Link>
-            </div>
-            {status === "authenticated" && (
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                <Link
-                  href="/dashboard"
-                  className={`${
-                    pathname === "/dashboard"
-                      ? "border-primary text-gray-900"
-                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
-                >
-                  Dashboard
+    <nav style={{ background: "#090D1A", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: 58 }}>
+
+          {/* Left: logo */}
+          <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+            <Link href="/" style={{ marginRight: 28, display: "flex", alignItems: "center" }}>
+              <MatchkooLogo height={38} />
+            </Link>
+
+            {/* All nav goes to /app — the full HTML system */}
+            <a href="/app" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontSize: "0.85rem", fontWeight: 600, marginRight: 20, padding: "4px 12px", borderRadius: 8, transition: "all 0.2s" }}>
+              Leagues & Cups
+            </a>
+            {status === "authenticated" && (<>
+              <a href="/app#predictions" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontSize: "0.85rem", fontWeight: 600, marginRight: 20, padding: "4px 12px", borderRadius: 8, transition: "all 0.2s" }}>
+                Predictions
+              </a>
+              <a href="/app#leaderboard" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontSize: "0.85rem", fontWeight: 600, marginRight: 20, padding: "4px 12px", borderRadius: 8, transition: "all 0.2s" }}>
+                Leaderboard
+              </a>
+              <a href="/app#profile" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontSize: "0.85rem", fontWeight: 600, marginRight: 20, padding: "4px 12px", borderRadius: 8, transition: "all 0.2s" }}>
+                My Dashboard
+              </a>
+              {(session?.user as any)?.role === "ADMIN" && (
+                <Link href="/admin" style={{ color: "#6FE840", textDecoration: "none", fontSize: "0.85rem", fontWeight: 700, padding: "4px 12px", borderRadius: 8 }}>
+                  Admin
                 </Link>
-                {session?.user?.role === "ADMIN" && (
-                  <Link
-                    href="/admin"
-                    className={`${
-                      pathname === "/admin"
-                        ? "border-primary text-gray-900"
-                        : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
-                  >
-                    Admin Area
-                  </Link>
-                )}
-              </div>
-            )}
+              )}
+            </>)}
           </div>
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            {status === "authenticated" ? (
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-700">
-                  Welcome, {session.user?.name}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="btn-secondary px-4 py-2 text-sm"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : status === "unauthenticated" ? (
-              <div className="flex space-x-4">
-                <Link href="/login" className="text-gray-500 hover:text-gray-900 px-3 py-2 text-sm font-medium">
-                  Login
-                </Link>
-                <Link href="/register" className="btn-primary px-4 py-2 text-sm">
-                  Register
-                </Link>
-              </div>
-            ) : null}
+
+          {/* Right: auth actions */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {status === "authenticated" ? (<>
+              <a href="/app" style={{ fontSize: "0.8rem", textDecoration: "none", padding: "6px 18px", borderRadius: 100, background: "linear-gradient(135deg,#3CB82E,#6FE840)", color: "#000", fontWeight: 800 }}>
+                Open App
+              </a>
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                style={{ padding: "6px 16px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.12)", background: "transparent", color: "rgba(255,255,255,0.55)", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer" }}
+              >
+                Sign out
+              </button>
+            </>) : status === "unauthenticated" ? (<>
+              <Link href="/login" style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.5)", textDecoration: "none", fontWeight: 600 }}>
+                Sign In
+              </Link>
+              <Link href="/register" style={{ padding: "6px 18px", borderRadius: 100, background: "linear-gradient(135deg,#3CB82E,#6FE840)", color: "#000", fontSize: "0.78rem", fontWeight: 800, textDecoration: "none" }}>
+                Play Free
+              </Link>
+            </>) : null}
           </div>
+
         </div>
       </div>
     </nav>
