@@ -362,9 +362,9 @@ function openLeagueFixtures(leagueId, leagueName) {
   const container = document.getElementById('fixtures-full-list');
   container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;">Loading fixtures...</div>';
 
-  // leagueId is a UUID when it is a real tournament synced from the admin panel.
+  // leagueId is a CUID (25 chars) when it is a real tournament synced from the admin panel.
   // Static mock leagues use short ids like 'epl', 'caf-cl', etc.
-  const looksLikeRealId = /^[0-9a-f\-]{20,}$/i.test(leagueId);
+  const looksLikeRealId = leagueId.length > 10;
 
   if (looksLikeRealId) {
     fetch('/api/matches?tournamentId=' + encodeURIComponent(leagueId))
