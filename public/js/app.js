@@ -210,6 +210,24 @@ function selectContinent(id) {
   renderLeagues(id);
 }
 
+// Active league names — everything else shows as Coming Soon
+const ACTIVE_LEAGUE_NAMES = [
+  'premier league',
+  'egyptian premier league',
+  'la liga',
+  'fifa world cup 2026',
+  'world cup 2026',
+];
+
+function _isLeagueActive(l) {
+  if (l.comingSoon === true) return false;
+  // Real DB tournaments injected by backend_api: check name against whitelist
+  if (l._realId || /^[0-9a-f-]{20,}$/i.test(l.id)) {
+    return ACTIVE_LEAGUE_NAMES.some(n => l.name.toLowerCase().includes(n) || n.includes(l.name.toLowerCase()));
+  }
+  return true; // static leagues gated by comingSoon flag in data.js
+}
+
 function renderLeagues(continentId) {
   const data = DATA.continents[continentId];
   if (!data) return;
@@ -224,8 +242,26 @@ function renderLeagues(continentId) {
 
   grid.innerHTML = data.leagues.map(l => {
     const isInviteOnly = l.registrationMode === "INVITE_ONLY";
+    const isActive = _isLeagueActive(l);
     const safeName = l.name.replace(/'/g, "\'");
     const safeId = String(l.id).replace(/'/g, "\'");
+
+    if (!isActive) {
+      // ── Coming Soon card — disabled, no click ─────────────────────
+      return "<div class=\"league-card\" style=\"cursor:not-allowed;opacity:0.45;position:relative;user-select:none;\">" +
+        "<div class=\"league-card-icon\" style=\"filter:grayscale(0.6)\">" + l.emoji + "</div>" +
+        "<div class=\"league-card-info\">" +
+          "<div class=\"league-card-name\" style=\"color:rgba(255,255,255,0.5)\">" + l.country + " " + l.name + "</div>" +
+          "<div class=\"league-card-meta\">" +
+            "<span style=\"font-size:0.6rem;font-weight:800;padding:2px 8px;border-radius:100px;" +
+              "background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);" +
+              "letter-spacing:0.5px;text-transform:uppercase\">🔒 Coming Soon</span>" +
+          "</div>" +
+        "</div>" +
+      "</div>";
+    }
+
+    // ── Active card ────────────────────────────────────────────────
     return "<div class=\"league-card\" onclick=\"openLeagueFixtures('" + safeId + "','" + safeName + "')\" style=\"cursor:pointer\">" +
       "<div class=\"league-card-icon\">" + l.emoji + "</div>" +
       "<div class=\"league-card-info\">" +
