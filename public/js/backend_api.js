@@ -131,25 +131,52 @@ const Backend = {
       }
 
       // ── Tournaments → Discover page leagues ─────────────────────
+      // ONLY inject the 5 agreed active leagues. Everything else stays
+      // as static coming-soon data from data.js.
       if (tournamentsRes.length > 0) {
-        const leagues = tournamentsRes.map(t => ({
-          id: t.id,          // UUID — will be recognised as a real tournament
-          name: t.name,
-          country: t.type === 'Cup' ? '🏆' : '⚽',
-          emoji: t.type === 'Cup' ? '🏆' : '⚽',
-          matches: t._count?.matches || 0,
-          color: '#3CB82E',
-          prizes: t.prizes || null,
-          registered: t.userRegistered,
-        }));
+        // Name fragments that identify our active leagues
+        const ACTIVE = [
+          { frag: 'premier league',         continent: 'europe' },
+          { frag: 'la liga',                continent: 'europe' },
+          { frag: 'champions league',       continent: 'europe' },
+          { frag: 'egyptian premier',       continent: 'africa' },
+          { frag: 'egypt',                  continent: 'africa' },
+          { frag: 'world cup',              continent: 'world'  },
+          { frag: 'fifa world cup',         continent: 'world'  },
+        ];
 
-        // Inject real tournaments into EVERY continent bucket so they are
-        // always visible no matter which tab the user is browsing.
-        Object.keys(DATA.continents).forEach(key => {
-          DATA.continents[key].leagues = [
-            ...leagues,
-            ...DATA.continents[key].leagues,
-          ];
+        tournamentsRes.forEach(t => {
+          const nameLower = (t.name || '').toLowerCase();
+          const match = ACTIVE.find(a => nameLower.includes(a.frag));
+          if (!match) return; // skip — not one of our 5 active leagues
+
+          const bucket = DATA.continents[match.continent];
+          if (!bucket) return;
+
+          // Replace the matching static league entry with real DB data,
+          // or prepend if not already present
+          const existing = bucket.leagues.findIndex(
+            l => (l.name || '').toLowerCase().includes(match.frag) ||
+                 nameLower.includes((l.name || '').toLowerCase().split(' ')[0])
+          );
+          const realLeague = {
+            id: t.id,
+            name: t.name,
+            country: match.continent === 'africa' ? '🇪🇬' :
+                     match.continent === 'world'  ? '🌍' :
+                     nameLower.includes('premier')   ? '🏴󠁧󠁢󠁥󠁮󠁧󠁿' :
+                     nameLower.includes('la liga')   ? '🇪🇸' : '🇪🇺',
+            emoji: t.type === 'Cup' ? '🏆' : '⚽',
+            matches: t._count?.matches || 0,
+            color: '#3CB82E',
+            _realId: t.id,
+            comingSoon: false,
+          };
+          if (existing >= 0) {
+            bucket.leagues[existing] = realLeague;
+          } else {
+            bucket.leagues.unshift(realLeague);
+          }
         });
       }
 
