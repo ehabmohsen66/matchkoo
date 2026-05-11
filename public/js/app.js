@@ -272,21 +272,34 @@ function selectContinent(id) {
 }
 
 // Active league names — everything else shows as Coming Soon
+// Matches both bare names AND year-suffixed names from DB (e.g. 'Premier League 2025')
 const ACTIVE_LEAGUE_NAMES = [
   'premier league',
+  'premier league 2025',
+  'premier league 2026',
   'egyptian premier league',
+  'egyptian premier league 2025',
+  'egyptian premier league 2026',
   'la liga',
+  'la liga 2025',
+  'la liga 2026',
+  'fifa world cup',
   'fifa world cup 2026',
+  'world cup',
   'world cup 2026',
   'champions league',
+  'champions league 2025',
+  'champions league 2026',
   'uefa champions league',
+  'uefa champions league 2025',
+  'uefa champions league 2026',
 ];
 
 function _isLeagueActive(l) {
   if (l.comingSoon === true) return false;
   // Real DB tournaments injected by backend_api: check name against exact whitelist
-  if (l._realId || /^[0-9a-f-]{20,}$/i.test(l.id)) {
-    const cleanName = (l.name || '').toLowerCase().replace(/ \\d{4}$/, '').trim();
+  if (l._realId || (l.id && l.id.length > 10 && !/^(epl|liga|ucl|egy|wc|caf|mls|bun|ser|l1)/.test(l.id))) {
+    const cleanName = (l.name || '').toLowerCase().trim();
     return ACTIVE_LEAGUE_NAMES.includes(cleanName);
   }
   return true; // static leagues gated by comingSoon flag in data.js
@@ -405,27 +418,16 @@ function _renderRealFixtures(container, matches, leagueName) {
   }).join('');
 }
 
-/** Render mock/generated fixtures (fallback for static leagues not yet synced) */
+/** No real DB fixtures yet — show a clean "coming soon" message, never generate fake teams */
 function _renderMockFixtures(container, leagueName) {
-  const fixtures = generateFixturesForLeague(leagueName);
-  if (!fixtures.length) {
-    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:48px;font-size:0.9rem;">No fixtures for this league yet. Sync fixtures from the Admin Panel first.</div>';
-    return;
-  }
-  container.innerHTML = fixtures.map(f =>
-    '<div class="fixture-row" role="button" tabindex="0" style="cursor:default">' +
-    '<div class="fixture-league-badge">' + f.flag + '</div>' +
-    '<div class="fixture-teams">' +
-      '<div class="fixture-league-name">' + leagueName + '</div>' +
-      '<div class="fixture-team-names">' + f.home + ' vs ' + f.away + '</div>' +
-    '</div>' +
-    '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
-      (f.predicted ? '<span style="color:var(--green);font-size:1rem" title="Predicted">&#10003;</span>' : '') +
-      '<div class="fixture-time">' + f.time + '</div>' +
-    '</div>' +
-    '</div>'
-  ).join('');
+  container.innerHTML = 
+    '<div style="text-align:center;padding:64px 24px;">' +
+      '<div style="font-size:2.5rem;margin-bottom:16px">📅</div>' +
+      '<div style="font-weight:800;font-size:1.1rem;color:#fff;margin-bottom:8px">Fixtures Syncing Soon</div>' +
+      '<div style="color:rgba(255,255,255,0.4);font-size:0.85rem;line-height:1.6">Real ' + leagueName + ' fixtures will appear here once synced.<br>Check back soon or ask an admin to sync from the Admin Panel.</div>' +
+    '</div>';
 }
+
 
 function generateFixturesForLeague(leagueName) {
   const times = ['14:00', '16:30', '17:00', '19:00', '19:45', '20:00', '20:30', '21:00'];
