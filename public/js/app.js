@@ -426,42 +426,79 @@ function openLeagueFixtures(leagueId, leagueName) {
   const looksLikeRealId = leagueId.length > 10;
 
   if (looksLikeRealId) {
-    fetch('/api/matches?tournamentId=' + encodeURIComponent(leagueId))
-      .then(r => r.ok ? r.json() : [])
-      .then(matches => {
-        if (matches && matches.length > 0) {
-          _renderRealFixtures(container, matches, leagueName);
+    // Fetch both matches and tournament info (for prizes)
+    Promise.all([
+      fetch('/api/matches?tournamentId=' + encodeURIComponent(leagueId)).then(r => r.ok ? r.json() : []),
+      fetch('/api/tournaments').then(r => r.ok ? r.json() : []),
+    ]).then(([matches, tournaments]) => {
+      // Show prizes if admin configured them
+      const tournament = tournaments.find(t => t.id === leagueId);
+      const prizesSection = document.getElementById('league-prizes-section');
+      if (prizesSection) {
+        if (tournament?.prizes) {
+          prizesSection.style.display = 'block';
+          const prizesContent = document.getElementById('league-prizes-content');
+          if (prizesContent) prizesContent.textContent = tournament.prizes;
         } else {
-          _renderMockFixtures(container, leagueName);
+          prizesSection.style.display = 'none';
         }
-      })
-      .catch(() => _renderMockFixtures(container, leagueName));
+      }
+      if (matches && matches.length > 0) {
+        _renderRealFixtures(container, matches, leagueName);
+      } else {
+        _renderMockFixtures(container, leagueName);
+      }
+    }).catch(() => _renderMockFixtures(container, leagueName));
   } else {
     _renderMockFixtures(container, leagueName);
   }
 }
 
-/** Render real DB-backed fixtures, wired to openRealMatchDetail with the correct match ID */
+/** Render real DB-backed fixtures, sorted by upcoming first then date, grouped by round */
 function _renderRealFixtures(container, matches, leagueName) {
-  container.innerHTML = matches.map(m => {
-    const t = new Date(m.matchDate);
-    const timeStr = t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    const hasPred = !!m.userPrediction;
-    const isCompleted = m.status === 'COMPLETED';
-    const isLive = m.status === 'LIVE';
-    const scoreOrTime = isCompleted ? (m.homeScore + '\u2013' + m.awayScore) : (isLive ? '\uD83D\uDD34 LIVE' : timeStr);
-    return '<div class="fixture-row" onclick="openRealMatchDetail(\'' + m.id + '\')" role="button" tabindex="0">' +
-      '<div class="fixture-league-badge">&#x26BD;</div>' +
-      '<div class="fixture-teams">' +
-        '<div class="fixture-league-name">' + leagueName + '</div>' +
-        '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
-      '</div>' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
-        (hasPred ? '<span style="color:var(--green);font-size:1rem" title="Predicted">&#10003;</span>' : '') +
-        '<div class="fixture-time">' + scoreOrTime + '</div>' +
-      '</div>' +
-    '</div>';
-  }).join('');
+  // Sort: UPCOMING/LIVE first (by date asc), then COMPLETED (by date desc)
+  const sorted = [...matches].sort((a, b) => {
+    const aLive = a.status === 'UPCOMING' || a.status === 'LIVE';
+    const bLive = b.status === 'UPCOMING' || b.status === 'LIVE';
+    if (aLive && !bLive) return -1;
+    if (!aLive && bLive) return 1;
+    return new Date(a.matchDate) - new Date(b.matchDate);
+  });
+
+  // Group by round
+  const rounds = {};
+  sorted.forEach(m => {
+    const r = m.round || 'Fixtures';
+    if (!rounds[r]) rounds[r] = [];
+    rounds[r].push(m);
+  });
+
+  container.innerHTML = Object.entries(rounds).map(([round, roundMatches]) =>
+    '<div style="margin-bottom:20px">' +
+      '<div style="font-size:0.7rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:8px">' + round + '</div>' +
+      roundMatches.map(m => {
+        const t = new Date(m.matchDate);
+        const timeStr = t.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        const hasPred = !!m.userPrediction;
+        const isCompleted = m.status === 'COMPLETED';
+        const isLive = m.status === 'LIVE';
+        const scoreOrTime = isCompleted
+          ? (m.homeScore + '\u2013' + m.awayScore)
+          : isLive ? '\uD83D\uDD34 LIVE' : t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        return '<div class="fixture-row" onclick="openRealMatchDetail(\'' + m.id + '\')" role="button" tabindex="0">' +
+          '<div class="fixture-league-badge">' + (m.homeLogo ? '<img src="' + m.homeLogo + '" width="24" height="24" style="border-radius:50%">' : '\u26BD') + '</div>' +
+          '<div class="fixture-teams">' +
+            '<div class="fixture-league-name">' + leagueName + '</div>' +
+            '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
+            (hasPred ? '<span title="You predicted this" style="color:var(--green);font-size:1rem">\u2713</span>' : '') +
+            '<div class="fixture-time" style="color:' + (isLive ? 'var(--red)' : isCompleted ? 'rgba(255,255,255,0.4)' : 'var(--text-secondary)') + '">' + scoreOrTime + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>'
+  ).join('');
 }
 
 /** No real DB fixtures yet — show a clean empty state */
@@ -507,7 +544,18 @@ function backToLeagues() {
 
 // ─── PREDICTIONS PAGE ────────────────────────────────────────────
 function initPredictions() {
-  renderPredictions('pending');
+  renderPredictions('upcoming');
+  // Load real stats
+  fetch('/api/predictions/stats').then(r => r.ok ? r.json() : null).then(s => {
+    if (!s) return;
+    const els = document.querySelectorAll('.psp-value');
+    // [0] = accuracy pill, [1] = correct pill, [2] = total pill
+    els.forEach((el, i) => {
+      if (i === 0) el.textContent = s.accuracy + '%';
+      if (i === 1) el.textContent = s.correct.toLocaleString();
+      if (i === 2) el.textContent = s.total.toLocaleString();
+    });
+  }).catch(() => {});
 }
 
 function filterPreds(filter) {
