@@ -11,16 +11,14 @@ import {
 } from "@/lib/football-api";
 
 /**
- * Agreed-upon leagues — ONLY these are ever synced or shown to users.
+ * Agreed-upon leagues — ONLY these 5 are ever synced or shown to users.
  *  39  = English Premier League
  *  140 = La Liga
  *  2   = UEFA Champions League
- *  3   = UEFA Europa League
  *  233 = Egyptian Premier League
- *  307 = Saudi Pro League
  *  1   = FIFA World Cup
  */
-const ALLOWED_LEAGUES = new Set([39, 140, 2, 3, 233, 307, 1]);
+const ALLOWED_LEAGUES = new Set([39, 140, 2, 233, 1]);
 
 /**
  * POST /api/admin/sync-fixtures

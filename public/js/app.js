@@ -240,10 +240,11 @@ async function renderFixturesList() {
       const timeStr = t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
       const hasPred = !!m.userPrediction;
       const flag = m.tournament?.name ? '' : '⚽';
+      const displayName = (m.tournament?.name || 'Match').replace(/\s*\[\d+\]$/, '');
       return '<div class="fixture-row" onclick="openRealMatchDetail(\'' + matchId + '\')" role="button" tabindex="0">' +
         '<div class="fixture-league-badge">' + (m.homeLogo ? '<img src="'+m.homeLogo+'" width="24" height="24" style="border-radius:50%">' : flag) + '</div>' +
         '<div class="fixture-teams">' +
-          '<div class="fixture-league-name">' + (m.tournament?.name||'Match') + '</div>' +
+          '<div class="fixture-league-name">' + displayName + '</div>' +
           '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
         '</div>' +
         '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
@@ -317,8 +318,7 @@ function selectContinent(id) {
   renderLeagues(id);
 }
 
-// Active league names — everything else shows as Coming Soon
-// Strips trailing " YYYY [ID]" or " YYYY" or " [ID]" from DB tournament names before matching.
+// Active league names — ONLY the 5 agreed leagues.
 const ACTIVE_LEAGUE_NAMES = [
   'premier league',
   'egyptian premier league',
@@ -327,10 +327,6 @@ const ACTIVE_LEAGUE_NAMES = [
   'world cup',
   'champions league',
   'uefa champions league',
-  'europa league',
-  'uefa europa league',
-  'pro league',           // Saudi Pro League
-  'saudi pro league',
 ];
 
 /** Normalise a tournament name from the DB for whitelist matching.
@@ -487,10 +483,11 @@ function _renderRealFixtures(container, matches, leagueName) {
         const scoreOrTime = isCompleted
           ? (m.homeScore + '\u2013' + m.awayScore)
           : isLive ? '\uD83D\uDD34 LIVE' : t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        const cleanLeagueName = (leagueName || '').replace(/\s*\[\d+\]$/, '');
         return '<div class="fixture-row" onclick="openRealMatchDetail(\'' + m.id + '\')" role="button" tabindex="0">' +
           '<div class="fixture-league-badge">' + (m.homeLogo ? '<img src="' + m.homeLogo + '" width="24" height="24" style="border-radius:50%">' : '\u26BD') + '</div>' +
           '<div class="fixture-teams">' +
-            '<div class="fixture-league-name">' + leagueName + '</div>' +
+            '<div class="fixture-league-name">' + cleanLeagueName + '</div>' +
             '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
           '</div>' +
           '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
