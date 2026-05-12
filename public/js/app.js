@@ -170,8 +170,8 @@ async function renderLiveMatches() {
     const ACTIVE_LEAGUES = ['premier league', 'la liga', 'uefa champions league', 'egyptian premier league', 'fifa world cup'];
     
     const liveMatches = matches.filter(m => {
-      const tName = (m.tournament?.name || '').toLowerCase().replace(/ \d{4}$/, '').trim();
-      return ACTIVE_LEAGUES.includes(tName) && m.status === 'LIVE';
+      const tName = _normaliseTournamentName(m.tournament?.name);
+      return ACTIVE_LEAGUE_NAMES.includes(tName) && m.status === 'LIVE';
     });
 
     if (!liveMatches.length) {
@@ -223,7 +223,7 @@ async function renderFixturesList() {
     // Only show matches from active leagues
     const todays = matches.filter(m => { 
         const d = new Date(m.matchDate);
-        const tName = (m.tournament?.name || '').toLowerCase().replace(/ \d{4}$/, '').trim();
+        const tName = _normaliseTournamentName(m.tournament?.name);
         const isActive = ACTIVE_LEAGUE_NAMES.includes(tName);
         return isActive && d >= today && d < tomorrow; 
     });
@@ -318,34 +318,36 @@ function selectContinent(id) {
 }
 
 // Active league names — everything else shows as Coming Soon
-// Matches both bare names AND year-suffixed names from DB (e.g. 'Premier League 2025')
+// Strips trailing " YYYY [ID]" or " YYYY" or " [ID]" from DB tournament names before matching.
 const ACTIVE_LEAGUE_NAMES = [
   'premier league',
-  'premier league 2025',
-  'premier league 2026',
   'egyptian premier league',
-  'egyptian premier league 2025',
-  'egyptian premier league 2026',
   'la liga',
-  'la liga 2025',
-  'la liga 2026',
   'fifa world cup',
-  'fifa world cup 2026',
   'world cup',
-  'world cup 2026',
   'champions league',
-  'champions league 2025',
-  'champions league 2026',
   'uefa champions league',
-  'uefa champions league 2025',
-  'uefa champions league 2026',
+  'europa league',
+  'uefa europa league',
+  'pro league',           // Saudi Pro League
+  'saudi pro league',
 ];
+
+/** Normalise a tournament name from the DB for whitelist matching.
+ *  Strips " 2024 [233]", " 2025", " [39]" etc. from the end. */
+function _normaliseTournamentName(raw) {
+  return (raw || '')
+    .toLowerCase()
+    .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')  // strip " 2025 [39]" or " 2025"
+    .replace(/\s+\[\d+\]$/, '')              // strip any remaining " [39]"
+    .trim();
+}
 
 function _isLeagueActive(l) {
   if (l.comingSoon === true) return false;
   // Real DB tournaments injected by backend_api: check name against exact whitelist
   if (l._realId || (l.id && l.id.length > 10 && !/^(epl|liga|ucl|egy|wc|caf|mls|bun|ser|l1)/.test(l.id))) {
-    const cleanName = (l.name || '').toLowerCase().trim();
+    const cleanName = _normaliseTournamentName(l.name);
     return ACTIVE_LEAGUE_NAMES.includes(cleanName);
   }
   return true; // static leagues gated by comingSoon flag in data.js
