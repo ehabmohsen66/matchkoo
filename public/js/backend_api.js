@@ -56,7 +56,9 @@ const Backend = {
         
         const todayMatches = matchesRes.filter(m => {
           const md = new Date(m.matchDate);
-          const tName = (m.tournament?.name || '').toLowerCase().replace(/ \d{4}$/, '').trim();
+          const tName = (m.tournament?.name || '').toLowerCase()
+            .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
+            .replace(/\s+\[\d+\]$/, '').trim();
           const isTargetLeague = ACTIVE_LEAGUES.includes(tName);
           
           return isTargetLeague && (md.toDateString() === today || m.status === 'UPCOMING');
@@ -152,9 +154,10 @@ const Backend = {
         ];
 
         tournamentsRes.forEach(t => {
-          const nameLower = (t.name || '').toLowerCase().trim();
-          // Filter out year suffixes like "2025" or "2026" for matching
-          const cleanName = nameLower.replace(/ \d{4}$/, '');
+          // Strip " 2025 [39]" or " [39]" or " 2025" from the end for matching
+          const cleanName = (t.name || '').toLowerCase()
+            .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
+            .replace(/\s+\[\d+\]$/, '').trim();
           
           const match = ACTIVE_EXACT.find(a => cleanName === a.name);
           if (!match) return; // skip — not one of our 5 active leagues
@@ -166,17 +169,21 @@ const Backend = {
           // or prepend if not already present
           const existing = bucket.leagues.findIndex(
             l => {
-                const staticName = (l.name || '').toLowerCase().replace(/ \d{4}$/, '');
+                const staticName = (l.name || '').toLowerCase()
+                  .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
+                  .replace(/\s+\[\d+\]$/, '').trim();
                 return staticName === match.name || staticName.includes(match.name);
             }
           );
+          // Strip [leagueId] from the display name shown in the league card
+          const displayName = (t.name || '').replace(/\s*\[\d+\]$/, '');
           const realLeague = {
             id: t.id,
-            name: t.name,
+            name: displayName,
             country: match.continent === 'africa' ? '🇪🇬' :
                      match.continent === 'world'  ? '🌍' :
-                     nameLower.includes('premier')   ? '🏴󠁧󠁢󠁥󠁮󠁧󠁿' :
-                     nameLower.includes('la liga')   ? '🇪🇸' : '🇪🇺',
+                     cleanName.includes('premier')   ? '🏴󠁧󠁢󠁥󠁮󠁧󠁿' :
+                     cleanName.includes('la liga')   ? '🇪🇸' : '🇪🇺',
             emoji: t.type === 'Cup' ? '🏆' : '⚽',
             matches: t._count?.matches || 0,
             color: '#3CB82E',
