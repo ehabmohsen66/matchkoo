@@ -51,9 +51,15 @@ const Backend = {
       if (matchesRes.length > 0) {
         const today = new Date().toDateString();
         
+        // Exact names of the active leagues to filter today's matches
+        const ACTIVE_LEAGUES = ['premier league', 'la liga', 'uefa champions league', 'egyptian premier league', 'fifa world cup'];
+        
         const todayMatches = matchesRes.filter(m => {
           const md = new Date(m.matchDate);
-          return (md.toDateString() === today || m.status === 'UPCOMING');
+          const tName = (m.tournament?.name || '').toLowerCase().replace(/ \d{4}$/, '').trim();
+          const isTargetLeague = ACTIVE_LEAGUES.includes(tName);
+          
+          return isTargetLeague && (md.toDateString() === today || m.status === 'UPCOMING');
         }).slice(0, 8);
 
         if (todayMatches.length > 0) {
@@ -135,17 +141,25 @@ const Backend = {
       // ONLY inject the 5 agreed active leagues. Everything else stays
       // as static coming-soon data from data.js.
       if (tournamentsRes.length > 0) {
+        // Name fragments that identify our active leagues
+        // MATCH EXACTLY to prevent 'Premier League International Cup' bleeding in
+        const ACTIVE_EXACT = [
+          { name: 'premier league', continent: 'europe' },
+          { name: 'la liga', continent: 'europe' },
+          { name: 'uefa champions league', continent: 'europe' },
+          { name: 'egyptian premier league', continent: 'africa' },
+          { name: 'fifa world cup', continent: 'world' },
+        ];
+
         tournamentsRes.forEach(t => {
           const nameLower = (t.name || '').toLowerCase().trim();
+          // Filter out year suffixes like "2025" or "2026" for matching
           const cleanName = nameLower.replace(/ \d{4}$/, '');
           
-          let continent = 'europe';
-          if (nameLower.includes('egypt') || nameLower.includes('africa') || nameLower.includes('caf')) continent = 'africa';
-          else if (nameLower.includes('world')) continent = 'world';
-          else if (nameLower.includes('america') || nameLower.includes('mls')) continent = 'americas';
-          else if (nameLower.includes('asia')) continent = 'asia';
+          const match = ACTIVE_EXACT.find(a => cleanName === a.name);
+          if (!match) return; // skip — not one of our 5 active leagues
 
-          const bucket = DATA.continents[continent];
+          const bucket = DATA.continents[match.continent];
           if (!bucket) return;
 
           // Replace the matching static league entry with real DB data,
@@ -153,14 +167,14 @@ const Backend = {
           const existing = bucket.leagues.findIndex(
             l => {
                 const staticName = (l.name || '').toLowerCase().replace(/ \d{4}$/, '');
-                return staticName === cleanName || staticName.includes(cleanName) || cleanName.includes(staticName);
+                return staticName === match.name || staticName.includes(match.name);
             }
           );
           const realLeague = {
             id: t.id,
             name: t.name,
-            country: continent === 'africa' ? '🇪🇬' :
-                     continent === 'world'  ? '🌍' :
+            country: match.continent === 'africa' ? '🇪🇬' :
+                     match.continent === 'world'  ? '🌍' :
                      nameLower.includes('premier')   ? '🏴󠁧󠁢󠁥󠁮󠁧󠁿' :
                      nameLower.includes('la liga')   ? '🇪🇸' : '🇪🇺',
             emoji: t.type === 'Cup' ? '🏆' : '⚽',

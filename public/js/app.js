@@ -166,8 +166,12 @@ async function renderLiveMatches() {
   try {
     const matches = await fetch('/api/matches').then(r => r.ok ? r.json() : []);
     
+    // Exact names of the active leagues
+    const ACTIVE_LEAGUES = ['premier league', 'la liga', 'uefa champions league', 'egyptian premier league', 'fifa world cup'];
+    
     const liveMatches = matches.filter(m => {
-      return m.status === 'LIVE';
+      const tName = (m.tournament?.name || '').toLowerCase().replace(/ \d{4}$/, '').trim();
+      return ACTIVE_LEAGUES.includes(tName) && m.status === 'LIVE';
     });
 
     if (!liveMatches.length) {
@@ -216,10 +220,12 @@ async function renderFixturesList() {
     const today = new Date(); today.setHours(0,0,0,0);
     const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+2);
     
-    // Show all matches in DB for today
+    // Only show matches from active leagues
     const todays = matches.filter(m => { 
         const d = new Date(m.matchDate);
-        return d >= today && d < tomorrow; 
+        const tName = (m.tournament?.name || '').toLowerCase().replace(/ \d{4}$/, '').trim();
+        const isActive = ACTIVE_LEAGUE_NAMES.includes(tName);
+        return isActive && d >= today && d < tomorrow; 
     });
     if (!todays.length) {
       container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:0.88rem;">No matches scheduled today in your leagues. Check Discover for upcoming fixtures.</div>';
@@ -339,7 +345,8 @@ function _isLeagueActive(l) {
   if (l.comingSoon === true) return false;
   // Real DB tournaments injected by backend_api: check name against exact whitelist
   if (l._realId || (l.id && l.id.length > 10 && !/^(epl|liga|ucl|egy|wc|caf|mls|bun|ser|l1)/.test(l.id))) {
-    return true; // Allow all real DB tournaments
+    const cleanName = (l.name || '').toLowerCase().trim();
+    return ACTIVE_LEAGUE_NAMES.includes(cleanName);
   }
   return true; // static leagues gated by comingSoon flag in data.js
 }
