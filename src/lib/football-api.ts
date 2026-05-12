@@ -45,7 +45,11 @@ async function apiFetch(path: string, params: Record<string, string | number> = 
   });
 
   if (!res.ok) throw new Error(`API-Football error: ${res.status}`);
-  return res.json();
+  const json = await res.json();
+  if (json.errors && json.errors.requests) {
+    throw new Error(json.errors.requests);
+  }
+  return json;
 }
 
 /** Get fixtures by date range */
