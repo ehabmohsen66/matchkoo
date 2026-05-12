@@ -11,13 +11,25 @@ import {
 } from "@/lib/football-api";
 
 /**
+ * Agreed-upon leagues — ONLY these are ever synced or shown to users.
+ *  39  = English Premier League
+ *  140 = La Liga
+ *  2   = UEFA Champions League
+ *  3   = UEFA Europa League
+ *  233 = Egyptian Premier League
+ *  307 = Saudi Pro League
+ *  1   = FIFA World Cup
+ */
+const ALLOWED_LEAGUES = new Set([39, 140, 2, 3, 233, 307, 1]);
+
+/**
  * POST /api/admin/sync-fixtures
  *
  * Body options:
- *   { mode: "today" }                       → sync today only
- *   { mode: "week" }                        → sync today + 7 days
- *   { mode: "month" }                       → sync today + 30 days
- *   { mode: "league", leagueId: 39 }       → sync specific league (30 days)
+ *   { mode: "today" }                       → sync today only (whitelisted leagues)
+ *   { mode: "week" }                        → sync today + 7 days (whitelisted leagues)
+ *   { mode: "month" }                       → sync today + 30 days (whitelisted leagues)
+ *   { mode: "league", leagueId: 39 }       → sync one specific allowed league (30 days)
  *   { mode: "update-live" }                 → update scores for LIVE matches
  *
  * Also callable from Vercel CRON (no session required if CRON_SECRET header matches)
@@ -42,28 +54,30 @@ export async function POST(req: NextRequest) {
     const today = new Date().toISOString().split("T")[0];
 
     if (mode === "today") {
-      fixtures = await getFixturesByDate(today, today);
+      const raw = await getFixturesByDate(today, today);
+      fixtures = raw.filter(f => ALLOWED_LEAGUES.has(f.league.id));
     } else if (mode === "week") {
       const to = new Date();
       to.setDate(to.getDate() + 7);
-      fixtures = await getFixturesByDate(today, to.toISOString().split("T")[0]);
+      const raw = await getFixturesByDate(today, to.toISOString().split("T")[0]);
+      fixtures = raw.filter(f => ALLOWED_LEAGUES.has(f.league.id));
     } else if (mode === "month") {
       const to = new Date();
       to.setDate(to.getDate() + 30);
-      fixtures = await getFixturesByDate(today, to.toISOString().split("T")[0]);
+      const raw = await getFixturesByDate(today, to.toISOString().split("T")[0]);
+      fixtures = raw.filter(f => ALLOWED_LEAGUES.has(f.league.id));
     } else if (mode === "league" && leagueId) {
-      fixtures = await getFixturesByLeague(Number(leagueId), 2025, 30);
+      const lid = Number(leagueId);
+      if (!ALLOWED_LEAGUES.has(lid)) {
+        return NextResponse.json({ error: `League ${lid} is not in the allowed list` }, { status: 400 });
+      }
+      fixtures = await getFixturesByLeague(lid, 2025, 30);
     } else if (mode === "update-live") {
-      // Fetch only live/recent matches to update scores
       const liveRes = await fetch("https://v3.football.api-sports.io/fixtures?live=all", {
         headers: { "x-apisports-key": process.env.FOOTBALL_API_KEY! },
       });
       const liveData = await liveRes.json();
-      
-      // ONLY ingest live matches from our 5 active leagues
-      // 39=EPL, 140=La Liga, 2=UCL, 233=Egypt PL, 1=World Cup
-      const ACTIVE_LEAGUES = [39, 140, 2, 233, 1];
-      fixtures = (liveData.response ?? []).filter((f: any) => ACTIVE_LEAGUES.includes(f.league.id));
+      fixtures = (liveData.response ?? []).filter((f: any) => ALLOWED_LEAGUES.has(f.league.id));
     }
 
     const results = await upsertFixtures(fixtures);
@@ -102,9 +116,13 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
     const awayScore = f.goals.away ?? (status === "UPCOMING" ? null : 0);
     const round = f.league.round || "Round";
 
+    // Build a unique tournament name using league ID to avoid cross-country name collisions
+    // e.g. "Premier League" exists in England, Lebanon, Ukraine, Uganda — use ID to disambiguate
+    const tournamentName = `${f.league.name} ${f.league.season} [${f.league.id}]`;
+
     // Find or create a tournament for this league+season
     let tournament = await prisma.tournament.findFirst({
-      where: { name: `${f.league.name} ${f.league.season}` },
+      where: { name: tournamentName },
     });
 
     if (!tournament) {
@@ -114,7 +132,7 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
 
       tournament = await prisma.tournament.create({
         data: {
-          name: `${f.league.name} ${f.league.season}`,
+          name: tournamentName,
           game: "Football",
           type: f.league.id === 2 || f.league.id === 3 || f.league.id === 848 ? "Cup" : "League",
           description: `${f.league.country} · Season ${f.league.season}`,
