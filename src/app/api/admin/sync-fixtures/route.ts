@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
 
       // For anything the API didn't return, force-mark as COMPLETED directly
       const returnedIds = new Set(fixtures.map((f: ApiFixture) => `apif-${f.fixture.id}`));
-      const missingStale = stale.filter(m => !returnedIds.has(m.externalId));
+      const missingStale = stale.filter(m => !returnedIds.has(m.externalId ?? ""));
       if (missingStale.length > 0) {
         await prisma.match.updateMany({
           where: { id: { in: missingStale.map(m => m.id) } },
