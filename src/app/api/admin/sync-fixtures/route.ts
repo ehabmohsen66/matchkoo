@@ -219,28 +219,71 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
     if (existing) {
       await prisma.match.update({ where: { id: existing.id }, data: matchData });
       
-      // If automatically transitioning to COMPLETED, calculate XP!
+      // ── XP Engine: fires when match transitions to COMPLETED ──────────────
       if (status === "COMPLETED" && existing.status !== "COMPLETED" && homeScore !== null && awayScore !== null) {
-        const predictions = await prisma.prediction.findMany({ where: { matchId: existing.id } });
+        const predictions = await prisma.prediction.findMany({
+          where: { matchId: existing.id },
+          include: { user: { select: { id: true, streak: true, bestStreak: true, predictionCount: true, correctCount: true } } },
+        });
+
         for (const pred of predictions) {
-          let xp = 0;
+          // ── 1. Determine outcome ─────────────────────────────────────────
           const correctResult =
-            (pred.homeScore > pred.awayScore && homeScore > awayScore) ||
-            (pred.homeScore < pred.awayScore && homeScore < awayScore) ||
+            (pred.homeScore > pred.awayScore  && homeScore > awayScore)  ||
+            (pred.homeScore < pred.awayScore  && homeScore < awayScore)  ||
             (pred.homeScore === pred.awayScore && homeScore === awayScore);
-          const exactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
+          const exactScore    = pred.homeScore === homeScore && pred.awayScore === awayScore;
+          const correctScorer = !!pred.firstGoalScorer &&
+            !!existing.firstGoalScorer &&
+            pred.firstGoalScorer.trim().toLowerCase() === existing.firstGoalScorer.trim().toLowerCase();
 
-          if (exactScore) xp += 30;
-          else if (correctResult) xp += 10;
+          const predStatus = correctResult ? "correct" : "wrong";
 
+          // ── 2. Base XP ───────────────────────────────────────────────────
+          let baseXp = 0;
+          if (correctResult) baseXp += 50;     // correct result
+          if (exactScore)    baseXp += 150;    // exact scoreline bonus (total 200)
+          if (correctScorer) baseXp += 100;    // first goalscorer bonus
+
+          // ── 3. Confidence multiplier: 50%=1.0×, 75%=1.5×, 100%=2.0× ────
           const multiplier = 1 + ((pred.confidence - 50) / 50);
-          xp = Math.round(xp * multiplier);
+          let xp = Math.round(baseXp * multiplier);
+
+          // ── 4. Double marker ─────────────────────────────────────────────
           if (pred.isDouble) xp *= 2;
 
-          await prisma.prediction.update({ where: { id: pred.id }, data: { xpEarned: xp } });
-          if (xp > 0) {
-            await prisma.user.update({ where: { id: pred.userId }, data: { xp: { increment: xp } } });
+          // ── 5. Streak update ─────────────────────────────────────────────
+          const newStreak    = correctResult ? pred.user.streak + 1 : 0;
+          const newBest      = Math.max(pred.user.bestStreak, newStreak);
+          const newPredCount = pred.user.predictionCount + 1;
+          const newCorrect   = pred.user.correctCount + (correctResult ? 1 : 0);
+
+          // Streak bonus XP (awarded on top)
+          let streakBonus = 0;
+          if (correctResult) {
+            if (newStreak === 10) streakBonus = 500;
+            else if (newStreak === 5) streakBonus = 150;
+            else if (newStreak === 3) streakBonus = 50;
           }
+          xp += streakBonus;
+
+          // ── 6. Persist prediction ────────────────────────────────────────
+          await prisma.prediction.update({
+            where: { id: pred.id },
+            data:  { xpEarned: xp, status: predStatus },
+          });
+
+          // ── 7. Persist user XP + stats ───────────────────────────────────
+          await prisma.user.update({
+            where: { id: pred.userId },
+            data: {
+              xp:              { increment: xp },
+              streak:          newStreak,
+              bestStreak:      newBest,
+              predictionCount: newPredCount,
+              correctCount:    newCorrect,
+            },
+          });
         }
       }
       

@@ -568,16 +568,46 @@ async function renderPredictions(filter) {
   try {
     const apiFilter = filter === 'upcoming' ? 'upcoming' : 'completed';
     const raw = await fetch('/api/predictions?filter=' + apiFilter).then(r => r.ok ? r.json() : []);
-    preds = raw.map(p => ({
-      matchId: p.matchId,
-      league: p.match?.tournament?.name || 'Match',
-      match: p.match?.homeTeam + ' vs ' + p.match?.awayTeam,
-      status: p.match?.status === 'UPCOMING' ? 'pending' : p.match?.status === 'LIVE' ? 'pending' : p.xpEarned > 0 ? 'correct' : p.match?.status === 'COMPLETED' ? 'wrong' : 'pending',
-      picks: [p.homeScore + '–' + p.awayScore, p.firstGoalScorer ? 'First: '+p.firstGoalScorer : null].filter(Boolean),
-      xp: p.xpEarned ? '+' + p.xpEarned + ' XP' : 'Pending',
-    }));
-    if (filter === 'correct') preds = preds.filter(p => p.status === 'correct');
-    else if (filter === 'wrong') preds = preds.filter(p => p.status === 'wrong');
+    preds = raw.map(p => {
+      // Use real DB status if available, fall back to match status
+      let status = p.status || 'pending';
+      if (!p.status) {
+        if (p.match?.status === 'UPCOMING' || p.match?.status === 'LIVE') status = 'pending';
+        else if (p.match?.status === 'COMPLETED') status = p.xpEarned > 0 ? 'correct' : 'wrong';
+      }
+
+      // Build picks display
+      const picks = [p.homeScore + '–' + p.awayScore];
+      if (p.firstGoalScorer) picks.push('⚽ First: ' + p.firstGoalScorer);
+      if (p.isDouble) picks.push('🃏 Double');
+      if (p.confidence && p.confidence !== 50) picks.push('Conf: ' + p.confidence + '%');
+
+      // XP display
+      let xpDisplay = 'Pending';
+      if (p.match?.status === 'COMPLETED') {
+        xpDisplay = p.xpEarned > 0 ? '+' + p.xpEarned.toLocaleString() + ' XP' : '0 XP';
+      }
+
+      // Show actual result if completed
+      let resultLine = '';
+      if (p.match?.status === 'COMPLETED' && p.match.homeScore != null) {
+        resultLine = 'Result: ' + p.match.homeScore + '–' + p.match.awayScore;
+      }
+
+      return {
+        matchId: p.matchId,
+        league: p.match?.tournament?.name?.replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '') || 'Match',
+        match: p.match?.homeTeam + ' vs ' + p.match?.awayTeam,
+        date: p.match?.matchDate ? new Date(p.match.matchDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '',
+        status,
+        picks,
+        xpDisplay,
+        resultLine,
+      };
+    });
+
+    if (filter === 'correct')  preds = preds.filter(p => p.status === 'correct');
+    else if (filter === 'wrong')    preds = preds.filter(p => p.status === 'wrong');
     else if (filter === 'upcoming') preds = preds.filter(p => p.status === 'pending');
   } catch(e) {}
 
@@ -600,17 +630,22 @@ async function renderPredictions(filter) {
       items.map(p => {
         const canEdit = p.status === 'pending';
         const mid = p.matchId || '';
+        const statusIcon = p.status === 'correct' ? '✅' : p.status === 'wrong' ? '❌' : '⏳';
+        const statusLabel = p.status === 'correct' ? 'Correct' : p.status === 'wrong' ? 'Wrong' : 'Upcoming';
+        const xpColor = p.status === 'correct' ? '#ffd700' : p.status === 'wrong' ? 'rgba(255,255,255,0.3)' : 'var(--text-secondary)';
+
         return '<div class="pred-item ' + p.status + '" role="listitem" style="cursor:pointer" onclick="openRealMatchDetail(\'' + mid + '\')">' +
           '<div class="pred-item-header">' +
-            '<span class="pred-item-league">' + p.league + '</span>' +
+            '<span class="pred-item-league">' + (p.date ? p.date + ' · ' : '') + league + '</span>' +
             '<div style="display:flex;align-items:center;gap:8px">' +
               (canEdit ? '<button onclick="event.stopPropagation();openRealMatchDetail(\'' + mid + '\')" style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(60,184,46,0.1);border:1px solid rgba(60,184,46,0.3);color:var(--green);cursor:pointer">Edit</button>' : '') +
-              '<span class="pred-item-status-badge status-' + p.status + '">' + (p.status === 'correct' ? '&#10003; Correct' : p.status === 'wrong' ? '&#10007; Wrong' : '&#9203; Upcoming') + '</span>' +
+              '<span class="pred-item-status-badge status-' + p.status + '">' + statusIcon + ' ' + statusLabel + '</span>' +
             '</div>' +
           '</div>' +
           '<div class="pred-item-match">' + p.match + '</div>' +
+          (p.resultLine ? '<div style="font-size:0.72rem;color:rgba(255,255,255,0.4);margin-bottom:4px">' + p.resultLine + '</div>' : '') +
           '<div class="pred-item-picks">' + p.picks.map(pick => '<span class="pred-pick-tag">' + pick + '</span>').join('') + '</div>' +
-          '<div class="pred-item-xp" style="color:' + (p.status === 'correct' ? 'var(--gold)' : p.status === 'wrong' ? 'var(--text-muted)' : 'var(--text-secondary)') + '">' + p.xp + '</div>' +
+          '<div class="pred-item-xp" style="font-weight:800;color:' + xpColor + '">' + p.xpDisplay + '</div>' +
         '</div>';
       }).join('') +
     '</div>'
@@ -785,8 +820,10 @@ function renderLeaderboardTable(entries) {
   }
 
   container.innerHTML = rows.map((u) => {
-    const lvl = _xpToLevel(u.xp || 0);
+    const lvl    = _xpToLevel(u.xp || 0);
     const avatar = u.image || ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name || 'user'));
+    const streak = u.streak || 0;
+    const acc    = u.accuracy != null ? u.accuracy + '%' : '';
     return `
       <div class="mini-lb-row ${u.isMe ? 'you-row' : ''}" role="row">
         <div class="lb-rank" style="color:var(--text-muted);font-weight:800">#${u.rank}</div>
@@ -798,8 +835,9 @@ function renderLeaderboardTable(entries) {
           <div class="lb-name">
             ${u.name || 'Player'}
             ${u.isMe ? '<span class="level-badge ' + lvl.cls + '">YOU</span>' : ''}
+            ${streak >= 3 ? '<span style="font-size:0.7rem;margin-left:4px" title="' + streak + ' streak">🔥' + streak + '</span>' : ''}
           </div>
-          <div class="lb-sub" style="font-size:0.7rem;color:var(--text-muted)">${lvl.label}</div>
+          <div class="lb-sub" style="font-size:0.7rem;color:var(--text-muted)">${lvl.label}${acc ? ' · ' + acc + ' accuracy' : ''}</div>
         </div>
         <div class="lb-right">
           <div class="lb-xp" style="font-weight:800;color:var(--green)">${(u.xp||0).toLocaleString()} XP</div>

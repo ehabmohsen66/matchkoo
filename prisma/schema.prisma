@@ -19,7 +19,11 @@ model User {
   image         String?
   password      String?
   role          String    @default("USER") // USER or ADMIN
-  xp            Int       @default(0)
+  xp              Int  @default(0)
+  streak          Int  @default(0)   // current consecutive correct predictions
+  bestStreak      Int  @default(0)   // all-time best streak
+  predictionCount Int  @default(0)   // total predictions submitted
+  correctCount    Int  @default(0)   // total correct predictions
   referredById  String?
   referredBy    User?     @relation("Referrals", fields: [referredById], references: [id])
   referrals     User[]    @relation("Referrals")
@@ -104,6 +108,7 @@ model Prediction {
   confidence      Int     @default(50)  // 50–100
   isDouble        Boolean @default(false) // double XP joker (one per round)
   xpEarned        Int?    // populated after match result
+  status          String? // "pending" | "correct" | "wrong"
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
