@@ -5,12 +5,12 @@
   "outputDirectory": ".next",
   "crons": [
     {
-      "path": "/api/cron/sync-fixtures",
+      "path": "/api/cron/sync-today",
       "schedule": "0 6 * * *"
     },
     {
       "path": "/api/cron/update-live",
-      "schedule": "* * * * *"
+      "schedule": "*/2 * * * *"
     }
   ]
 }
