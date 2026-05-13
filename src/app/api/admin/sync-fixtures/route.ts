@@ -76,6 +76,53 @@ export async function POST(req: NextRequest) {
       });
       const liveData = await liveRes.json();
       fixtures = (liveData.response ?? []).filter((f: any) => ALLOWED_LEAGUES.has(f.league.id));
+    } else if (mode === "fix-stale") {
+      // Find all matches stuck in LIVE or UPCOMING past their match date
+      const stale = await prisma.match.findMany({
+        where: {
+          status: { in: ["LIVE", "UPCOMING"] },
+          matchDate: { lt: new Date(new Date().setHours(0, 0, 0, 0)) }, // before today midnight
+          externalId: { startsWith: "apif-" },
+        },
+        select: { id: true, externalId: true },
+      });
+
+      if (stale.length === 0) {
+        return NextResponse.json({ success: true, message: "No stale matches found", fixed: 0 });
+      }
+
+      // Re-fetch each stale match from the API and update its real status
+      const fixtureIds = stale.map(m => m.externalId.replace("apif-", "")).join(",");
+      const res = await fetch(
+        `https://v3.football.api-sports.io/fixtures?ids=${fixtureIds}`,
+        { headers: { "x-apisports-key": process.env.FOOTBALL_API_KEY! } }
+      );
+      const data = await res.json();
+      fixtures = (data.response ?? []).filter((f: any) => ALLOWED_LEAGUES.has(f.league.id));
+
+      // For anything the API didn't return, force-mark as COMPLETED directly
+      const returnedIds = new Set(fixtures.map((f: ApiFixture) => `apif-${f.fixture.id}`));
+      const missingStale = stale.filter(m => !returnedIds.has(m.externalId));
+      if (missingStale.length > 0) {
+        await prisma.match.updateMany({
+          where: { id: { in: missingStale.map(m => m.id) } },
+          data: { status: "COMPLETED" },
+        });
+      }
+    }
+
+    // Always close stale LIVE/UPCOMING from previous days on any sync mode
+    if (["today", "week", "month", "update-live"].includes(mode)) {
+      const staleCount = await prisma.match.updateMany({
+        where: {
+          status: { in: ["LIVE", "UPCOMING"] },
+          matchDate: { lt: new Date(new Date().setHours(0, 0, 0, 0)) },
+        },
+        data: { status: "COMPLETED" },
+      });
+      if (staleCount.count > 0) {
+        console.log(`[sync] Auto-closed ${staleCount.count} stale LIVE/UPCOMING matches from previous days`);
+      }
     }
 
     const results = await upsertFixtures(fixtures);
