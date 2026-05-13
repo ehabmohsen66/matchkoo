@@ -161,9 +161,17 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
     const awayScore = f.goals.away ?? (status === "UPCOMING" ? null : 0);
     const round = f.league.round || "Round";
 
-    // Build a unique tournament name using league ID to avoid cross-country name collisions
-    // e.g. "Premier League" exists in England, Lebanon, Ukraine, Uganda — use ID to disambiguate
-    const tournamentName = `${f.league.name} ${f.league.season} [${f.league.id}]`;
+    // Canonical league names — API returns generic names like "Premier League" for multiple countries.
+    // We override with unambiguous names so backend_api.js can match them correctly.
+    const CANONICAL_NAMES: Record<number, string> = {
+      39:  "English Premier League",
+      140: "La Liga",
+      2:   "UEFA Champions League",
+      233: "Egyptian Premier League",
+      1:   "FIFA World Cup",
+    };
+    const leagueName = CANONICAL_NAMES[f.league.id] || f.league.name;
+    const tournamentName = `${leagueName} ${f.league.season} [${f.league.id}]`;
 
     // Find or create a tournament for this league+season
     let tournament = await prisma.tournament.findFirst({

@@ -319,14 +319,16 @@ function selectContinent(id) {
 }
 
 // Active league names — ONLY the 5 agreed leagues.
+// These MUST match the CANONICAL_NAMES in sync-fixtures/route.ts after normalisation.
 const ACTIVE_LEAGUE_NAMES = [
-  'premier league',
+  'english premier league',
+  'premier league',          // legacy fallback
   'egyptian premier league',
   'la liga',
-  'fifa world cup',
-  'world cup',
-  'champions league',
   'uefa champions league',
+  'champions league',        // legacy fallback
+  'fifa world cup',
+  'world cup',               // legacy fallback
 ];
 
 /** Normalise a tournament name from the DB for whitelist matching.

@@ -52,7 +52,7 @@ const Backend = {
         const today = new Date().toDateString();
         
         // Exact names of the active leagues to filter today's matches
-        const ACTIVE_LEAGUES = ['premier league', 'la liga', 'uefa champions league', 'egyptian premier league', 'fifa world cup'];
+        const ACTIVE_LEAGUES = ['english premier league', 'premier league', 'la liga', 'uefa champions league', 'egyptian premier league', 'fifa world cup'];
         
         const todayMatches = matchesRes.filter(m => {
           const md = new Date(m.matchDate);
@@ -143,14 +143,13 @@ const Backend = {
       // ONLY inject the 5 agreed active leagues. Everything else stays
       // as static coming-soon data from data.js.
       if (tournamentsRes.length > 0) {
-        // Name fragments that identify our active leagues
-        // MATCH EXACTLY to prevent 'Premier League International Cup' bleeding in
+        // These MUST match the CANONICAL_NAMES map in sync-fixtures/route.ts exactly
         const ACTIVE_EXACT = [
-          { name: 'premier league', continent: 'europe' },
-          { name: 'la liga', continent: 'europe' },
-          { name: 'uefa champions league', continent: 'europe' },
+          { name: 'english premier league', continent: 'europe' },
+          { name: 'la liga',                continent: 'europe' },
+          { name: 'uefa champions league',  continent: 'europe' },
           { name: 'egyptian premier league', continent: 'africa' },
-          { name: 'fifa world cup', continent: 'world' },
+          { name: 'fifa world cup',          continent: 'world'  },
         ];
 
         tournamentsRes.forEach(t => {
