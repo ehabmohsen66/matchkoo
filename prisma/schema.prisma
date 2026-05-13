@@ -83,6 +83,10 @@ model Match {
   awayScore         Int?
   firstGoalScorer   String?
 
+  // Lineup & live events (fetched from API-Football, cached here)
+  lineup            Json?   // { home: { team, formation, startXI, substitutes }, away: {...} }
+  events            Json?   // [{ time, team, player, assist, type, detail }]
+
   predictions Prediction[]
 
   createdAt DateTime @default(now())

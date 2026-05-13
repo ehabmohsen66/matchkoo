@@ -2050,3 +2050,72 @@ body[data-role="admin"] .admin-only { display: block !important; }
   letter-spacing: 1px;
   color: var(--text-primary);
 }
+
+/* ── PLAYER PICKER (First Goalscorer) ─────────────────────────── */
+.player-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.player-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.75);
+  transition: all 0.18s ease;
+  user-select: none;
+}
+.player-chip:hover {
+  background: rgba(60,184,46,0.12);
+  border-color: rgba(60,184,46,0.4);
+  color: #fff;
+}
+.player-chip.selected-player {
+  background: rgba(60,184,46,0.18);
+  border-color: #3CB82E;
+  color: #3CB82E;
+  font-weight: 800;
+}
+.player-chip.subbed-off {
+  opacity: 0.35;
+  text-decoration: line-through;
+  pointer-events: none;
+}
+.player-chip.subbed-on {
+  border-color: rgba(255,153,20,0.5);
+  color: #ff9914;
+}
+.player-chip .player-num {
+  font-size: 0.65rem;
+  opacity: 0.55;
+  font-weight: 800;
+}
+/* Events timeline */
+.events-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.event-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  color: rgba(255,255,255,0.7);
+}
+.event-time {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #ff9914;
+  min-width: 30px;
+}
+.event-icon { font-size: 0.9rem; }
+.event-text { flex: 1; }

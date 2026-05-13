@@ -1125,6 +1125,11 @@ async function openRealMatchDetail(matchId) {
     }
     document.body.style.overflow = 'hidden';
 
+    // Load lineup for prediction form (upcoming + live)
+    if (m.status !== 'COMPLETED') {
+      _loadLineup(matchId);
+    }
+
     if (m.status === 'LIVE') {
       // Immediate live fetch then poll every 10s
       _fetchAndApplyLive(matchId);
@@ -1135,11 +1140,141 @@ async function openRealMatchDetail(matchId) {
           return;
         }
         _fetchAndApplyLive(matchId);
-      }, 10000);
+        // Also refresh lineup/events during live
+        _loadLineup(matchId);
+      }, 30000); // refresh lineup every 30s during live
     }
   } catch(e) {
     showNotification('Could not load match details', 'error');
   }
+}
+
+// ─── LINEUP / PLAYER PICKER ──────────────────────────────────────
+
+async function _loadLineup(matchId) {
+  // Show loading spinner
+  const loading = document.getElementById('lineup-loading');
+  const picker  = document.getElementById('player-picker');
+  if (loading) loading.style.display = 'block';
+  if (picker)  picker.style.display  = 'none';
+
+  try {
+    const res = await fetch('/api/lineups?matchId=' + matchId);
+    if (!res.ok) throw new Error('API error');
+    const { lineup, events } = await res.json();
+
+    if (loading) loading.style.display = 'none';
+    if (picker)  picker.style.display  = 'block';
+
+    _renderPlayerPicker(lineup, events);
+    if (events && events.length > 0) _renderEventsTimeline(events);
+  } catch(e) {
+    // Silently fall back to text input
+    if (loading) loading.style.display = 'none';
+    if (picker)  picker.style.display  = 'block';
+    const noMsg = document.getElementById('no-lineup-msg');
+    if (noMsg) noMsg.style.display = 'block';
+  }
+}
+
+function _renderPlayerPicker(lineup, events) {
+  const noMsg = document.getElementById('no-lineup-msg');
+
+  if (!lineup || (!lineup.home?.startXI?.length && !lineup.away?.startXI?.length)) {
+    if (noMsg) noMsg.style.display = 'block';
+    return;
+  }
+  if (noMsg) noMsg.style.display = 'none';
+
+  // Build set of players subbed off
+  const subbedOff = new Set();
+  const subbedOn  = new Set();
+  if (events) {
+    events.filter(e => e.type === 'subst').forEach(e => {
+      if (e.assistName) subbedOff.add(e.assistName);  // "assist" = player coming OFF
+      if (e.playerName) subbedOn.add(e.playerName);   // "player" = player coming ON
+    });
+  }
+
+  const currentScorer = (document.getElementById('scorer-select')?.value || '').trim();
+
+  const renderGrid = (containerId, players, isSub) => {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    players.forEach(p => {
+      const isOff = subbedOff.has(p.name);
+      const isOn  = subbedOn.has(p.name) && isSub;
+      const isSelected = currentScorer === p.name;
+
+      const chip = document.createElement('button');
+      chip.className = 'player-chip' +
+        (isSelected ? ' selected-player' : '') +
+        (isOff ? ' subbed-off' : '') +
+        (isOn  ? ' subbed-on'  : '');
+      chip.innerHTML = '<span class="player-num">' + (p.number || '') + '</span>' + p.name;
+      chip.title = p.pos || '';
+      chip.onclick = () => {
+        // Toggle selection
+        const scorerInput = document.getElementById('scorer-select');
+        if (isSelected || isOff) {
+          // Deselect
+          if (scorerInput) scorerInput.value = '';
+          container.querySelectorAll('.player-chip').forEach(c => c.classList.remove('selected-player'));
+          // Also deselect from other grids
+          document.querySelectorAll('.player-chip.selected-player').forEach(c => c.classList.remove('selected-player'));
+        } else {
+          // Clear all selections
+          document.querySelectorAll('.player-chip.selected-player').forEach(c => c.classList.remove('selected-player'));
+          chip.classList.add('selected-player');
+          if (scorerInput) scorerInput.value = p.name;
+        }
+      };
+      container.appendChild(chip);
+    });
+  };
+
+  // Home team
+  const homeLbl = document.getElementById('lineup-home-label');
+  if (homeLbl) homeLbl.textContent = (lineup.home?.team || '').toUpperCase() + (lineup.home?.formation ? '  ' + lineup.home.formation : '');
+  renderGrid('lineup-home-players', lineup.home?.startXI || [], false);
+  renderGrid('lineup-home-subs',    lineup.home?.substitutes || [], true);
+
+  // Away team
+  const awayLbl = document.getElementById('lineup-away-label');
+  if (awayLbl) awayLbl.textContent = (lineup.away?.team || '').toUpperCase() + (lineup.away?.formation ? '  ' + lineup.away.formation : '');
+  renderGrid('lineup-away-players', lineup.away?.startXI || [], false);
+  renderGrid('lineup-away-subs',    lineup.away?.substitutes || [], true);
+}
+
+function _renderEventsTimeline(events) {
+  const container = document.getElementById('match-events-timeline');
+  if (!container) return;
+
+  const goals = events.filter(e => e.type === 'Goal');
+  const subs  = events.filter(e => e.type === 'subst');
+
+  if (goals.length === 0 && subs.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = 'block';
+  const allEvents = [...events].sort((a, b) => (a.time || 0) - (b.time || 0));
+
+  container.innerHTML =
+    '<div style="font-size:0.68rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px">Match Events</div>' +
+    '<div class="events-timeline">' +
+    allEvents.map(e => {
+      const icon   = e.type === 'Goal'  ? (e.detail === 'Penalty' ? '⚽🎯' : e.detail === 'Own Goal' ? '🔴' : '⚽')
+                   : e.type === 'subst' ? '🔄' : '';
+      const time   = e.time + (e.extraTime ? '+' + e.extraTime : '') + "'";
+      const text   = e.type === 'Goal'
+        ? '<b>' + e.playerName + '</b>' + (e.assistName ? ' <span style="opacity:0.5">(assist: ' + e.assistName + ')</span>' : '') + ' – ' + e.teamName
+        : e.assistName + ' → ' + e.playerName + ' <span style="opacity:0.5">(' + e.teamName + ')</span>';
+      return '<div class="event-row"><span class="event-time">' + time + '</span><span class="event-icon">' + icon + '</span><span class="event-text">' + text + '</span></div>';
+    }).join('') +
+    '</div>';
 }
 
 async function submitPrediction() {
