@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Re-fetch each stale match from the API and update its real status
-      const fixtureIds = stale.map(m => m.externalId.replace("apif-", "")).join(",");
+      const fixtureIds = stale.map(m => (m.externalId ?? "").replace("apif-", "")).filter(Boolean).join(",");
       const res = await fetch(
         `https://v3.football.api-sports.io/fixtures?ids=${fixtureIds}`,
         { headers: { "x-apisports-key": process.env.FOOTBALL_API_KEY! } }
