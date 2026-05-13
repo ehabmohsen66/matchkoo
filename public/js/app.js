@@ -272,33 +272,27 @@ function toggleDoubleXP(matchId) {
   renderFixturesList();
 }
 
-function renderMiniLeaderboard() {
+async function renderMiniLeaderboard() {
   const container = document.getElementById('mini-leaderboard') || document.getElementById('home-top-predictors');
   if (!container) return;
-
-  container.innerHTML = DATA.friendsLeaderboard.map(u => {
-    const rankClass = u.rank === 1 ? 'gold-rank' : u.rank === 2 ? 'silver-rank' : u.rank === 3 ? 'bronze-rank' : u.isYou ? 'you-rank' : '';
-    return `
-      <div class="mini-lb-row ${u.isMe ? 'you-row' : ''}" role="row">
-        <div class="lb-rank ${rankClass}">${u.rank === 1 ? '🥇' : u.rank === 2 ? '🥈' : u.rank === 3 ? '🥉' : '#'+u.rank}</div>
-        <div class="lb-avatar">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${u.seed}" alt="${u.name}" width="36" height="36">
-          <div class="level-badge-sm ${u.level}">${u.level[0].toUpperCase()}</div>
-        </div>
-        <div class="lb-info">
-          <div class="lb-name">
-            <span class="lb-name-flag">${u.flag}</span>
-            ${u.isMe ? '<strong>' + u.name + '</strong>' : u.name}
-            ${u.isMe ? '<span class="level-badge ' + u.level + '">YOU</span>' : ''}
-          </div>
-          <div class="lb-sub">${u.acc} accuracy</div>
-        </div>
-        <div class="lb-right">
-          <div class="lb-xp">${u.xp} XP</div>
-        </div>
-      </div>
-    `;
-  }).join('');
+  // Already handled by loadHomeWidgets — just delegate to avoid duplication
+  try {
+    const lb = await fetch('/api/leaderboard').then(r => r.ok ? r.json() : []);
+    if (!lb.length) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;font-size:0.85rem">No predictors yet. Be the first!</div>';
+      return;
+    }
+    container.innerHTML = lb.slice(0, 5).map((u, i) => {
+      const rankIcon = i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+      const avatar = u.image || ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name || 'user'));
+      return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:' + (u.isMe?'rgba(60,184,46,0.08)':'rgba(255,255,255,0.03)') + ';border-radius:12px;border:1px solid ' + (u.isMe?'rgba(60,184,46,0.2)':'rgba(255,255,255,0.05)') + '">' +
+        '<div style="font-weight:800;min-width:28px;color:' + (i===0?'#ffd700':i===1?'#c0c0c0':i===2?'#cd7f32':'rgba(255,255,255,0.4)') + ';text-align:center">' + rankIcon + '</div>' +
+        '<img src="' + avatar + '" width="32" height="32" style="border-radius:50%;border:2px solid rgba(255,255,255,0.1)">' +
+        '<div style="flex:1"><div style="font-weight:700;color:#fff;font-size:0.85rem">' + (u.name||'Player') + (u.isMe?' <span style="font-size:0.65rem;color:var(--green)">YOU</span>':'') + '</div></div>' +
+        '<div style="font-weight:800;color:var(--green);font-size:0.82rem">' + (u.xp||0).toLocaleString() + ' XP</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) { if (container) container.innerHTML = ''; }
 }
 
 // ─── DISCOVER PAGE ───────────────────────────────────────────────
@@ -624,24 +618,51 @@ async function renderPredictions(filter) {
 }
 
 // ─── LEADERBOARD PAGE ────────────────────────────────────────────
-async function initLeaderboard() {
+async function initLeaderboard(period) {
+  const url = period && period !== 'alltime' ? '/api/leaderboard?period=' + period : '/api/leaderboard';
   try {
-    const data = await fetch('/api/leaderboard').then(r => r.ok ? r.json() : []);
+    const data = await fetch(url).then(r => r.ok ? r.json() : []);
     renderLeaderboardTable(data);
-    // Update podium
-    const podium = [data[0], data[1], data[2]].filter(Boolean);
-    podium.forEach((u, i) => {
-      const el = document.getElementById('podium-' + (i+1));
-      if (el) {
-        const nameEl = el.querySelector('.podium-name');
-        const xpEl = el.querySelector('.podium-xp');
-        const imgEl = el.querySelector('img');
-        if (nameEl) nameEl.textContent = u.name;
-        if (xpEl) xpEl.textContent = (u.xp||0).toLocaleString() + ' XP';
-        if (imgEl) imgEl.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name);
-      }
+
+    // ── Update Podium (ranks 1/2/3) ──
+    // HTML order: rank2 / rank1 / rank3
+    const podiumOrder = [data[1], data[0], data[2]]; // 2nd | 1st | 3rd
+    const podiumCards = document.querySelectorAll('.podium-card');
+    podiumCards.forEach((card, i) => {
+      const u = podiumOrder[i];
+      if (!u) return;
+      const nameEl = card.querySelector('.podium-name');
+      const xpEl   = card.querySelector('.podium-xp');
+      const imgEl  = card.querySelector('img');
+      const rnkEl  = card.querySelector('.rank-num');
+      const rank   = i === 0 ? 2 : i === 1 ? 1 : 3;
+      if (nameEl) nameEl.textContent = u.name || 'Player';
+      if (xpEl)   xpEl.textContent   = (u.xp || 0).toLocaleString() + ' XP';
+      if (imgEl)  imgEl.src = u.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name || 'user');
+      if (rnkEl)  rnkEl.textContent  = '#' + rank;
     });
-  } catch(e) {}
+
+    // ── Update Your Rank Banner ──
+    const me = data.find(u => u.isMe);
+    if (me) {
+      const yrb = document.querySelector('.your-rank-banner');
+      if (yrb) {
+        const rankEl = yrb.querySelector('.yrb-rank');
+        const nameEl = yrb.querySelector('.yrb-name');
+        const xpEl   = yrb.querySelector('.yrb-xp');
+        const imgEl  = yrb.querySelector('img');
+        if (rankEl) rankEl.textContent = '#' + me.rank;
+        if (nameEl) nameEl.textContent = (me.name || 'You') + ' (You)';
+        if (xpEl)   xpEl.textContent   = (me.xp || 0).toLocaleString() + ' XP';
+        if (imgEl)  imgEl.src = me.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=me';
+        if (yrb) yrb.style.display = '';
+      }
+    } else {
+      // User has no predictions yet — hide the banner
+      const yrb = document.querySelector('.your-rank-banner');
+      if (yrb) yrb.style.display = 'none';
+    }
+  } catch(e) { console.error('Leaderboard error', e); }
 }
 
 function setLBScope(scope) {
@@ -735,32 +756,53 @@ function setTimePeriod(period) {
   state.lbPeriod = period;
   document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
   event.target.classList.add('active');
+  // Re-fetch leaderboard with the selected period
+  initLeaderboard(period);
+}
+
+function _xpToLevel(xp) {
+  if (xp >= 50000) return { label: 'Legend', cls: 'legend', badge: 'L' };
+  if (xp >= 20000) return { label: 'Platinum', cls: 'platinum', badge: 'P' };
+  if (xp >= 10000) return { label: 'Gold', cls: 'gold', badge: 'G' };
+  if (xp >= 4000)  return { label: 'Silver', cls: 'silver', badge: 'S' };
+  return { label: 'Bronze', cls: 'bronze', badge: 'B' };
 }
 
 function renderLeaderboardTable(entries) {
   const container = document.getElementById('leaderboard-table');
   if (!container) return;
 
-  container.innerHTML = entries.slice(3).map((u, i) => {
-    const displayRank = i + 4;
+  if (!entries || entries.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:48px;font-size:0.9rem">No predictions yet — be the first to score XP!</div>';
+    return;
+  }
+
+  // Rows from rank 4 onwards (1-3 shown in podium)
+  const rows = entries.slice(3);
+  if (rows.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:0.85rem">Only 3 players so far — all shown in the podium above!</div>';
+    return;
+  }
+
+  container.innerHTML = rows.map((u) => {
+    const lvl = _xpToLevel(u.xp || 0);
+    const avatar = u.image || ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name || 'user'));
     return `
       <div class="mini-lb-row ${u.isMe ? 'you-row' : ''}" role="row">
-        <div class="lb-rank" style="color: var(--text-muted)">#${displayRank}</div>
+        <div class="lb-rank" style="color:var(--text-muted);font-weight:800">#${u.rank}</div>
         <div class="lb-avatar">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${u.seed}" alt="${u.name}" width="36" height="36">
-          <div class="level-badge-sm ${u.level}">${u.level[0].toUpperCase()}</div>
+          <img src="${avatar}" alt="${u.name || 'Player'}" width="36" height="36" style="border-radius:50%">
+          <div class="level-badge-sm ${lvl.cls}">${lvl.badge}</div>
         </div>
         <div class="lb-info">
           <div class="lb-name">
-            <span class="lb-name-flag">${u.flag}</span>
-            ${u.name}
-            ${u.isMe ? '<span class="level-badge ' + u.level + '">YOU</span>' : ''}
+            ${u.name || 'Player'}
+            ${u.isMe ? '<span class="level-badge ' + lvl.cls + '">YOU</span>' : ''}
           </div>
-          <div class="lb-sub">${u.acc} accuracy</div>
+          <div class="lb-sub" style="font-size:0.7rem;color:var(--text-muted)">${lvl.label}</div>
         </div>
         <div class="lb-right">
-          <div class="lb-xp">${u.xp} XP</div>
-          <div class="lb-acc" style="font-size:0.7rem; color:var(--text-muted)">${u.level}</div>
+          <div class="lb-xp" style="font-weight:800;color:var(--green)">${(u.xp||0).toLocaleString()} XP</div>
         </div>
       </div>
     `;
