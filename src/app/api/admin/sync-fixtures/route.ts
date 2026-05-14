@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import * as React from "react";
+import { sendEmail } from "@/lib/email";
+import MatchResultEmail from "@/emails/MatchResultEmail";
+import StreakMilestoneEmail from "@/emails/StreakMilestoneEmail";
+import LevelUpEmail from "@/emails/LevelUpEmail";
 import {
   getFixturesByDate,
   getFixturesByLeague,
@@ -9,6 +14,15 @@ import {
   LEAGUE_CONTINENT_MAP,
   type ApiFixture,
 } from "@/lib/football-api";
+
+/** XP level thresholds u2014 module-level so POST handler + upsertFixtures both use it */
+const LEVELS = [
+  { name: "Silver",   threshold: 3000,  next: "Gold" as string | undefined,    nextXp: 10000  as number | undefined },
+  { name: "Gold",     threshold: 10000, next: "Platinum" as string | undefined, nextXp: 20000  as number | undefined },
+  { name: "Platinum", threshold: 20000, next: "Legend" as string | undefined,   nextXp: 50000  as number | undefined },
+  { name: "Legend",   threshold: 50000, next: undefined as string | undefined,  nextXp: undefined as number | undefined },
+];
+
 
 /**
  * Agreed-upon leagues — ONLY these 5 are ever synced or shown to users.
@@ -112,16 +126,132 @@ export async function POST(req: NextRequest) {
     }
 
     // Always close stale LIVE/UPCOMING from previous days on any sync mode
+    // AND run the XP+email engine for any predictions on those matches
     if (["today", "week", "month", "update-live"].includes(mode)) {
-      const staleCount = await prisma.match.updateMany({
+      const staleMatches = await prisma.match.findMany({
         where: {
           status: { in: ["LIVE", "UPCOMING"] },
           matchDate: { lt: new Date(new Date().setHours(0, 0, 0, 0)) },
         },
-        data: { status: "COMPLETED" },
+        select: { id: true, homeTeam: true, awayTeam: true, homeScore: true, awayScore: true, firstGoalScorer: true },
       });
-      if (staleCount.count > 0) {
-        console.log(`[sync] Auto-closed ${staleCount.count} stale LIVE/UPCOMING matches from previous days`);
+
+      if (staleMatches.length > 0) {
+        // Close status
+        await prisma.match.updateMany({
+          where: { id: { in: staleMatches.map(m => m.id) } },
+          data: { status: "COMPLETED" },
+        });
+        console.log(`[sync] Auto-closed ${staleMatches.length} stale LIVE/UPCOMING matches from previous days`);
+
+        // Run XP + email engine for unsettled predictions on these matches
+        for (const staleMatch of staleMatches) {
+          if (staleMatch.homeScore === null || staleMatch.awayScore === null) continue;
+          const unsettledPreds = await prisma.prediction.findMany({
+            where: { matchId: staleMatch.id, status: { equals: null } },
+            include: { user: { select: { id: true, email: true, name: true, xp: true, streak: true, bestStreak: true, predictionCount: true, correctCount: true } } },
+          });
+          for (const pred of unsettledPreds) {
+            const hs = staleMatch.homeScore!, as = staleMatch.awayScore!;
+            const correctResult =
+              (pred.homeScore > pred.awayScore && hs > as) ||
+              (pred.homeScore < pred.awayScore && hs < as) ||
+              (pred.homeScore === pred.awayScore && hs === as);
+            const exactScore = pred.homeScore === hs && pred.awayScore === as;
+            const correctScorer = !!pred.firstGoalScorer && !!staleMatch.firstGoalScorer &&
+              pred.firstGoalScorer.trim().toLowerCase() === staleMatch.firstGoalScorer.trim().toLowerCase();
+
+            let baseXp = 0;
+            if (correctResult) baseXp += 50;
+            if (exactScore)    baseXp += 150;
+            if (correctScorer) baseXp += 100;
+            const multiplier = 1 + ((pred.confidence - 50) / 50);
+            let xp = Math.round(baseXp * multiplier);
+            if (pred.isDouble) xp *= 2;
+
+            const newStreak = correctResult ? pred.user.streak + 1 : 0;
+            const newBest   = Math.max(pred.user.bestStreak, newStreak);
+            let streakBonus = 0;
+            if (correctResult) {
+              if (newStreak === 10) streakBonus = 500;
+              else if (newStreak === 5) streakBonus = 150;
+              else if (newStreak === 3) streakBonus = 50;
+            }
+            xp += streakBonus;
+
+            await prisma.prediction.update({
+              where: { id: pred.id },
+              data: { xpEarned: xp, status: correctResult ? "correct" : "wrong" },
+            });
+            const oldXp = pred.user.xp ?? 0;
+            const updatedUser = await prisma.user.update({
+              where: { id: pred.userId },
+              data: {
+                xp:         { increment: xp },
+                streak:     newStreak,
+                bestStreak: newBest,
+                // Note: predictionCount/correctCount are NOT incremented here.
+                // The stale-close path settles predictions that were already counted
+                // when the user created them. Incrementing here would double-count.
+              },
+              select: { email: true, name: true, xp: true },
+            });
+
+            if (updatedUser.email) {
+              sendEmail({
+                to: updatedUser.email,
+                subject: exactScore
+                  ? `🎯 Perfect call! ${staleMatch.homeTeam} ${hs}–${as} ${staleMatch.awayTeam}`
+                  : correctResult
+                  ? `✅ Result correct! ${staleMatch.homeTeam} vs ${staleMatch.awayTeam}`
+                  : `⚽ Match result: ${staleMatch.homeTeam} ${hs}–${as} ${staleMatch.awayTeam}`,
+                react: React.createElement(MatchResultEmail, {
+                  name: updatedUser.name ?? "there",
+                  homeTeam: staleMatch.homeTeam,
+                  awayTeam: staleMatch.awayTeam,
+                  actualScore: `${hs} – ${as}`,
+                  predictedScore: `${pred.homeScore} – ${pred.awayScore}`,
+                  resultCorrect: correctResult,
+                  scoreCorrect: exactScore,
+                  xpEarned: xp,
+                  newTotalXp: updatedUser.xp,
+                  firstGoalScorer: pred.firstGoalScorer ?? undefined,
+                  scorerCorrect: correctScorer || undefined,
+                }),
+              }).catch((err) => console.error(`[email] Failed to send stale-close result email to ${updatedUser.email}:`, err));
+
+              // Streak milestone email
+              if (correctResult && [3, 5, 10].includes(newStreak) && streakBonus > 0) {
+                sendEmail({
+                  to: updatedUser.email,
+                  subject: `🔥 ${newStreak}-game streak! +${streakBonus} XP bonus earned`,
+                  react: React.createElement(StreakMilestoneEmail, {
+                    name: updatedUser.name ?? "there",
+                    streak: newStreak,
+                    bonusXp: streakBonus,
+                    newTotalXp: updatedUser.xp,
+                  }),
+                }).catch((err) => console.error(`[email] Failed to send streak email to ${updatedUser.email}:`, err));
+              }
+
+              // Level-up email
+              const levelUp = LEVELS.find(l => oldXp < l.threshold && updatedUser.xp >= l.threshold);
+              if (levelUp) {
+                sendEmail({
+                  to: updatedUser.email,
+                  subject: `${levelUp.name === "Legend" ? "👑" : levelUp.name === "Platinum" ? "💎" : levelUp.name === "Gold" ? "🥇" : "🥈"} You've reached ${levelUp.name} on Matchkoo!`,
+                  react: React.createElement(LevelUpEmail, {
+                    name: updatedUser.name ?? "there",
+                    newLevel: levelUp.name,
+                    newTotalXp: updatedUser.xp,
+                    nextLevel: levelUp.next,
+                    nextLevelXp: levelUp.nextXp,
+                  }),
+                }).catch((err) => console.error(`[email] Failed to send level-up email to ${updatedUser.email}:`, err));
+              }
+            }
+          }
+        }
       }
     }
 
@@ -153,6 +283,11 @@ export async function GET(req: NextRequest) {
 async function upsertFixtures(fixtures: ApiFixture[]) {
   let created = 0, updated = 0, skipped = 0;
 
+  // Pre-fetch admin once — avoids N+1 inside the fixture loop
+  const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
+
+  // Level thresholds are defined at module level (above)
+
   for (const f of fixtures) {
     const externalId = `apif-${f.fixture.id}`;
     const status = toMatchStatus(f.fixture.status.short);
@@ -179,8 +314,7 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
     });
 
     if (!tournament) {
-      // Find system admin to assign as creator
-      const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
+      // Use pre-fetched admin
       if (!admin) { skipped++; continue; }
 
       tournament = await prisma.tournament.create({
@@ -223,7 +357,7 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
       if (status === "COMPLETED" && existing.status !== "COMPLETED" && homeScore !== null && awayScore !== null) {
         const predictions = await prisma.prediction.findMany({
           where: { matchId: existing.id },
-          include: { user: { select: { id: true, streak: true, bestStreak: true, predictionCount: true, correctCount: true } } },
+          include: { user: { select: { id: true, xp: true, streak: true, bestStreak: true, predictionCount: true, correctCount: true } } },
         });
 
         for (const pred of predictions) {
@@ -274,7 +408,8 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
           });
 
           // ── 7. Persist user XP + stats ───────────────────────────────────
-          await prisma.user.update({
+          const oldXp = pred.user.xp ?? 0; // capture before increment
+          const updatedUser = await prisma.user.update({
             where: { id: pred.userId },
             data: {
               xp:              { increment: xp },
@@ -283,7 +418,64 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
               predictionCount: newPredCount,
               correctCount:    newCorrect,
             },
+            select: { email: true, name: true, xp: true },
           });
+
+          // ── 8. Send match result email ────────────────────────────────────
+          if (updatedUser.email) {
+            sendEmail({
+              to: updatedUser.email,
+              subject: exactScore
+                ? `🎯 Perfect call! ${existing.homeTeam} ${homeScore}–${awayScore} ${existing.awayTeam}`
+                : correctResult
+                ? `✅ Result correct! ${existing.homeTeam} vs ${existing.awayTeam}`
+                : `⚽ Match result: ${existing.homeTeam} ${homeScore}–${awayScore} ${existing.awayTeam}`,
+              react: React.createElement(MatchResultEmail, {
+                name:          updatedUser.name ?? "there",
+                homeTeam:      existing.homeTeam,
+                awayTeam:      existing.awayTeam,
+                actualScore:   `${homeScore} – ${awayScore}`,
+                predictedScore:`${pred.homeScore} – ${pred.awayScore}`,
+                resultCorrect: correctResult,
+                scoreCorrect:  exactScore,
+                xpEarned:      xp,
+                newTotalXp:    updatedUser.xp,
+                firstGoalScorer: pred.firstGoalScorer ?? undefined,
+                scorerCorrect:   correctScorer || undefined,
+              }),
+            }).catch((err) => console.error(`[email] Failed to send result email to ${updatedUser.email}:`, err));
+
+            // ── 9. Streak milestone email ────────────────────────────────
+            if (correctResult && [3, 5, 10].includes(newStreak) && streakBonus > 0) {
+              sendEmail({
+                to: updatedUser.email,
+                subject: `🔥 ${newStreak}-game streak! +${streakBonus} XP bonus earned`,
+                react: React.createElement(StreakMilestoneEmail, {
+                  name:        updatedUser.name ?? "there",
+                  streak:      newStreak,
+                  bonusXp:     streakBonus,
+                  newTotalXp:  updatedUser.xp,
+                }),
+              }).catch((err) => console.error(`[email] Failed to send streak email to ${updatedUser.email}:`, err));
+            }
+
+            // ── 10. Level-up email ───────────────────────────────────────
+            const newXp = updatedUser.xp;
+            const levelUp = LEVELS.find(l => oldXp < l.threshold && newXp >= l.threshold);
+            if (levelUp) {
+              sendEmail({
+                to: updatedUser.email,
+                subject: `${levelUp.name === "Legend" ? "👑" : levelUp.name === "Platinum" ? "💎" : levelUp.name === "Gold" ? "🥇" : "🥈"} You've reached ${levelUp.name} on Matchkoo!`,
+                react: React.createElement(LevelUpEmail, {
+                  name:        updatedUser.name ?? "there",
+                  newLevel:    levelUp.name,
+                  newTotalXp:  newXp,
+                  nextLevel:   levelUp.next,
+                  nextLevelXp: levelUp.nextXp,
+                }),
+              }).catch((err) => console.error(`[email] Failed to send level-up email to ${updatedUser.email}:`, err));
+            }
+          }
         }
       }
       

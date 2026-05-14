@@ -15,6 +15,9 @@ export default function Navbar() {
   // The full app lives at /app — don't show this navbar there either
   if (pathname === "/app") return null;
 
+  // Auth pages are fully immersive — no navbar
+  if (pathname === "/login" || pathname === "/register") return null;
+
   return (
     <nav style={{ background: "#090D1A", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import * as React from "react";
+import { sendEmail } from "@/lib/email";
+import MatchResultEmail from "@/emails/MatchResultEmail";
 
 // PATCH /api/admin/matches/[id] — set result and trigger XP calculation
 export async function PATCH(
@@ -27,7 +30,10 @@ export async function PATCH(
 
   // If match completed, calculate XP for all predictions
   if (status === "COMPLETED" && homeScore !== undefined && awayScore !== undefined) {
-    const predictions = await prisma.prediction.findMany({ where: { matchId: id } });
+    const predictions = await prisma.prediction.findMany({
+      where: { matchId: id },
+      include: { user: { select: { id: true, email: true, name: true } } },
+    });
 
     for (const pred of predictions) {
       let xp = 0;
@@ -36,7 +42,7 @@ export async function PATCH(
         (pred.homeScore < pred.awayScore && homeScore < awayScore) ||
         (pred.homeScore === pred.awayScore && homeScore === awayScore);
       const exactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
-      const correctFGS = firstGoalScorer && pred.firstGoalScorer?.toLowerCase() === firstGoalScorer.toLowerCase();
+      const correctFGS = !!(firstGoalScorer && pred.firstGoalScorer?.toLowerCase() === firstGoalScorer.toLowerCase());
 
       if (exactScore) xp += 30;
       else if (correctResult) xp += 10;
@@ -52,8 +58,35 @@ export async function PATCH(
       await prisma.prediction.update({ where: { id: pred.id }, data: { xpEarned: xp } });
 
       // Update user total XP
-      if (xp > 0) {
-        await prisma.user.update({ where: { id: pred.userId }, data: { xp: { increment: xp } } });
+      const updatedUser = await prisma.user.update({
+        where: { id: pred.userId },
+        data: { xp: { increment: xp } },
+        select: { xp: true },
+      });
+
+      // Send match result email — log failures instead of swallowing them
+      if (pred.user.email) {
+        sendEmail({
+          to: pred.user.email,
+          subject: exactScore
+            ? `🎯 Perfect call! ${match.homeTeam} ${homeScore}–${awayScore} ${match.awayTeam}`
+            : correctResult
+            ? `✅ Result correct! ${match.homeTeam} vs ${match.awayTeam}`
+            : `⚽ Match result: ${match.homeTeam} ${homeScore}–${awayScore} ${match.awayTeam}`,
+          react: React.createElement(MatchResultEmail, {
+            name:           pred.user.name ?? "there",
+            homeTeam:       match.homeTeam,
+            awayTeam:       match.awayTeam,
+            actualScore:    `${homeScore} – ${awayScore}`,
+            predictedScore: `${pred.homeScore} – ${pred.awayScore}`,
+            resultCorrect:  correctResult,
+            scoreCorrect:   exactScore,
+            xpEarned:       xp,
+            newTotalXp:     updatedUser.xp,
+            firstGoalScorer: pred.firstGoalScorer ?? undefined,
+            scorerCorrect:   correctFGS || undefined,
+          }),
+        }).catch((err) => console.error(`[email] Failed to send result email to ${pred.user.email}:`, err));
       }
     }
   }

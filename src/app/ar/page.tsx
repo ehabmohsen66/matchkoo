@@ -28,8 +28,8 @@ export default function HomeAr() {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
         EN
       </a>
-      <a href="/login" className="btn-ghost">تسجيل الدخول</a>
-      <a href="/register" className="btn-primary">
+      <a href="/ar/login" className="btn-ghost">تسجيل الدخول</a>
+      <a href="/ar/register" className="btn-primary">
         العب مجاناً
         <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fillRule="evenodd" d="M17 10a.75.75 0 00-.75-.75H5.612l4.158-3.96a.75.75 0 00-1.04-1.08l-5.5 5.25a.75.75 0 000 1.08l5.5 5.25a.75.75 0 101.04-1.08L5.612 10.75H16.25A.75.75 0 0017 10z" clipRule="evenodd"/></svg>
       </a>

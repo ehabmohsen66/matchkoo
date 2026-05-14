@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="KickOff — The world's #1 football prediction and social gaming platform. Predict matches, earn XP, climb global leaderboards, and compete with friends.">
-  <title>KickOff — Football Prediction Platform</title>
+  <meta name="description" content="Matchkoo — The world's #1 football prediction and social gaming platform. Predict matches, earn XP, climb global leaderboards, and compete with friends.">
+  <title>Matchkoo — Football Prediction Platform</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Russo+One&family=Cairo:wght@400;600;700;800&family=Noto+Kufi+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.v6.css">
-  <link rel="stylesheet" href="css/animations.css?v=6">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Russo+One&family=Cairo:wght@400;600;700&family=Noto+Kufi+Arabic:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.v6.css?v=7">
+  <link rel="stylesheet" href="/css/animations.css?v=6">
   <script type="importmap">
   {
     "imports": {
@@ -25,8 +27,8 @@
 
   <!-- ─── SIDEBAR NAV ─────────────────────────────────────────────── -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo" onclick="navigate('home')" style="cursor:pointer;padding:8px 12px 16px;text-align:center;">
-      <img src="/matchkoo-logo.png" alt="Matchkoo" style="height:90px;object-fit:contain;max-width:150px;display:block;margin:0 auto;"
+    <div class="sidebar-logo" onclick="navigate('home')" style="cursor:pointer;padding:12px 16px;text-align:center;">
+      <img src="/matchkoo-logo.png" alt="Matchkoo" style="width:100%;max-width:200px;height:auto;object-fit:contain;display:block;margin:0 auto;"
            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
       <div style="display:none;align-items:center;justify-content:center;gap:8px">
         <svg viewBox="0 0 32 32" fill="none" width="34" height="34"><circle cx="16" cy="16" r="14" stroke="#29bf12" stroke-width="2"/><path d="M16 5L18.5 12H26L20 16.5L22.5 23.5L16 19L9.5 23.5L12 16.5L6 12H13.5Z" fill="#29bf12"/></svg>
@@ -40,9 +42,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         <span>Home</span>
       </button>
-      <button class="nav-item" data-page="discover" onclick="navigate('discover')" id="nav-discover">
+      <button class="nav-item" data-page="leagues" onclick="navigate('leagues')" id="nav-leagues">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <span>Discover</span>
+        <span>Leagues & Cups</span>
       </button>
       <button class="nav-item" data-page="predictions" onclick="navigate('predictions')" id="nav-predictions">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -136,7 +138,7 @@
       </select>
     </div>
     <div class="mobile-logo" onclick="navigate('home')" style="cursor:pointer">
-      <img src="/matchkoo-logo.png" alt="Matchkoo" style="height:36px;object-fit:contain;"
+      <img src="/matchkoo-logo.png" alt="Matchkoo" style="height:44px;object-fit:contain;"
            onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\'font-family:Russo One,sans-serif;color:#fff;font-size:0.95rem;letter-spacing:1px\'>MATCHKOO</span>')">
     </div>
     <div class="mobile-streak">
@@ -195,7 +197,7 @@
           <h2 class="section-title">
             <span class="live-dot"></span> Live Now
           </h2>
-          <button class="see-all-btn" onclick="navigate('discover')">See all</button>
+          <button class="see-all-btn" onclick="navigate('leagues')">See all</button>
         </div>
         <div class="match-cards-scroll" id="live-now-cards">
           <div style="color:rgba(255,255,255,0.3);font-size:0.85rem;padding:20px 0;">Loading live matches...</div>
@@ -206,7 +208,7 @@
       <section class="content-section">
         <div class="section-header">
           <h2 class="section-title">Today's Fixtures</h2>
-          <button class="see-all-btn" onclick="navigate('discover')">See all</button>
+          <button class="see-all-btn" onclick="navigate('leagues')">See all</button>
         </div>
         <div class="fixtures-list" id="fixtures-list">
           <!-- Injected by JS -->
@@ -292,9 +294,9 @@
     </div>
 
     <!-- ════════════════ DISCOVER PAGE ════════════════ -->
-    <div class="page hidden" id="page-discover">
+    <div class="page hidden" id="page-leagues">
       <div class="page-header-block">
-        <h1 class="page-title">Discover Matches</h1>
+        <h1 class="page-title">Leagues & Cups</h1>
         <p class="page-sub">Browse leagues/Cups across every continent</p>
       </div>
 
@@ -303,32 +305,32 @@
         <button class="continent-card active-continent" onclick="selectContinent('europe')" id="cont-europe">
           <div class="continent-emoji">🌍</div>
           <span>Europe</span>
-          <div class="continent-count">48 leagues</div>
+          <div class="continent-count" id="count-europe">10 leagues</div>
         </button>
         <button class="continent-card" onclick="selectContinent('africa')" id="cont-africa">
           <div class="continent-emoji">🌍</div>
           <span>Africa</span>
-          <div class="continent-count">32 leagues</div>
+          <div class="continent-count" id="count-africa">6 leagues</div>
         </button>
         <button class="continent-card" onclick="selectContinent('americas')" id="cont-americas">
           <div class="continent-emoji">🌎</div>
           <span>Americas</span>
-          <div class="continent-count">28 leagues</div>
+          <div class="continent-count" id="count-americas">6 leagues</div>
         </button>
         <button class="continent-card" onclick="selectContinent('asia')" id="cont-asia">
           <div class="continent-emoji">🌏</div>
           <span>Asia</span>
-          <div class="continent-count">35 leagues</div>
+          <div class="continent-count" id="count-asia">6 leagues</div>
         </button>
         <button class="continent-card" onclick="selectContinent('oceania')" id="cont-oceania">
           <div class="continent-emoji">🌏</div>
           <span>Oceania</span>
-          <div class="continent-count">8 leagues</div>
+          <div class="continent-count" id="count-oceania">3 leagues</div>
         </button>
         <button class="continent-card world-card" onclick="selectContinent('world')" id="cont-world">
           <div class="continent-emoji">🌐</div>
           <span>World Cup / Intl</span>
-          <div class="continent-count">Special</div>
+          <div class="continent-count" id="count-world">Special</div>
         </button>
       </div>
 
@@ -393,6 +395,12 @@
         <button class="filter-tab" onclick="filterPreds('all')">All Time</button>
       </div>
 
+      <div style="padding: 0 20px 16px;">
+        <select id="pred-league-filter" class="form-input" onchange="applyLocalPredFilter()" style="padding:10px 14px;font-size:0.85rem;background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1)">
+          <option value="ALL">All Leagues & Cups</option>
+        </select>
+      </div>
+
       <div class="predictions-list" id="predictions-list">
         <!-- Injected by JS -->
       </div>
@@ -406,9 +414,6 @@
 
       <div class="lb-scope-tabs">
         <button class="lb-tab active" onclick="setLBScope('global')" id="lb-global">🌍 Global</button>
-        <button class="lb-tab" onclick="setLBScope('continental')" id="lb-continental">🌍 Africa</button>
-        <button class="lb-tab" onclick="setLBScope('league')" id="lb-league">🏆 League</button>
-        <button class="lb-tab" onclick="setLBScope('friends')" id="lb-friends">👥 Friends</button>
         <button class="lb-tab" onclick="setLBScope('myleagues')" id="lb-myleagues">⭐ My Leagues</button>
       </div>
 
@@ -643,9 +648,37 @@
         <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:4px">Vote once per day per club · Earn +50 XP each vote</p>
       </div>
 
-      <!-- Club Voting Section -->
-      <div style="background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:24px;border:1px solid rgba(255,255,255,0.06)">
-        <div style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px">Browse & Vote by League</div>
+      <!-- Continent Selector -->
+      <div class="continent-grid" id="vote-continent-grid">
+        <button class="continent-card active-continent" onclick="selectVoteContinent('europe')" id="vote-cont-europe">
+          <div class="continent-emoji">🌍</div>
+          <span>Europe</span>
+        </button>
+        <button class="continent-card" onclick="selectVoteContinent('africa')" id="vote-cont-africa">
+          <div class="continent-emoji">🌍</div>
+          <span>Africa</span>
+        </button>
+        <button class="continent-card" onclick="selectVoteContinent('americas')" id="vote-cont-americas">
+          <div class="continent-emoji">🌎</div>
+          <span>Americas</span>
+        </button>
+        <button class="continent-card" onclick="selectVoteContinent('asia')" id="vote-cont-asia">
+          <div class="continent-emoji">🌏</div>
+          <span>Asia</span>
+        </button>
+        <button class="continent-card" onclick="selectVoteContinent('oceania')" id="vote-cont-oceania">
+          <div class="continent-emoji">🌏</div>
+          <span>Oceania</span>
+        </button>
+        <button class="continent-card world-card" onclick="selectVoteContinent('world')" id="vote-cont-world">
+          <div class="continent-emoji">🌐</div>
+          <span>World Cup / Intl</span>
+        </button>
+      </div>
+
+      <!-- Leagues List (for voting) -->
+      <div class="leagues-section" id="vote-leagues-section">
+        <h3 class="sub-section-title" id="vote-leagues-title">European Leagues</h3>
         <div id="vote-leagues-container">
           <div style="text-align:center;color:var(--text-muted);padding:32px">Loading clubs...</div>
         </div>
@@ -807,12 +840,12 @@
               <div class="player-grid" id="lineup-away-subs"></div>
             </div>
             <!-- No lineup yet message -->
-            <div id="no-lineup-msg" style="display:none;text-align:center;padding:12px;color:rgba(255,255,255,0.35);font-size:0.82rem">
-              ⏳ Lineup not released yet — type a name below
+            <div id="no-lineup-msg" style="display:none;text-align:center;padding:16px 12px;color:rgba(255,255,255,0.35);font-size:0.82rem">
+              ⏳ Lineup not released yet — usually available ~1 hour before kickoff
             </div>
           </div>
-          <!-- Fallback text input (shown when no lineup + as selected display) -->
-          <input type="text" class="scorer-input" id="scorer-select" placeholder="Type player name (Optional)" style="margin-top:8px;width:100%;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;font-size:0.88rem;font-family:inherit;box-sizing:border-box">
+          <!-- Hidden value store for the selected scorer (set by player picker) -->
+          <input type="hidden" id="scorer-select">
           <!-- Live events timeline -->
           <div id="match-events-timeline" style="display:none;margin-top:12px"></div>
         </div>
@@ -825,8 +858,8 @@
               <span class="pred-xp-badge">75 XP</span>
             </div>
             <div class="toggle-group">
-              <button class="toggle-btn active-toggle" onclick="toggleBTTS('yes', this)">Yes</button>
-              <button class="toggle-btn" onclick="toggleBTTS('no', this)">No</button>
+              <button class="toggle-btn active-toggle" id="btts-yes-btn" onclick="toggleBTTS('yes', this)">Yes</button>
+              <button class="toggle-btn" id="btts-no-btn" onclick="toggleBTTS('no', this)">No</button>
             </div>
           </div>
           <div class="pred-section pred-half">
@@ -834,9 +867,13 @@
               <span class="pred-section-title">Total Goals</span>
               <span class="pred-xp-badge">75 XP</span>
             </div>
-            <div class="toggle-group">
-              <button class="toggle-btn active-toggle" onclick="toggleGoals('over', this)">Over 2.5</button>
-              <button class="toggle-btn" onclick="toggleGoals('under', this)">Under 2.5</button>
+            <div class="toggle-group" id="goals-picker" style="display:flex;flex-wrap:wrap;gap:6px">
+              <button class="toggle-btn active-toggle goals-btn" onclick="selectGoals(0, this)">0</button>
+              <button class="toggle-btn goals-btn" onclick="selectGoals(1, this)">1</button>
+              <button class="toggle-btn goals-btn" onclick="selectGoals(2, this)">2</button>
+              <button class="toggle-btn goals-btn" onclick="selectGoals(3, this)">3</button>
+              <button class="toggle-btn goals-btn" onclick="selectGoals(4, this)">4</button>
+              <button class="toggle-btn goals-btn" onclick="selectGoals(5, this)">5+</button>
             </div>
           </div>
         </div>
@@ -871,15 +908,15 @@
 
   <!-- ─── CREATE LEAGUE MODAL ────────────────────────────────────── -->
   <div class="modal-overlay hidden" id="create-league-modal">
-    <div class="modal-sheet create-league-sheet" onclick="event.stopPropagation()">
+    <div class="modal-sheet create-league-sheet" onclick="event.stopPropagation()" style="display:flex;flex-direction:column;max-height:90vh;overflow:hidden;">
       <div class="modal-drag-handle"></div>
-      <div class="modal-header">
+      <div class="modal-header" style="flex-shrink:0;">
         <h3 class="create-league-title">Create Mini League</h3>
         <button class="modal-close-btn" onclick="closeCreateLeague()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
-      <div class="create-league-form">
+      <div class="create-league-form" style="flex:1;overflow-y:auto;padding-bottom:8px;">
         <div class="form-group">
           <label class="form-label">League Name</label>
           <input type="text" class="form-input" placeholder="e.g. Office Fantasy PL 2025" id="league-name-input">
@@ -887,11 +924,11 @@
         <div class="form-group">
           <label class="form-label">Competitions to Include</label>
           <div class="comp-checkboxes">
-            <label class="comp-check"><input type="checkbox" checked> Premier League</label>
-            <label class="comp-check"><input type="checkbox"> La Liga</label>
-            <label class="comp-check"><input type="checkbox"> Champions League</label>
-            <label class="comp-check"><input type="checkbox"> AFCON 2026</label>
-            <label class="comp-check"><input type="checkbox"> World Cup 2026</label>
+            <label class="comp-check"><input type="radio" name="mini_league_comp" value="premier_league" checked> Premier League</label>
+            <label class="comp-check"><input type="radio" name="mini_league_comp" value="la_liga"> La Liga</label>
+            <label class="comp-check"><input type="radio" name="mini_league_comp" value="champions_league"> Champions League</label>
+            <label class="comp-check"><input type="radio" name="mini_league_comp" value="egyptian_premier_league"> Egyptian Premier League</label>
+            <label class="comp-check"><input type="radio" name="mini_league_comp" value="world_cup"> World Cup</label>
           </div>
         </div>
         <div class="form-group">
@@ -932,8 +969,9 @@
   <!-- ─── XP CELEBRATION OVERLAY ─────────────────────────────────── -->
   <div class="celebration-overlay hidden" id="celebration-overlay">
     <div class="celebration-content">
-      <div class="celebration-icon">⚽</div>
-      <div class="celebration-title">Correct Prediction!</div>
+      <div class="celebration-icon">🔒</div>
+      <div class="celebration-title">Prediction Locked!</div>
+      <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-bottom:8px">Potential XP if correct</div>
       <div class="xp-earned-badge" id="xp-earned-badge">+500 XP</div>
       <div class="celebration-confetti" id="confetti-container"></div>
     </div>
@@ -945,9 +983,9 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span>Home</span>
     </button>
-    <button class="mobile-nav-item" onclick="navigate('discover')" id="mnav-discover">
+    <button class="mobile-nav-item" onclick="navigate('leagues')" id="mnav-leagues">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <span>Discover</span>
+      <span>Leagues & Cups</span>
     </button>
     <button class="mobile-nav-item" onclick="navigate('predictions')" id="mnav-predictions">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -998,10 +1036,10 @@
     </div>
   </div>
 
-  <script src="js/backend_api.js?v=2.6"></script>
-  <script src="js/teams_db.js?v=2.6"></script>
-  <script src="js/data.js?v=2.6"></script>
-  <script src="js/i18n.js?v=2.6"></script>
-  <script src="js/app.js?v=2.6"></script>
+  <script src="/js/backend_api.js?v=3.0"></script>
+  <script src="/js/teams_db.js?v=2.6"></script>
+  <script src="/js/data.js?v=2.8"></script>
+  <script src="/js/i18n.js?v=2.6"></script>
+  <script src="/js/app.js?v=4.4"></script>
 </body>
 </html>

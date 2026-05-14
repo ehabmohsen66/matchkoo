@@ -2,7 +2,7 @@
    KICKOFF — PREMIUM DARK GAMING DESIGN SYSTEM
    Style: Dark Mode / Controlled Accents (like landing page)
    Palette: #29BF12 #ABFF4F #08BDBD #F21B3F #FF9914
-   Fonts: Russo One (headings) + Nunito (body)
+   Fonts: Russo One (headings) + Chakra Petch (body)
 ═══════════════════════════════════════════════════════════════ */
 
 /* ─── TOKENS ────────────────────────────────────────────────── */
@@ -67,7 +67,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
-  font-family: 'Nunito', 'Inter', 'Segoe UI', sans-serif;
+  font-family: 'Chakra Petch', 'Inter', 'Segoe UI', sans-serif;
   background: var(--bg-page);
   color: var(--text-primary);
   min-height: 100vh;
@@ -148,7 +148,7 @@ a { text-decoration: none; color: inherit; }
   padding: 12px 14px;
   border-radius: var(--radius-md);
   color: var(--text-secondary);
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   font-weight: 700;
   transition: all 0.2s ease;
   width: 100%;
@@ -226,8 +226,8 @@ a { text-decoration: none; color: inherit; }
 .level-badge-sm.legend   { background: linear-gradient(135deg, var(--orange), var(--red)); color: #fff; }
 
 .user-info-sm { flex: 1; min-width: 0; }
-.user-name-sm { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.user-xp-sm { font-size: 0.72rem; color: var(--green); font-weight: 700; }
+.user-name-sm { font-size: 0.88rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-xp-sm { font-size: 0.78rem; color: var(--green); font-weight: 700; }
 
 .streak-indicator {
   display: flex;
@@ -254,7 +254,7 @@ a { text-decoration: none; color: inherit; }
   cursor: pointer;
   outline: none;
   transition: border-color 0.2s;
-  font-family: 'Nunito', sans-serif;
+  font-family: 'Chakra Petch', sans-serif;
   width: calc(100% - 20px);
 }
 .lang-selector:focus { border-color: var(--cyan); }
@@ -362,7 +362,7 @@ a { text-decoration: none; color: inherit; }
 .streak-stat { flex-direction: row; gap: 6px; align-items: center; }
 .stat-num { font-size: 1.5rem; color: var(--text-primary); }
 .stat-num.fire { color: var(--orange); }
-.stat-lbl { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.stat-lbl { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
 .hero-divider { width: 1px; height: 40px; background: var(--border); margin: 0 8px; }
 
 /* ─── DAILY BONUS BANNER ────────────────────────────────────── */
@@ -506,8 +506,8 @@ a { text-decoration: none; color: inherit; }
   animation: pulse-live 1.2s ease-in-out infinite;
   flex-shrink: 0;
 }
-.match-league { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
-.match-minute { font-size: 0.75rem; font-weight: 800; }
+.match-league { font-size: 0.76rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.match-minute { font-size: 0.8rem; font-weight: 800; }
 .live-badge { color: var(--red); animation: pulse-text 1.5s ease-in-out infinite; font-weight: 800; }
 
 .match-teams {
@@ -520,7 +520,7 @@ a { text-decoration: none; color: inherit; }
 .team-block, .team-block-right { display: flex; align-items: center; gap: 8px; flex: 1; }
 .team-block-right { flex-direction: row-reverse; }
 .team-badge img, .team-badge svg { border-radius: 50%; }
-.team-name { font-size: 0.82rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.team-name { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .team-score { font-family: 'Russo One', sans-serif; font-size: 1.7rem; color: var(--text-primary); min-width: 24px; text-align: center; }
 .vs-block { font-size: 0.68rem; color: var(--text-muted); font-weight: 800; flex-shrink: 0; }
 
@@ -572,8 +572,8 @@ a { text-decoration: none; color: inherit; }
   flex-shrink: 0;
 }
 .fixture-teams { flex: 1; }
-.fixture-league-name { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-.fixture-team-names { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin-top: 2px; }
+.fixture-league-name { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.fixture-team-names { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-top: 2px; }
 .fixture-time { font-size: 0.82rem; font-weight: 800; color: var(--cyan); font-family: 'Russo One', sans-serif; flex-shrink: 0; }
 .fixture-pred-indicator {
   width: 8px; height: 8px;
@@ -612,12 +612,12 @@ a { text-decoration: none; color: inherit; }
 .lb-avatar { position: relative; flex-shrink: 0; }
 .lb-avatar img { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--border); }
 .lb-info { flex: 1; min-width: 0; }
-.lb-name { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; flex-wrap: wrap; }
+.lb-name { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; font-weight: 700; flex-wrap: wrap; }
 .lb-name-flag { font-size: 1rem; }
-.lb-sub  { font-size: 0.7rem; color: var(--text-muted); }
+.lb-sub  { font-size: 0.78rem; color: var(--text-muted); }
 .lb-right{ text-align: right; flex-shrink: 0; }
-.lb-xp  { font-size: 0.85rem; font-weight: 800; color: var(--orange); }
-.lb-acc { font-size: 0.7rem; color: var(--green); font-weight: 700; }
+.lb-xp  { font-size: 0.9rem; font-weight: 800; color: var(--orange); }
+.lb-acc { font-size: 0.78rem; color: var(--green); font-weight: 700; }
 
 .level-badge {
   font-size: 0.6rem;
@@ -645,7 +645,7 @@ a { text-decoration: none; color: inherit; }
   gap: 12px;
   line-height: 1.1;
 }
-.page-sub { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; font-weight: 600; }
+.page-sub { font-size: 0.88rem; color: var(--text-muted); margin-top: 4px; font-weight: 600; }
 
 /* ─── HOME LAYOUT ───────────────────────────────────────────── */
 .home-two-col { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
@@ -677,8 +677,8 @@ a { text-decoration: none; color: inherit; }
   border: 1.5px solid var(--border);
 }
 .challenge-info { flex: 1; min-width: 0; }
-.challenge-name { font-weight: 800; font-size: 0.9rem; margin-bottom: 4px; color: var(--text-primary); }
-.challenge-desc { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px; }
+.challenge-name { font-weight: 800; font-size: 0.95rem; margin-bottom: 4px; color: var(--text-primary); }
+.challenge-desc { font-size: 0.83rem; color: var(--text-secondary); margin-bottom: 10px; }
 .progress-bar { height: 8px; background: var(--bg-page); border-radius: 4px; overflow: hidden; }
 .progress-fill {
   height: 100%;

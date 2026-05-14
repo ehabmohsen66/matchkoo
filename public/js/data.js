@@ -9,12 +9,12 @@ const DATA = {
     europe: {
       label: 'Europe',
       leagues: [
-        { id: 'epl', name: 'Premier League', country: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', emoji: '⚽', matches: 48, color: '#38003C' },
-        { id: 'laliga', name: 'La Liga', country: '🇪🇸', emoji: '🇪🇸', matches: 42, color: '#EE1C25' },
+        { id: 'epl', name: 'Premier League', country: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', emoji: '⚽', logo: 'https://media.api-sports.io/football/leagues/39.png', matches: 48, color: '#38003C' },
+        { id: 'laliga', name: 'La Liga', country: '🇪🇸', emoji: '🇪🇸', logo: 'https://media.api-sports.io/football/leagues/140.png', matches: 42, color: '#EE1C25' },
         { id: 'bundesliga', name: 'Bundesliga', country: '🇩🇪', emoji: '🇩🇪', matches: 38, color: '#D3010C', comingSoon: true },
         { id: 'seriea', name: 'Serie A', country: '🇮🇹', emoji: '🇮🇹', matches: 44, color: '#024494', comingSoon: true },
         { id: 'ligue1', name: 'Ligue 1', country: '🇫🇷', emoji: '🇫🇷', matches: 36, color: '#182A4E', comingSoon: true },
-        { id: 'ucl', name: 'Champions League', country: '🇪🇺', emoji: '⭐', matches: 22, color: '#1B0E60' },
+        { id: 'ucl', name: 'Champions League', country: '🇪🇺', emoji: '⭐', logo: 'https://media.api-sports.io/football/leagues/2.png', matches: 22, color: '#1B0E60' },
         { id: 'uel', name: 'Europa League', country: '🇪🇺', emoji: '🟠', matches: 18, color: '#FF6900', comingSoon: true },
         { id: 'eredivisie', name: 'Eredivisie', country: '🇳🇱', emoji: '🇳🇱', matches: 30, color: '#EF7D00', comingSoon: true },
         { id: 'primeirliga', name: 'Primeira Liga', country: '🇵🇹', emoji: '🇵🇹', matches: 34, color: '#009B3A', comingSoon: true },
@@ -24,7 +24,7 @@ const DATA = {
     africa: {
       label: 'Africa',
       leagues: [
-        { id: 'egipt', name: 'Egyptian Premier League', country: '🇪🇬', emoji: '🇪🇬', matches: 30, color: '#C09300' },
+        { id: 'egipt', name: 'Egyptian Premier League', country: '🇪🇬', emoji: '🇪🇬', logo: 'https://tmssl.akamaized.net//images/logo/header/egy1.png?lm=1741338264', matches: 30, color: '#C09300' },
         { id: 'caf-cl', name: 'CAF Champions League', country: '🌍', emoji: '🏆', matches: 24, color: '#009A44', comingSoon: true },
         { id: 'afcon', name: 'AFCON 2026', country: '🌍', emoji: '🇲🇦', matches: 32, color: '#C1272D', comingSoon: true },
         { id: 'npfl', name: 'NPFL (Nigeria)', country: '🇳🇬', emoji: '🇳🇬', matches: 28, color: '#008751', comingSoon: true },
@@ -65,7 +65,7 @@ const DATA = {
     world: {
       label: 'World Cup / Intl',
       leagues: [
-        { id: 'wc2026', name: 'FIFA World Cup 2026', country: '🌍', emoji: '🏆', matches: 64, color: '#17458F' },
+        { id: 'wc2026', name: 'FIFA World Cup 2026', country: '🌍', emoji: '🏆', logo: 'https://media.api-sports.io/football/leagues/1.png', matches: 64, color: '#17458F' },
         { id: 'ucl-world', name: 'UEFA Champions League', country: '🌍', emoji: '⭐', matches: 22, color: '#1B0E60' },
         { id: 'nations', name: 'UEFA Nations League', country: '🇪🇺', emoji: '🇪🇺', matches: 48, color: '#003087', comingSoon: true },
         { id: 'friendly', name: 'Internationals/Friendlies', country: '🌍', emoji: '⚽', matches: '∞', color: '#444', comingSoon: true },

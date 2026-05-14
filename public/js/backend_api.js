@@ -6,6 +6,7 @@
 
 const Backend = {
   user: null,
+  preferredLeagues: [], // canonical league names the user follows
 
   // ─── INIT — call on page load ────────────────────────────────────
   async init() {
@@ -40,12 +41,16 @@ const Backend = {
   // ─── HYDRATE DATA object with real API data ──────────────────────
   async _hydrateData() {
     try {
-      const [matchesRes, predsRes, lbRes, tournamentsRes] = await Promise.all([
+      const [matchesRes, predsRes, lbRes, tournamentsRes, prefsRes] = await Promise.all([
         fetch('/api/matches').then(r => r.ok ? r.json() : []),
         fetch('/api/predictions').then(r => r.ok ? r.json() : []),
         fetch('/api/leaderboard').then(r => r.ok ? r.json() : []),
         fetch('/api/tournaments').then(r => r.ok ? r.json() : []),
+        fetch('/api/user/preferences').then(r => r.ok ? r.json() : { preferredLeagues: [] }),
       ]);
+
+      // Store preferred leagues so Discover can use them
+      this.preferredLeagues = prefsRes.preferredLeagues || [];
 
       // ── Today's Fixtures from real matches ──────────────────────
       if (matchesRes.length > 0) {
@@ -140,60 +145,58 @@ const Backend = {
       }
 
       // ── Tournaments → Discover page leagues ─────────────────────
-      // ONLY inject the 5 agreed active leagues. Everything else stays
-      // as static coming-soon data from data.js.
+      // ONLY inject the 5 agreed active leagues. Each real DB tournament
+      // replaces its matching static placeholder by exact staticId.
       if (tournamentsRes.length > 0) {
-        // These MUST match the CANONICAL_NAMES map in sync-fixtures/route.ts exactly
-        const ACTIVE_EXACT = [
-          { name: 'english premier league', continent: 'europe' },
-          { name: 'la liga',                continent: 'europe' },
-          { name: 'uefa champions league',  continent: 'europe' },
-          { name: 'egyptian premier league', continent: 'africa' },
-          { name: 'fifa world cup',          continent: 'world'  },
-        ];
+        // Maps cleaned canonical name → { continent, staticId, country, canonicalName, logo }
+        const ACTIVE_EXACT = {
+          'english premier league': { continent: 'europe', staticId: 'epl',     country: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', emoji: '⚽', logo: 'https://media.api-sports.io/football/leagues/39.png', canonicalName: 'English Premier League' },
+          'la liga':                { continent: 'europe', staticId: 'laliga',  country: '🇪🇸', emoji: '🇪🇸', logo: 'https://media.api-sports.io/football/leagues/140.png', canonicalName: 'La Liga' },
+          'uefa champions league':  { continent: 'europe', staticId: 'ucl',     country: '🇪🇺', emoji: '⭐', logo: 'https://media.api-sports.io/football/leagues/2.png', canonicalName: 'UEFA Champions League' },
+          'egyptian premier league':{ continent: 'africa', staticId: 'egipt',   country: '🇪🇬', emoji: '🇪🇬', logo: 'https://tmssl.akamaized.net//images/logo/header/egy1.png?lm=1741338264', canonicalName: 'Egyptian Premier League' },
+          'fifa world cup':         { continent: 'world',  staticId: 'wc2026',  country: '🌍', emoji: '🏆', logo: 'https://media.api-sports.io/football/leagues/1.png', canonicalName: 'FIFA World Cup' },
+        };
 
         tournamentsRes.forEach(t => {
-          // Strip " 2025 [39]" or " [39]" or " 2025" from the end for matching
           const cleanName = (t.name || '').toLowerCase()
             .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
             .replace(/\s+\[\d+\]$/, '').trim();
-          
-          const match = ACTIVE_EXACT.find(a => cleanName === a.name);
-          if (!match) return; // skip — not one of our 5 active leagues
 
-          const bucket = DATA.continents[match.continent];
+          const cfg = ACTIVE_EXACT[cleanName];
+          if (!cfg) return; // not one of our 5 active leagues
+
+          const bucket = DATA.continents[cfg.continent];
           if (!bucket) return;
 
-          // Replace the matching static league entry with real DB data,
-          // or prepend if not already present
-          const existing = bucket.leagues.findIndex(
-            l => {
-                const staticName = (l.name || '').toLowerCase()
-                  .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
-                  .replace(/\s+\[\d+\]$/, '').trim();
-                return staticName === match.name || staticName.includes(match.name);
-            }
-          );
-          // Strip [leagueId] from the display name shown in the league card
-          const displayName = (t.name || '').replace(/\s*\[\d+\]$/, '');
+          // Find by staticId — guaranteed unique, no ambiguity
+          const idx = bucket.leagues.findIndex(l => l.id === cfg.staticId);
+
           const realLeague = {
             id: t.id,
-            name: displayName,
-            country: match.continent === 'africa' ? '🇪🇬' :
-                     match.continent === 'world'  ? '🌍' :
-                     cleanName.includes('premier')   ? '🏴󠁧󠁢󠁥󠁮󠁧󠁿' :
-                     cleanName.includes('la liga')   ? '🇪🇸' : '🇪🇺',
-            emoji: t.type === 'Cup' ? '🏆' : '⚽',
-            matches: t._count?.matches || 0,
+            name: cfg.canonicalName,          // clean display name, no year/[id]
+            country: cfg.country,
+            emoji: cfg.emoji,
+            logo: cfg.logo,
+            matches: t._count?.matches ?? 0,  // real count from DB
             color: '#3CB82E',
             _realId: t.id,
+            canonicalName: cfg.canonicalName, // used by toggleFollow
             comingSoon: false,
           };
-          if (existing >= 0) {
-            bucket.leagues[existing] = realLeague;
+
+          if (idx >= 0) {
+            bucket.leagues[idx] = realLeague; // replace static placeholder
           } else {
-            bucket.leagues.unshift(realLeague);
+            bucket.leagues.unshift(realLeague); // first time — prepend
           }
+        });
+
+        // Dynamically update continent count pills from actual data
+        Object.entries(DATA.continents).forEach(([key, val]) => {
+          const el = document.getElementById('count-' + key);
+          if (!el) return;
+          if (key === 'world') return; // keep "Special"
+          el.textContent = val.leagues.length + ' leagues';
         });
       }
 
@@ -323,6 +326,78 @@ const Backend = {
       return res.json();
     } catch (e) {
       return { error: 'Network error' };
+    }
+  },
+
+  // ─── LEAGUE FOLLOW / UNFOLLOW ────────────────────────────────────
+  async toggleLeagueFollow(canonicalLeagueName, action) {
+    try {
+      const res = await fetch('/api/user/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ league: canonicalLeagueName, action }),
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      // Update local cache
+      this.preferredLeagues = data.preferredLeagues || [];
+      // Refresh Today's Fixtures to reflect the new preference
+      await this._refreshTodayFixtures();
+      return true;
+    } catch (e) {
+      console.error('[Backend] toggleLeagueFollow failed:', e);
+      return false;
+    }
+  },
+
+  // Refetch /api/matches and rebuild Today's Fixtures in DATA
+  async _refreshTodayFixtures() {
+    try {
+      const matchesRes = await fetch('/api/matches').then(r => r.ok ? r.json() : []);
+      if (!matchesRes.length) return;
+
+      const today = new Date().toDateString();
+      const prefs = this.preferredLeagues;
+
+      // Build the active league list: if user has prefs, use them; else show all
+      const ACTIVE_LEAGUES = ['english premier league', 'premier league', 'la liga',
+        'uefa champions league', 'egyptian premier league', 'fifa world cup'];
+
+      const todayMatches = matchesRes.filter(m => {
+        const md = new Date(m.matchDate);
+        const tName = (m.tournament?.name || '').toLowerCase()
+          .replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '').trim();
+
+        const inActive = ACTIVE_LEAGUES.includes(tName);
+        if (!inActive) return false;
+
+        // If user has preferences, apply them
+        if (prefs.length > 0) {
+          const matchesPref = prefs.some(p => tName.includes(p.toLowerCase()));
+          if (!matchesPref) return false;
+        }
+
+        return md.toDateString() === today || m.status === 'UPCOMING';
+      }).slice(0, 8);
+
+      if (todayMatches.length > 0) {
+        DATA.todayFixtures = todayMatches.map(m => ({
+          id: m.id, league: m.tournament?.name || 'League',
+          leagueFlag: m.tournament?.type === 'Cup' ? '🏆' : '⚽',
+          home: m.homeTeam, away: m.awayTeam,
+          time: new Date(m.matchDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+          predicted: !!m.userPrediction,
+          homeColor: '#3CB82E', awayColor: '#6FE840',
+          _realId: m.id, _tournamentName: m.tournament?.name,
+        }));
+      } else {
+        DATA.todayFixtures = [];
+      }
+
+      // Re-render the today tab if it's currently active
+      if (typeof renderHome === 'function') renderHome();
+    } catch (e) {
+      console.error('[Backend] _refreshTodayFixtures failed:', e);
     }
   },
 };

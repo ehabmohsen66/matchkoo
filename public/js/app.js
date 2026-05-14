@@ -17,10 +17,37 @@ const state = {
   bttsChoice: 'yes',
   goalsChoice: 'over',
   totalXP: 0,
+  _livePoller: null,        // setInterval ID for live score polling
 };
 
+// ─── LANGUAGE-AWARE URL HELPERS ──────────────────────────────────
+const SUPPORTED_LANGS = ['en', 'ar', 'de', 'es', 'fr'];
+
+function _detectLangFromPath(path) {
+  const parts = path.split('/').filter(Boolean); // ['ar','app','leagues']
+  if (parts.length > 0 && SUPPORTED_LANGS.includes(parts[0])) {
+    return parts[0];
+  }
+  return 'en';
+}
+
+function _detectPageFromPath(path) {
+  const parts = path.split('/').filter(Boolean);
+  // e.g. ['ar','app','leagues'] or ['app','leagues']
+  const appIdx = parts.indexOf('app');
+  if (appIdx !== -1 && parts.length > appIdx + 1) {
+    return parts[appIdx + 1]; // the segment after /app/
+  }
+  return 'home';
+}
+
+function _buildUrl(lang, page) {
+  const base = lang === 'en' ? '/app' : '/' + lang + '/app';
+  return page === 'home' ? base : base + '/' + page;
+}
+
 // ─── NAVIGATION ──────────────────────────────────────────────────
-function navigate(page) {
+function navigate(page, skipHistory = false) {
   // Hide all pages
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -43,7 +70,7 @@ function navigate(page) {
 
   // Initialize page content
   if (page === 'home') initHome();
-  if (page === 'discover') initDiscover();
+  if (page === 'leagues') initLeaguesPage();
   if (page === 'predictions') initPredictions();
   if (page === 'leaderboard') initLeaderboard();
   if (page === 'minileague') initMiniLeagues();
@@ -60,7 +87,23 @@ function navigate(page) {
   if (window.animatePageEnter && target) {
     setTimeout(() => window.animatePageEnter(target), 0);
   }
+
+  // Update History API with language-prefixed URL
+  if (!skipHistory) {
+    const lang = window._currentLang || 'en';
+    const newUrl = _buildUrl(lang, page);
+    window.history.pushState({ page, lang }, '', newUrl);
+  }
 }
+
+window.addEventListener('popstate', (e) => {
+  const pg = e.state?.page || _detectPageFromPath(window.location.pathname);
+  const lg = e.state?.lang || _detectLangFromPath(window.location.pathname);
+  if (lg !== window._currentLang) {
+    if (typeof applyTranslations === 'function') applyTranslations(lg);
+  }
+  navigate(pg, true);
+});
 
 function toggleMobileSidebar() {
   document.getElementById('sidebar').classList.toggle('mobile-open');
@@ -74,6 +117,7 @@ function initHome() {
   loadHomeWidgets();
   initChallenges();
   _checkDailySpinStatus();
+  _startLiveScorePolling(); // auto-refresh live scores
 }
 
 async function loadHomeWidgets() {
@@ -228,7 +272,7 @@ async function renderFixturesList() {
         return isActive && d >= today && d < tomorrow; 
     });
     if (!todays.length) {
-      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:0.88rem;">No matches scheduled today in your leagues. Check Discover for upcoming fixtures.</div>';
+      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:0.88rem;">No matches scheduled today in your leagues. Check Leagues & Cups for upcoming fixtures.</div>';
       return;
     }
     container.innerHTML = todays.map(m => {
@@ -239,9 +283,9 @@ async function renderFixturesList() {
       const t = new Date(m.matchDate);
       const timeStr = t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
       const hasPred = !!m.userPrediction;
-      const flag = m.tournament?.name ? '' : '⚽';
-      const displayName = (m.tournament?.name || 'Match').replace(/\s*\[\d+\]$/, '');
-      return '<div class="fixture-row" onclick="openRealMatchDetail(\'' + matchId + '\')" role="button" tabindex="0">' +
+      const baseName = (m.tournament?.name || 'Match').replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '');
+      const displayName = typeof t === 'function' ? t(baseName, window._currentLang || 'en') : baseName;
+      return '<div class="fixture-row" data-match-id="' + matchId + '" onclick="openRealMatchDetail(\'' + matchId + '\')" role="button" tabindex="0">' +
         '<div class="fixture-league-badge">' + (m.homeLogo ? '<img src="'+m.homeLogo+'" width="24" height="24" style="border-radius:50%">' : flag) + '</div>' +
         '<div class="fixture-teams">' +
           '<div class="fixture-league-name">' + displayName + '</div>' +
@@ -249,9 +293,9 @@ async function renderFixturesList() {
         '</div>' +
         '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
           (hasPred ? '<span style="color:var(--green);font-size:1.1rem;font-weight:900" title="Predicted">&#10003;</span>' : '') +
-          (m.status==='LIVE' ? '<span style="color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE</span>' : '') +
+          '<span class="live-badge" style="display:' + (m.status==='LIVE'?'inline':'none') + ';color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE</span>' +
           '<button onclick="event.stopPropagation();toggleDoubleXP(\'' + matchId + '\')" title="Double XP" style="background:'+doubleBg+';border:1px solid '+doubleBg+';color:'+doubleColor+';font-size:0.65rem;font-weight:800;padding:3px 8px;border-radius:100px;cursor:pointer">2x</button>' +
-          '<div class="fixture-time">' + (m.status==='COMPLETED'?(m.homeScore+'–'+m.awayScore):timeStr) + '</div>' +
+          '<div class="fixture-time live-score-val" style="color:' + (m.status==='LIVE'?'#f21b3f':m.status==='COMPLETED'?'rgba(255,255,255,0.4)':'') + '">' + (m.status==='COMPLETED'?(m.homeScore+'\u2013'+m.awayScore):m.status==='LIVE'?((m.homeScore??0)+'\u2013'+(m.awayScore??0)):timeStr) + '</div>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -270,6 +314,52 @@ function toggleDoubleXP(matchId) {
     showNotification('Double XP marked! 2x XP if correct.', 'success');
   }
   renderFixturesList();
+}
+
+// ─── LIVE SCORE POLLING ──────────────────────────────────────────
+// Polls every 60s when any match is LIVE. Updates scores in-place without
+// re-rendering the full list. Auto-stops when no live matches remain.
+function _startLiveScorePolling() {
+  if (state._livePoller) { clearInterval(state._livePoller); state._livePoller = null; }
+
+  state._livePoller = setInterval(async () => {
+    try {
+      const matches = await fetch('/api/matches').then(r => r.ok ? r.json() : []);
+      const hasLive = matches.some(m => m.status === 'LIVE');
+
+      // Update each fixture row currently in the DOM
+      matches.forEach(m => {
+        const row = document.querySelector('[data-match-id="' + m.id + '"]');
+        if (!row) return;
+        const scoreEl = row.querySelector('.live-score-val');
+        const badgeEl = row.querySelector('.live-badge');
+        if (!scoreEl) return;
+
+        if (m.status === 'LIVE') {
+          scoreEl.textContent = (m.homeScore ?? 0) + '\u2013' + (m.awayScore ?? 0);
+          scoreEl.style.color = '#f21b3f';
+          if (badgeEl) badgeEl.style.display = 'inline';
+        } else if (m.status === 'COMPLETED') {
+          scoreEl.textContent = (m.homeScore ?? 0) + '\u2013' + (m.awayScore ?? 0);
+          scoreEl.style.color = 'rgba(255,255,255,0.4)';
+          if (badgeEl) badgeEl.style.display = 'none';
+        }
+      });
+
+      // Also refresh the open match modal if it shows a live game
+      const openId = state._openModalMatchId;
+      if (openId) {
+        const liveM = matches.find(m => m.id === openId && m.status === 'LIVE');
+        if (liveM) {
+          const modalScore = document.getElementById('modal-score-display');
+          if (modalScore) modalScore.textContent = (liveM.homeScore ?? 0) + ' \u2013 ' + (liveM.awayScore ?? 0);
+        }
+      }
+
+      // Stop polling when no live matches to save network requests
+      if (!hasLive) { clearInterval(state._livePoller); state._livePoller = null; }
+    } catch (_) { /* silent — never break UX */ }
+  }, 60000); // poll every 60 seconds
 }
 
 async function renderMiniLeaderboard() {
@@ -296,7 +386,7 @@ async function renderMiniLeaderboard() {
 }
 
 // ─── DISCOVER PAGE ───────────────────────────────────────────────
-function initDiscover() {
+function initLeaguesPage() {
   renderLeagues(state.currentContinent);
 }
 
@@ -363,10 +453,14 @@ function renderLeagues(continentId) {
     const safeName = l.name.replace(/'/g, "\'");
     const safeId = String(l.id).replace(/'/g, "\'");
 
+    const iconHtml = l.logo
+      ? "<img src=\"" + l.logo + "\" alt=\"" + safeName + "\" style=\"width:100%;height:100%;object-fit:contain;\">"
+      : l.emoji;
+
     if (!isActive) {
       // ── Coming Soon card — disabled, no click ─────────────────────
       return "<div class=\"league-card\" style=\"cursor:not-allowed;opacity:0.45;position:relative;user-select:none;\">" +
-        "<div class=\"league-card-icon\" style=\"filter:grayscale(0.6)\">" + l.emoji + "</div>" +
+        "<div class=\"league-card-icon\" style=\"filter:grayscale(0.6)\">" + iconHtml + "</div>" +
         "<div class=\"league-card-info\">" +
           "<div class=\"league-card-name\" style=\"color:rgba(255,255,255,0.5)\">" + l.country + " " + l.name + "</div>" +
           "<div class=\"league-card-meta\">" +
@@ -378,19 +472,87 @@ function renderLeagues(continentId) {
       "</div>";
     }
 
+    // ── Determine follow state ─────────────────────────────────────
+    // Canonical name = the l.name as returned by backend after normalisation
+    // e.g. "English Premier League", "La Liga"
+    const canonicalName = l.canonicalName || l.name; // backend_api sets canonicalName on injected leagues
+    const isFollowed = Backend.preferredLeagues.some(p =>
+      p.toLowerCase() === canonicalName.toLowerCase() ||
+      canonicalName.toLowerCase().includes(p.toLowerCase())
+    );
+
+    const followBtn =
+      "<button " +
+      "  id=\"follow-btn-" + safeId + "\" " +
+      "  onclick=\"event.stopPropagation();toggleFollow('" + safeId + "','" + safeName + "','" + canonicalName.replace(/'/g,"\\'") + "')\" " +
+      "  style=\"" +
+        "flex-shrink:0;margin-left:auto;padding:4px 12px;border-radius:100px;" +
+        "border:1px solid " + (isFollowed ? "rgba(248,113,113,0.4)" : "rgba(111,232,64,0.4)") + ";" +
+        "background:" + (isFollowed ? "rgba(248,113,113,0.1)" : "rgba(111,232,64,0.1)") + ";" +
+        "color:" + (isFollowed ? "#F87171" : "#6FE840") + ";" +
+        "font-size:0.65rem;font-weight:800;cursor:pointer;font-family:inherit;" +
+        "letter-spacing:0.5px;text-transform:uppercase;transition:all 0.2s;white-space:nowrap;" +
+      "\">" +
+      (isFollowed ? "✕ Unfollow" : "+ Follow") +
+      "</button>";
+
     // ── Active card ────────────────────────────────────────────────
     return "<div class=\"league-card\" onclick=\"openLeagueFixtures('" + safeId + "','" + safeName + "')\" style=\"cursor:pointer\">" +
-      "<div class=\"league-card-icon\">" + l.emoji + "</div>" +
+      "<div class=\"league-card-icon\">" + iconHtml + "</div>" +
       "<div class=\"league-card-info\">" +
         "<div class=\"league-card-name\">" + l.country + " " + l.name + "</div>" +
         "<div class=\"league-card-meta\">" + l.matches + " matches" +
-          (isInviteOnly ? " \u00a0<span style=\"font-size:0.6rem;font-weight:800;padding:2px 6px;border-radius:100px;background:rgba(255,153,20,0.15);color:#ff9914\">\uD83D\uDD12 Invite Only</span>" : "") +
-          (l.prizes ? " \u00a0<span style=\"font-size:0.6rem;font-weight:800;padding:2px 6px;border-radius:100px;background:rgba(255,153,20,0.08);color:rgba(255,153,20,0.8)\">\uD83C\uDFC6 Prizes</span>" : "") +
+          (isInviteOnly ? " &nbsp;<span style=\"font-size:0.6rem;font-weight:800;padding:2px 6px;border-radius:100px;background:rgba(255,153,20,0.15);color:#ff9914\">🔒 Invite Only</span>" : "") +
+          (l.prizes ? " &nbsp;<span style=\"font-size:0.6rem;font-weight:800;padding:2px 6px;border-radius:100px;background:rgba(255,153,20,0.08);color:rgba(255,153,20,0.8)\">🏆 Prizes</span>" : "") +
         "</div>" +
       "</div>" +
-      (l.registered ? "<span style=\"font-size:0.65rem;font-weight:800;color:var(--green);margin-left:auto\">&#10003; Joined</span>" : "") +
+      followBtn +
     "</div>";
   }).join("");
+}
+
+// ── Follow / Unfollow a league from the Discover page ─────────────────────────
+async function toggleFollow(leagueId, leagueName, canonicalName) {
+  const btn = document.getElementById('follow-btn-' + leagueId);
+  if (!btn) return;
+
+  const currentlyFollowed = btn.textContent.trim().startsWith('✕');
+  const action = currentlyFollowed ? 'unfollow' : 'follow';
+
+  // Optimistic UI: disable + show spinner
+  btn.disabled = true;
+  btn.textContent = '…';
+
+  const ok = await Backend.toggleLeagueFollow(canonicalName, action);
+
+  if (ok) {
+    // Update button without full re-render
+    const nowFollowed = action === 'follow';
+    btn.textContent = nowFollowed ? '✕ Unfollow' : '+ Follow';
+    btn.style.border = '1px solid ' + (nowFollowed ? 'rgba(248,113,113,0.4)' : 'rgba(111,232,64,0.4)');
+    btn.style.background = nowFollowed ? 'rgba(248,113,113,0.1)' : 'rgba(111,232,64,0.1)';
+    btn.style.color = nowFollowed ? '#F87171' : '#6FE840';
+
+    // Toast feedback
+    const toast = document.createElement('div');
+    toast.textContent = nowFollowed
+      ? '✓ ' + leagueName + ' added to Today\'s Fixtures'
+      : leagueName + ' removed from Today\'s Fixtures';
+    Object.assign(toast.style, {
+      position: 'fixed', bottom: '28px', left: '50%', transform: 'translateX(-50%)',
+      background: nowFollowed ? 'rgba(60,184,46,0.92)' : 'rgba(80,80,80,0.92)',
+      color: '#fff', padding: '10px 22px', borderRadius: '100px', fontSize: '0.85rem',
+      fontWeight: '700', zIndex: '9999', pointerEvents: 'none', fontFamily: 'inherit',
+      boxShadow: '0 4px 24px rgba(0,0,0,0.4)', transition: 'opacity 0.4s',
+    });
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 2200);
+  } else {
+    // Revert on failure
+    btn.textContent = currentlyFollowed ? '✕ Unfollow' : '+ Follow';
+  }
+
+  btn.disabled = false;
 }
 
 function openLeagueFixtures(leagueId, leagueName) {
@@ -398,6 +560,9 @@ function openLeagueFixtures(leagueId, leagueName) {
   document.getElementById('leagues-section').classList.add('hidden');
   document.getElementById('league-fixtures-section').classList.remove('hidden');
 
+  // Push URL: /app/leagues/<slug>
+  const slug = leagueName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  window.history.pushState({ page: 'leagues', leagueId, leagueName }, '', '/app/leagues/' + slug);
   // Show prizes if available for this league
   const prizesSection = document.getElementById('league-prizes-section');
   const tournament = (DATA.continents.world?.leagues || []).find(l => l.id === leagueId || l._realId === leagueId);
@@ -560,15 +725,16 @@ function filterPreds(filter) {
   renderPredictions(filter);
 }
 
+let currentRawPreds = [];
+
 async function renderPredictions(filter) {
   const container = document.getElementById('predictions-list');
   if (!container) return;
   container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;">Loading...</div>';
-  let preds = [];
   try {
     const apiFilter = filter === 'upcoming' ? 'upcoming' : 'completed';
     const raw = await fetch('/api/predictions?filter=' + apiFilter).then(r => r.ok ? r.json() : []);
-    preds = raw.map(p => {
+    currentRawPreds = raw.map(p => {
       // Use real DB status if available, fall back to match status
       let status = p.status || 'pending';
       if (!p.status) {
@@ -605,14 +771,50 @@ async function renderPredictions(filter) {
         resultLine,
       };
     });
-
-    if (filter === 'correct')  preds = preds.filter(p => p.status === 'correct');
-    else if (filter === 'wrong')    preds = preds.filter(p => p.status === 'wrong');
-    else if (filter === 'upcoming') preds = preds.filter(p => p.status === 'pending');
   } catch(e) {}
+  
+  // Reset the league filter when switching tabs so we don't accidentally hide items
+  const select = document.getElementById('pred-league-filter');
+  if (select) select.value = 'ALL';
+
+  applyLocalPredFilter(filter);
+}
+
+function applyLocalPredFilter(statusFilterOverride) {
+  const container = document.getElementById('predictions-list');
+  if (!container) return;
+
+  const statusFilter = statusFilterOverride || state.predFilter || 'upcoming';
+  let preds = currentRawPreds || [];
+
+  if (statusFilter === 'correct')  preds = preds.filter(p => p.status === 'correct');
+  else if (statusFilter === 'wrong')    preds = preds.filter(p => p.status === 'wrong');
+  else if (statusFilter === 'upcoming') preds = preds.filter(p => p.status === 'pending');
+
+  const select = document.getElementById('pred-league-filter');
+  if (select) {
+     const currentVal = select.value;
+     const uniqueLeagues = [...new Set(preds.map(p => p.league))].filter(Boolean).sort();
+     let opts = '<option value="ALL">' + (typeof t === 'function' ? t('All Leagues & Cups', window._currentLang || 'en') : 'All Leagues & Cups') + '</option>';
+     uniqueLeagues.forEach(l => {
+       const lTranslated = typeof t === 'function' ? t(l, window._currentLang || 'en') : l;
+       opts += '<option value="' + l.replace(/"/g,'&quot;') + '">' + lTranslated + '</option>';
+     });
+     select.innerHTML = opts;
+     if (uniqueLeagues.includes(currentVal)) {
+        select.value = currentVal;
+     } else {
+        select.value = 'ALL';
+     }
+     
+     if (select.value !== 'ALL') {
+       preds = preds.filter(p => p.league === select.value);
+     }
+  }
 
   if (preds.length === 0) {
-    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:48px;font-size:0.9rem;">No ' + filter + ' predictions yet</div>';
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:48px;font-size:0.9rem;">No ' + statusFilter + ' predictions yet</div>';
+    if (typeof translateDOM === 'function') translateDOM(window._currentLang);
     return;
   }
 
@@ -624,9 +826,10 @@ async function renderPredictions(filter) {
     groups[key].push(p);
   });
 
-  container.innerHTML = Object.entries(groups).map(([league, items]) =>
-    '<div class="pred-league-group">' +
-      '<div style="font-size:0.7rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:12px 0 6px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:8px">' + league + '</div>' +
+  container.innerHTML = Object.entries(groups).map(([league, items]) => {
+    const lTranslated = typeof t === 'function' ? t(league, window._currentLang || 'en') : league;
+    return '<div class="pred-league-group">' +
+      '<div style="font-size:0.7rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:12px 0 6px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:8px">' + lTranslated + '</div>' +
       items.map(p => {
         const canEdit = p.status === 'pending';
         const mid = p.matchId || '';
@@ -636,7 +839,7 @@ async function renderPredictions(filter) {
 
         return '<div class="pred-item ' + p.status + '" role="listitem" style="cursor:pointer" onclick="openRealMatchDetail(\'' + mid + '\')">' +
           '<div class="pred-item-header">' +
-            '<span class="pred-item-league">' + (p.date ? p.date + ' · ' : '') + league + '</span>' +
+            '<span class="pred-item-league">' + (p.date || '') + '</span>' +
             '<div style="display:flex;align-items:center;gap:8px">' +
               (canEdit ? '<button onclick="event.stopPropagation();openRealMatchDetail(\'' + mid + '\')" style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(60,184,46,0.1);border:1px solid rgba(60,184,46,0.3);color:var(--green);cursor:pointer">Edit</button>' : '') +
               '<span class="pred-item-status-badge status-' + p.status + '">' + statusIcon + ' ' + statusLabel + '</span>' +
@@ -648,8 +851,10 @@ async function renderPredictions(filter) {
           '<div class="pred-item-xp" style="font-weight:800;color:' + xpColor + '">' + p.xpDisplay + '</div>' +
         '</div>';
       }).join('') +
-    '</div>'
-  ).join('');
+    '</div>';
+  }).join('');
+
+  if (typeof translateDOM === 'function') translateDOM(window._currentLang);
 }
 
 // ─── LEADERBOARD PAGE ────────────────────────────────────────────
@@ -748,7 +953,7 @@ async function loadMyLeagueRanks() {
     ]);
 
     if (!regRes || regRes.length === 0) {
-      listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px">You have not joined any leagues or cups yet. Go to Discover to join!</div>';
+      listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px">You have not joined any leagues or cups yet. Go to Leagues & Cups to join!</div>';
     } else {
       listEl.innerHTML = regRes.map(item =>
         '<div style="display:flex;align-items:center;gap:14px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05)">' +
@@ -964,11 +1169,75 @@ async function initProfile() {
       if (xpEl) xpEl.textContent = (u.xp||0).toLocaleString() + ' XP';
       const imgEl = document.querySelector('.profile-avatar img');
       if (imgEl) imgEl.src = u.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name);
+
+      // ── Invite Friends card ───────────────────────────────────────
+      _renderInviteCard(u.id, u.name);
     }
   } catch(e) {}
   renderTrophies();
   renderLeagueAccuracy();
 }
+
+function _renderInviteCard(userId, userName) {
+  // Remove existing card if any (prevents duplicates on re-nav)
+  const existing = document.getElementById('invite-friends-card');
+  if (existing) existing.remove();
+
+  const refLink = `${window.location.origin}/register?ref=${userId}`;
+  const shareText = encodeURIComponent(`Join me on Matchkoo — the football prediction platform! Predict scores, earn XP and compete on leaderboards. Sign up with my invite link:`);
+  const waUrl = `https://wa.me/?text=${shareText}%20${encodeURIComponent(refLink)}`;
+  const twUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(refLink)}`;
+
+  const card = document.createElement('section');
+  card.id = 'invite-friends-card';
+  card.className = 'content-section';
+  card.innerHTML = `
+    <div class="section-header">
+      <h2 class="section-title">🎁 Invite Friends</h2>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(111,232,64,0.06),rgba(60,184,46,0.03));border:1px solid rgba(111,232,64,0.18);border-radius:18px;padding:22px 20px;">
+      <p style="color:rgba(255,255,255,0.65);font-size:0.88rem;line-height:1.6;margin:0 0 16px;">
+        Share your personal invite link. When a friend registers and makes their <strong style="color:#fff">first prediction</strong>, you both earn <strong style="color:#6FE840">+200 XP</strong>.
+      </p>
+      <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 14px;margin-bottom:16px;">
+        <span id="invite-link-text" style="flex:1;font-size:0.78rem;color:rgba(255,255,255,0.55);word-break:break-all;font-family:monospace;">${refLink}</span>
+        <button onclick="_copyInviteLink('${refLink}')" id="copy-invite-btn"
+          style="flex-shrink:0;padding:7px 14px;border-radius:100px;border:1px solid rgba(111,232,64,0.4);background:rgba(111,232,64,0.1);color:#6FE840;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+          Copy Link
+        </button>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <a href="${waUrl}" target="_blank"
+          style="flex:1;padding:10px;background:#25D366;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:0.82rem;text-align:center;">
+          📲 WhatsApp
+        </a>
+        <a href="${twUrl}" target="_blank"
+          style="flex:1;padding:10px;background:#1DA1F2;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:0.82rem;text-align:center;">
+          𝕏 Twitter
+        </a>
+      </div>
+    </div>
+  `;
+
+  // Insert after the Boost Inventory section (before Accuracy by League)
+  const accSection = document.querySelector('#league-accuracy-list')?.closest('section.content-section');
+  if (accSection) {
+    accSection.parentNode.insertBefore(card, accSection);
+  } else {
+    document.getElementById('page-profile')?.appendChild(card);
+  }
+}
+
+function _copyInviteLink(link) {
+  navigator.clipboard.writeText(link).then(() => {
+    const btn = document.getElementById('copy-invite-btn');
+    if (btn) { btn.textContent = '✓ Copied!'; btn.style.color = '#fff'; btn.style.background = 'rgba(111,232,64,0.3)'; }
+    setTimeout(() => { if (btn) { btn.textContent = 'Copy Link'; btn.style.color = '#6FE840'; btn.style.background = 'rgba(111,232,64,0.1)'; } }, 2000);
+  }).catch(() => {
+    showNotification('Copy not supported — please copy the link manually', 'warning');
+  });
+}
+
 
 function renderTrophies() {
   const container = document.getElementById('trophies-grid');
@@ -1086,6 +1355,12 @@ function toggleGoals(choice, btn) {
   btn.classList.add('active-toggle');
 }
 
+function selectGoals(num, btn) {
+  state.goalsChoice = num; // integer (5 means 5+)
+  btn.closest('#goals-picker').querySelectorAll('.goals-btn').forEach(b => b.classList.remove('active-toggle'));
+  btn.classList.add('active-toggle');
+}
+
 
 // ─── REAL MATCH DETAIL ───────────────────────────────────────────
 // ─── helpers ─────────────────────────────────────────────────────
@@ -1157,6 +1432,31 @@ function _applyMatchData(m) {
 
       const scorerInput = document.getElementById('scorer-select');
       if (scorerInput) scorerInput.value = m.userPrediction?.firstGoalScorer ?? '';
+
+      // Restore BTTS
+      const pred = m.userPrediction;
+      if (pred?.btts !== null && pred?.btts !== undefined) {
+        state.bttsChoice = pred.btts ? 'yes' : 'no';
+        document.getElementById('btts-yes-btn')?.classList.toggle('active-toggle', pred.btts);
+        document.getElementById('btts-no-btn')?.classList.toggle('active-toggle', !pred.btts);
+      } else {
+        state.bttsChoice = 'yes';
+        document.getElementById('btts-yes-btn')?.classList.add('active-toggle');
+        document.getElementById('btts-no-btn')?.classList.remove('active-toggle');
+      }
+
+      // Restore Total Goals
+      if (pred?.totalGoals !== null && pred?.totalGoals !== undefined) {
+        state.goalsChoice = pred.totalGoals;
+        document.querySelectorAll('.goals-btn').forEach(b => {
+          const v = parseInt(b.textContent);
+          const match = b.textContent === '5+' ? pred.totalGoals >= 5 : v === pred.totalGoals;
+          b.classList.toggle('active-toggle', match);
+        });
+      } else {
+        state.goalsChoice = 0;
+        document.querySelectorAll('.goals-btn').forEach((b, i) => b.classList.toggle('active-toggle', i === 0));
+      }
     } else {
       // Clear previous inputs
       const hs = document.getElementById('score-home-input');
@@ -1384,6 +1684,8 @@ async function submitPrediction() {
       firstGoalScorer: scorer || null,
       confidence,
       isDouble: false,
+      btts: state.bttsChoice === 'yes',
+      totalGoals: typeof state.goalsChoice === 'number' ? state.goalsChoice : null,
     });
 
     if (btn) { btn.disabled = false; btn.textContent = 'Lock In Predictions'; }
@@ -1741,7 +2043,7 @@ function shareTrophy(el) {
   const trophyName = el.getAttribute ? el.getAttribute('data-name') : el;
   const trophyIcon = el.getAttribute ? el.getAttribute('data-icon') : arguments[1];
   const text = encodeURIComponent('I just unlocked the "' + trophyName + '" trophy on Matchkoo! ' + trophyIcon + ' Come join me and predict football matches for XP prizes!');
-  const url = encodeURIComponent('https://kickoff-taupe.vercel.app');
+  const url = encodeURIComponent(window.location.origin);
   const twitterUrl = 'https://twitter.com/intent/tweet?text=' + text + '&url=' + url;
   const whatsappUrl = 'https://wa.me/?text=' + text + '%20' + url;
   const share = document.createElement('div');
@@ -1758,9 +2060,30 @@ function shareTrophy(el) {
 }
 // ─── INIT ────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  navigate('home');
+  const path = window.location.pathname;
+
+  // Detect language from URL (e.g. /ar/app/leaderboard → 'ar')
+  const lang = _detectLangFromPath(path);
+  window._currentLang = lang;
+
+  // Detect initial page
+  const initialPage = _detectPageFromPath(path);
+
+  // Sync language dropdowns
+  const d = document.getElementById('lang-select-desktop');
+  const m = document.getElementById('lang-select-mobile');
+  if (d) d.value = lang;
+  if (m) m.value = lang;
+
+  // Apply translations immediately
+  if (typeof applyTranslations === 'function') applyTranslations(lang);
+
+  navigate(initialPage, true);
   drawWheel(0);
   startLiveSimulation();
+
+  // Replace initial history entry so popstate works correctly
+  window.history.replaceState({ page: initialPage, lang }, '', path);
 
   // XP bar animation on profile load
   setTimeout(() => {
@@ -1770,8 +2093,6 @@ window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => { xpFill.style.width = '62.25%'; }, 100);
     }
   }, 500);
-
-
 });
 
 
@@ -1786,35 +2107,119 @@ const CLUBS_DB = {
 };
 
 let votedTodayMap = {}; // clubName -> true
+let clubLogosMap  = {}; // clubName -> logoUrl (from DB match data)
+// These are the 5 live leagues — all others get a "Coming Soon" treatment
+const ACTIVE_VOTE_LEAGUES = new Set([
+  'Premier League', 'La Liga', 'UEFA Champions League', 'Egyptian Premier League', 'FIFA World Cup'
+]);
 
 async function initVote() {
-  // Load today's votes
+  // Load today's votes + club logos in parallel
   try {
-    const res = await fetch('/api/clubs/vote');
-    if (res.ok) {
-      const data = await res.json();
+    const [voteRes, logoRes] = await Promise.all([
+      fetch('/api/clubs/vote'),
+      fetch('/api/clubs/logos'),
+    ]);
+    if (voteRes.ok) {
+      const data = await voteRes.json();
       votedTodayMap = {};
       (data.votedToday || []).forEach(v => { votedTodayMap[v.clubName] = true; });
     }
+    if (logoRes.ok) {
+      clubLogosMap = await logoRes.json();
+    }
   } catch(e) {}
   
-  renderVoteLeagues();
+  selectVoteContinent('europe');
   loadClubLeaderboard('alltime');
+}
+
+let currentVoteContinent = 'europe';
+
+function selectVoteContinent(id) {
+  currentVoteContinent = id;
+  const grid = document.getElementById('vote-continent-grid');
+  if (grid) {
+    grid.querySelectorAll('.continent-card').forEach(c => c.classList.remove('active-continent'));
+  }
+  const btn = document.getElementById(`vote-cont-${id}`);
+  if (btn) btn.classList.add('active-continent');
+
+  const titles = {
+    'europe': 'European Leagues',
+    'africa': 'African Leagues',
+    'americas': 'Americas Leagues',
+    'asia': 'Asian Leagues',
+    'oceania': 'Oceania Leagues',
+    'world': 'International Competitions'
+  };
+  const titleEl = document.getElementById('vote-leagues-title');
+  if (titleEl) titleEl.textContent = titles[id] || 'Leagues';
+
+  renderVoteLeagues();
+}
+
+// Colour-coded initials badge — used when no logo URL is available
+function _clubInitialsBadge(club, size) {
+  const s = size || 36;
+  const colours = ['#e63946','#457b9d','#2a9d8f','#e9c46a','#f4a261','#6a4c93','#1982c4','#8ac926','#ff595e','#6a0572'];
+  const hue = colours[club.charCodeAt(0) % colours.length];
+  const initials = club.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  return '<div style="width:' + s + 'px;height:' + s + 'px;border-radius:50%;background:' + hue + ';display:flex;align-items:center;justify-content:center;font-size:' + Math.round(s*0.36) + 'px;font-weight:900;color:#fff;flex-shrink:0;">' + initials + '</div>';
 }
 
 function renderVoteLeagues() {
   const container = document.getElementById('vote-leagues-container');
   if (!container) return;
-  container.innerHTML = Object.entries(CLUBS_DB).map(([league, data]) =>
-    '<div style="margin-bottom:24px">' +
-      '<div style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:0 0 10px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:12px">' + league + ' · ' + data.country + '</div>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:8px">' +
+
+  const leagues = Object.entries(CLUBS_DB).filter(([_, data]) => data.continent === currentVoteContinent);
+
+  if (leagues.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;background:var(--bg-card);border-radius:16px;border:1px solid rgba(255,255,255,0.06)">No clubs available for voting in this region yet.</div>';
+    return;
+  }
+
+  container.innerHTML = leagues.map(([league, data]) => {
+    const isActive = ACTIVE_VOTE_LEAGUES.has(league);
+    const cardStyle = isActive
+      ? 'background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:24px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 8px 32px rgba(0,0,0,0.2);position:relative;'
+      : 'background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:24px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 4px 16px rgba(0,0,0,0.15);position:relative;opacity:0.45;filter:grayscale(0.6);pointer-events:none;user-select:none;';
+
+    const comingSoonBadge = !isActive
+      ? '<div style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);color:rgba(255,255,255,0.55);font-size:0.6rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:100px;">Coming Soon</div>'
+      : '';
+
+    return '<div style="' + cardStyle + '">' +
+      comingSoonBadge +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.06)">' +
+        '<div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:18px">🏆</div>' +
+        '<div>' +
+          '<div style="font-weight:800;color:#fff;font-size:1rem;letter-spacing:0.5px">' + league + '</div>' +
+          '<div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:1px">' + data.country + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">' +
         data.clubs.map(club => {
           const voted = votedTodayMap[club];
-          return '<button onclick="castVote(this)" data-club="' + club.replace(/"/g,'&quot;') + '" data-country="' + data.country.replace(/"/g,'&quot;') + '" data-continent="' + data.continent + '"' +
-            ' style="padding:8px 14px;border-radius:100px;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;' +
-            (voted ? 'background:rgba(60,184,46,0.15);border:1px solid rgba(60,184,46,0.4);color:var(--green)' : 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7)') + '">' +
-            (voted ? '&#10003; ' : '') + club + (voted ? '' : ' +50 XP') +
+          const safe = club.replace(/"/g,'&quot;');
+          const safeCo = data.country.replace(/"/g,'&quot;');
+          const initials = club.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+          const colours = ['#e63946','#457b9d','#2a9d8f','#e9c46a','#f4a261','#6a0572','#1982c4','#8ac926','#ff595e','#6a0572'];
+          const badgeBg = colours[club.charCodeAt(0) % colours.length];
+          const logoUrl = clubLogosMap[club] || '';
+          const logoInner = logoUrl
+            ? '<img src="' + logoUrl + '" alt="' + safe + '" style="width:64px;height:64px;object-fit:contain;border-radius:50%;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><span style="display:none;width:64px;height:64px;border-radius:50%;background:' + badgeBg + ';align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff">' + initials + '</span>'
+            : '<span style="width:64px;height:64px;border-radius:50%;background:' + badgeBg + ';display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff">' + initials + '</span>';
+          return '<button onclick="castVote(this)" data-club="' + safe + '" data-country="' + safeCo + '" data-continent="' + data.continent + '"' +
+            ' style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 10px;border-radius:14px;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;text-align:center;' +
+            (voted ? 'background:rgba(60,184,46,0.12);border:1.5px solid rgba(60,184,46,0.5);color:var(--green)' : 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.75)') + '">' +
+            // Logo: real crest or initials badge
+            '<div style="width:64px;height:64px;position:relative;">' +
+              logoInner +
+              (voted ? '<div style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;background:#29bf12;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;border:2px solid var(--bg-card)">✓</div>' : '') +
+            '</div>' +
+            '<span style="line-height:1.2;word-break:break-word">' + club + '</span>' +
+            (!voted ? '<span style="opacity:0.45;font-size:0.65rem;font-weight:600">+50 XP</span>' : '') +
           '</button>';
         }).join('') +
       '</div>' +
@@ -1923,8 +2328,16 @@ function changeLanguage(lang) {
   if (d) d.value = lang;
   if (m) m.value = lang;
 
-  // Delegate to full i18n system (i18n.js)
+  // Update global lang tracker
+  window._currentLang = lang;
+
+  // Apply translations (i18n.js)
   if (typeof applyTranslations === 'function') {
     applyTranslations(lang);
   }
+
+  // Update the URL to reflect the language change without a page reload
+  const currentPage = state.currentPage || 'home';
+  const newUrl = _buildUrl(lang, currentPage);
+  window.history.pushState({ page: currentPage, lang }, '', newUrl);
 }

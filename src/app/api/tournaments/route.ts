@@ -8,10 +8,9 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     const tournaments = await prisma.tournament.findMany({
-      // UPCOMING first, then ONGOING, then COMPLETED — all sorted by startDate within group
       orderBy: [{ startDate: "asc" }],
       include: {
-        _count: { select: { registrations: true } },
+        _count: { select: { registrations: true, matches: true } },
         ...(session?.user?.id
           ? { registrations: { where: { userId: session.user.id }, select: { id: true } } }
           : {}),

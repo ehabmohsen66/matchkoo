@@ -6,6 +6,12 @@ import Navbar from "@/components/Navbar";
 export const metadata: Metadata = {
   title: "Matchkoo — The Intelligent Football Prediction Platform",
   description: "Join 2.4M predictors on Matchkoo. Predict football results, earn XP, compete across 188 leagues and climb global leaderboards.",
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({

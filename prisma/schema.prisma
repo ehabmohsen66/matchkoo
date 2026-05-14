@@ -20,10 +20,13 @@ model User {
   password      String?
   role          String    @default("USER") // USER or ADMIN
   xp              Int  @default(0)
-  streak          Int  @default(0)   // current consecutive correct predictions
-  bestStreak      Int  @default(0)   // all-time best streak
-  predictionCount Int  @default(0)   // total predictions submitted
-  correctCount    Int  @default(0)   // total correct predictions
+  streak          Int  @default(0)
+  bestStreak      Int  @default(0)
+  predictionCount Int  @default(0)
+  correctCount    Int  @default(0)
+  verificationToken     String?   @unique
+  resetPasswordToken    String?   @unique
+  resetPasswordExpiry   DateTime?
   referredById  String?
   referredBy    User?     @relation("Referrals", fields: [referredById], references: [id])
   referrals     User[]    @relation("Referrals")
@@ -36,8 +39,14 @@ model User {
   miniLeaguesCreated MiniLeague[]      @relation("MiniLeagueCreator")
   miniLeagueMemberships MiniLeagueMember[]
   clubVotes         ClubVote[]
+  teamReminderSnoozes TeamReminderSnooze[]
   dailySpins        DailySpin[]
   challengeRewards  ChallengeReward[]
+  preferredLeagues  String[]           @default([]) // league names chosen at registration
+
+  // Friends / followers
+  following   Friendship[] @relation("Follower")
+  followers   Friendship[] @relation("Following")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -107,6 +116,8 @@ model Prediction {
   firstGoalScorer String?
   confidence      Int     @default(50)  // 50–100
   isDouble        Boolean @default(false) // double XP joker (one per round)
+  btts            Boolean?              // both teams to score
+  totalGoals      Int?                  // predicted total goals in match
   xpEarned        Int?    // populated after match result
   status          String? // "pending" | "correct" | "wrong"
 
@@ -246,3 +257,31 @@ model ChallengeReward {
   @@unique([userId, weekStart, challengeKey])
 }
 
+
+model TeamReminderSnooze {
+  id        String   @id @default(cuid())
+  userId    String
+  clubName  String
+  // snoozedUntil = null means "forever"
+  snoozedUntil DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, clubName])
+}
+
+model Friendship {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+
+  follower  User @relation("Follower",  fields: [followerId],  references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}

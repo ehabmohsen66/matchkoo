@@ -3,15 +3,49 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
-// GET /api/matches?tournamentId=xxx
+// GET /api/matches?tournamentId=xxx   — or personalised if no tournamentId
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const tournamentId = searchParams.get("tournamentId");
     const session = await getServerSession(authOptions);
 
+    // Build the where clause
+    let where: Record<string, any> = {};
+
+    if (tournamentId) {
+      // Explicit league page — show that league only
+      where = { tournamentId };
+    } else if (session?.user?.id) {
+      // Personalised view: only show leagues the user has selected
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { preferredLeagues: true },
+      });
+      if (user?.preferredLeagues && user.preferredLeagues.length > 0) {
+        // preferredLeagues stores canonical league names like "English Premier League"
+        // Tournament names in DB are like "English Premier League 2025 [39]"
+        // Match with contains filter across all preferred leagues
+        where = {
+          tournament: {
+            name: {
+              in: await prisma.tournament.findMany({
+                where: {
+                  OR: user.preferredLeagues.map((league) => ({
+                    name: { contains: league },
+                  })),
+                },
+                select: { name: true },
+              }).then((ts) => ts.map((t) => t.name)),
+            },
+          },
+        };
+      }
+      // If preferredLeagues is empty (not set yet) fall through and show all
+    }
+
     const matches = await prisma.match.findMany({
-      where: tournamentId ? { tournamentId } : {},
+      where,
       orderBy: [{ round: "asc" }, { matchDate: "asc" }],
       include: {
         tournament: { select: { id: true, name: true, type: true } },

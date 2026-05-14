@@ -6,11 +6,27 @@
   "crons": [
     {
       "path": "/api/cron/sync-today",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/sync-today",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/sync-today",
+      "schedule": "0 9 * * *"
     },
     {
       "path": "/api/cron/update-live",
       "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/cron/re-engagement",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/team-reminders",
+      "schedule": "0 10 * * *"
     }
   ]
 }

@@ -22,10 +22,13 @@ const I18N = {
     'Leagues': 'دوري',
     'Your Rank': 'ترتيبك',
     'Streak': 'سلسلة',
+    'Streak · 2× XP': 'السلسلة · 2× XP',
     'Daily Bonus Ready!': 'المكافأة اليومية جاهزة!',
     'Spin to win XP & prediction boosts': 'العب لتربح XP ومضاعفات التوقع',
     'Spin Now': 'العب الآن',
     'Live Now': '🔴 الآن مباشرة',
+    'No live matches right now. Check back during match time!': 'لا توجد مباريات مباشرة الآن. يرجى التحقق لاحقًا وقت المباريات!',
+    'No matches scheduled today in your leagues. Check Leagues & Cups for upcoming fixtures.': 'لا توجد مباريات مقررة اليوم في دورياتك. راجع الدوريات والكؤوس للمباريات القادمة.',
     'See all': 'عرض الكل',
     "Today's Fixtures": 'مباريات اليوم',
     'Weekly Challenges': 'تحديات الأسبوع',
@@ -53,6 +56,7 @@ const I18N = {
     'Special': 'خاص',
     'leagues': 'دوريات',
     'matches': 'مباريات',
+    'All Leagues & Cups': 'جميع الدوريات والكؤوس',
     'European Leagues': 'الدوريات الأوروبية',
     'African Leagues': 'الدوريات الأفريقية',
     'American Leagues': 'دوريات الأمريكتين',
@@ -230,7 +234,7 @@ function t(key, lang) {
 }
 
 // ── Apply full UI translation ─────────────────────────────────────
-function applyTranslations(lang) {
+function translateDOM(lang) {
   const dict = I18N[lang] || {};
   const isAr = lang === 'ar';
 
@@ -369,6 +373,14 @@ function applyTranslations(lang) {
     const k = el.textContent.trim();
     if (dict[k]) el.textContent = dict[k];
   });
+  
+  // Catch dynamically rendered empty states
+  document.querySelectorAll('div').forEach(el => {
+    if (el.style.color === 'var(--text-muted)') {
+      const txt = el.textContent.trim();
+      if (dict[txt]) el.textContent = dict[txt];
+    }
+  });
 
   // ── Profile stat labels ───────────────────────────────────────────
   document.querySelectorAll('.stat-card-lbl').forEach(el => {
@@ -404,6 +416,12 @@ function applyTranslations(lang) {
     const k = el.textContent.trim();
     if (dict[k]) el.textContent = dict[k];
   });
+  
+  // Daily bonus banner
+  document.querySelectorAll('.bonus-title, .bonus-desc').forEach(el => {
+    const k = el.textContent.trim();
+    if (dict[k]) el.textContent = dict[k];
+  });
 
   // ── Celebration overlay ───────────────────────────────────────────
   const cel = document.querySelector('.celebration-title');
@@ -426,9 +444,13 @@ function applyTranslations(lang) {
   if (signoutLabel && signoutLabel.textContent !== (dict['Signing out…'] || 'Signing out…')) {
     if (dict['Sign Out']) signoutLabel.textContent = dict['Sign Out'];
   }
+}
 
-  // ── Re-render JS-injected content with new lang ───────────────────
+function applyTranslations(lang) {
   window._currentLang = lang;
+  translateDOM(lang);
+  
+  // ── Re-render JS-injected content with new lang ───────────────────
   const cur = window.state?.currentPage;
   if (cur === 'home') { renderFixturesList(); renderMiniLeaderboard(); }
   if (cur === 'discover') renderLeagues(window.state?.currentContinent || 'europe');
