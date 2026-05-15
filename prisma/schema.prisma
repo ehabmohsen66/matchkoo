@@ -210,6 +210,7 @@ model ClubVote {
   id        String   @id @default(cuid())
   userId    String
   clubName  String
+  league    String   @default("")  // e.g. "Premier League"
   country   String
   continent String   @default("world")
   votedDate String   // YYYY-MM-DD — one vote per club per day
@@ -219,6 +220,7 @@ model ClubVote {
   createdAt DateTime @default(now())
 
   @@unique([userId, clubName, votedDate])
+  @@unique([userId, league, votedDate])  // one team per league per day
 }
 
 model Referral {

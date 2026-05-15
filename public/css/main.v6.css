@@ -2050,3 +2050,65 @@ body[data-role="admin"] .admin-only { display: block !important; }
   letter-spacing: 1px;
   color: var(--text-primary);
 }
+
+/* ─── PLAYER PICKER (First Goalscorer) ─────────────────────────── */
+.player-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.player-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px 5px 6px;
+  border-radius: 100px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.8);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.player-chip:hover {
+  border-color: rgba(41,191,18,0.5);
+  background: rgba(41,191,18,0.08);
+  color: #fff;
+}
+.player-chip.selected-player {
+  border-color: var(--green);
+  background: rgba(41,191,18,0.18);
+  color: var(--green);
+  font-weight: 800;
+}
+.player-chip.subbed-off {
+  opacity: 0.35;
+  text-decoration: line-through;
+  cursor: default;
+  pointer-events: none;
+}
+.player-chip.subbed-on {
+  border-color: rgba(255,165,0,0.5);
+  color: orange;
+}
+.player-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  font-size: 0.65rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.selected-player .player-num {
+  background: rgba(41,191,18,0.3);
+}
+
+/* ─── PROFILE — dynamic IDs ─────────────────────────────────────── */
+#profile-global-rank, #profile-cont-rank { transition: opacity 0.3s; }

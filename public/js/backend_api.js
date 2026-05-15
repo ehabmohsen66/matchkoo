@@ -54,19 +54,20 @@ const Backend = {
 
       // ── Today's Fixtures from real matches ──────────────────────
       if (matchesRes.length > 0) {
-        const today = new Date().toDateString();
+        const today = new Date();
+        const todayStr    = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+        const tomorrow    = new Date(today); tomorrow.setDate(today.getDate() + 1);
+        const tomorrowStr = tomorrow.getFullYear() + '-' + String(tomorrow.getMonth()+1).padStart(2,'0') + '-' + String(tomorrow.getDate()).padStart(2,'0');
         
-        // Exact names of the active leagues to filter today's matches
-        const ACTIVE_LEAGUES = ['english premier league', 'premier league', 'la liga', 'uefa champions league', 'egyptian premier league', 'fifa world cup'];
-        
+        // helper: get local YYYY-MM-DD from a match date
+        const localDateStr = (dt) => { const d = new Date(dt); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+
         const todayMatches = matchesRes.filter(m => {
-          const md = new Date(m.matchDate);
           const tName = (m.tournament?.name || '').toLowerCase()
             .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
             .replace(/\s+\[\d+\]$/, '').trim();
           const isTargetLeague = ACTIVE_LEAGUES.includes(tName);
-          
-          return isTargetLeague && (md.toDateString() === today || m.status === 'UPCOMING');
+          return isTargetLeague && localDateStr(m.matchDate) === todayStr;
         }).slice(0, 8);
 
         if (todayMatches.length > 0) {
@@ -356,28 +357,23 @@ const Backend = {
       const matchesRes = await fetch('/api/matches').then(r => r.ok ? r.json() : []);
       if (!matchesRes.length) return;
 
-      const today = new Date().toDateString();
+      const localDateStr = (dt) => { const d = new Date(dt); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+      const now = new Date();
+      const todayStr = localDateStr(now);
       const prefs = this.preferredLeagues;
-
-      // Build the active league list: if user has prefs, use them; else show all
       const ACTIVE_LEAGUES = ['english premier league', 'premier league', 'la liga',
         'uefa champions league', 'egyptian premier league', 'fifa world cup'];
 
       const todayMatches = matchesRes.filter(m => {
-        const md = new Date(m.matchDate);
         const tName = (m.tournament?.name || '').toLowerCase()
           .replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '').trim();
-
         const inActive = ACTIVE_LEAGUES.includes(tName);
         if (!inActive) return false;
-
-        // If user has preferences, apply them
         if (prefs.length > 0) {
           const matchesPref = prefs.some(p => tName.includes(p.toLowerCase()));
           if (!matchesPref) return false;
         }
-
-        return md.toDateString() === today || m.status === 'UPCOMING';
+        return localDateStr(m.matchDate) === todayStr;
       }).slice(0, 8);
 
       if (todayMatches.length > 0) {

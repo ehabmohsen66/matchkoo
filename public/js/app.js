@@ -487,13 +487,13 @@ function renderLeagues(continentId) {
       "  onclick=\"event.stopPropagation();toggleFollow('" + safeId + "','" + safeName + "','" + canonicalName.replace(/'/g,"\\'") + "')\" " +
       "  style=\"" +
         "flex-shrink:0;margin-left:auto;padding:4px 12px;border-radius:100px;" +
-        "border:1px solid " + (isFollowed ? "rgba(248,113,113,0.4)" : "rgba(111,232,64,0.4)") + ";" +
-        "background:" + (isFollowed ? "rgba(248,113,113,0.1)" : "rgba(111,232,64,0.1)") + ";" +
-        "color:" + (isFollowed ? "#F87171" : "#6FE840") + ";" +
+        "border:1px solid " + (isFollowed ? "rgba(111,232,64,0.5)" : "rgba(111,232,64,0.4)") + ";" +
+        "background:" + (isFollowed ? "rgba(111,232,64,0.15)" : "rgba(111,232,64,0.1)") + ";" +
+        "color:" + (isFollowed ? "#6FE840" : "#6FE840") + ";" + +
         "font-size:0.65rem;font-weight:800;cursor:pointer;font-family:inherit;" +
         "letter-spacing:0.5px;text-transform:uppercase;transition:all 0.2s;white-space:nowrap;" +
       "\">" +
-      (isFollowed ? "✕ Unfollow" : "+ Follow") +
+      (isFollowed ? "✓ Joined" : "+ Join") +
       "</button>";
 
     // ── Active card ────────────────────────────────────────────────
@@ -528,10 +528,10 @@ async function toggleFollow(leagueId, leagueName, canonicalName) {
   if (ok) {
     // Update button without full re-render
     const nowFollowed = action === 'follow';
-    btn.textContent = nowFollowed ? '✕ Unfollow' : '+ Follow';
-    btn.style.border = '1px solid ' + (nowFollowed ? 'rgba(248,113,113,0.4)' : 'rgba(111,232,64,0.4)');
-    btn.style.background = nowFollowed ? 'rgba(248,113,113,0.1)' : 'rgba(111,232,64,0.1)';
-    btn.style.color = nowFollowed ? '#F87171' : '#6FE840';
+    btn.textContent = nowFollowed ? '✓ Joined' : '+ Join';
+    btn.style.border = '1px solid rgba(111,232,64,0.5)';
+    btn.style.background = 'rgba(111,232,64,0.12)';
+    btn.style.color = '#6FE840';
 
     // Toast feedback
     const toast = document.createElement('div');
@@ -549,7 +549,7 @@ async function toggleFollow(leagueId, leagueName, canonicalName) {
     setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 2200);
   } else {
     // Revert on failure
-    btn.textContent = currentlyFollowed ? '✕ Unfollow' : '+ Follow';
+    btn.textContent = currentlyFollowed ? '✓ Joined' : '+ Join';
   }
 
   btn.disabled = false;
@@ -1161,19 +1161,79 @@ async function initProfile() {
     const session = await fetch('/api/auth/session').then(r => r.ok ? r.json() : null);
     if (session?.user) {
       const u = session.user;
-      const nameEl = document.getElementById('profile-name');
-      const xpEl = document.getElementById('profile-xp');
-      const emailEl = document.getElementById('profile-email');
-      if (nameEl) nameEl.textContent = u.name;
-      if (emailEl) emailEl.textContent = u.email;
-      if (xpEl) xpEl.textContent = (u.xp||0).toLocaleString() + ' XP';
-      const imgEl = document.querySelector('.profile-avatar img');
-      if (imgEl) imgEl.src = u.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name);
+      const xp = u.xp || 0;
 
-      // ── Invite Friends card ───────────────────────────────────────
+      // Name, email
+      const nameEl = document.getElementById('profile-name');
+      if (nameEl) nameEl.textContent = u.name || '—';
+      const emailEl = document.getElementById('profile-email');
+      if (emailEl) emailEl.textContent = u.email || '';
+
+      // Avatar
+      const avatarEl = document.getElementById('profile-avatar-img');
+      if (avatarEl) avatarEl.src = u.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name || 'user');
+
+      // XP display
+      const xpEl = document.getElementById('profile-xp');
+      if (xpEl) xpEl.textContent = xp.toLocaleString() + ' XP';
+
+      // Level / tier
+      const TIERS = [
+        { name: 'Bronze',   min: 0,     max: 2999,  cls: 'bronze'   },
+        { name: 'Silver',   min: 3000,  max: 9999,  cls: 'silver'   },
+        { name: 'Gold',     min: 10000, max: 19999, cls: 'gold'     },
+        { name: 'Platinum', min: 20000, max: 49999, cls: 'platinum' },
+        { name: 'Legend',   min: 50000, max: Infinity, cls: 'legend' },
+      ];
+      const tier = TIERS.find(t => xp >= t.min && xp <= t.max) || TIERS[0];
+      const nextTier = TIERS[TIERS.indexOf(tier) + 1];
+
+      const badge = document.getElementById('profile-level-badge');
+      if (badge) {
+        badge.textContent = tier.name.toUpperCase();
+        badge.className = 'level-badge-lg ' + tier.cls;
+      }
+
+      const levelLabel = document.getElementById('profile-level-label');
+      if (levelLabel) {
+        levelLabel.textContent = nextTier
+          ? tier.name + ' → ' + nextTier.name
+          : '🏆 ' + tier.name + ' (Max)';
+      }
+
+      // XP progress bar
+      const xpBar = document.getElementById('xp-fill-bar');
+      if (xpBar) {
+        const pct = nextTier
+          ? Math.min(100, ((xp - tier.min) / (nextTier.min - tier.min)) * 100).toFixed(1)
+          : 100;
+        setTimeout(() => { if (xpBar) xpBar.style.width = pct + '%'; }, 150);
+      }
+
+      // Sidebar bottom XP
+      const sideXp = document.querySelector('.sidebar-user .user-xp');
+      if (sideXp) sideXp.textContent = 'XP ' + xp.toLocaleString();
+
+      // Fetch real global rank from leaderboard
+      try {
+        const lbRes = await fetch('/api/leaderboard?period=alltime&limit=5000');
+        if (lbRes.ok) {
+          const lbData = await lbRes.json();
+          const entries = lbData.entries || [];
+          const myIdx = entries.findIndex(e => e.id === u.id);
+          const globalRank = myIdx >= 0 ? myIdx + 1 : null;
+          const rankEl = document.getElementById('profile-global-rank');
+          if (rankEl) {
+            rankEl.textContent = globalRank ? '#' + globalRank.toLocaleString() + ' Global' : 'Unranked';
+            rankEl.style.opacity = '1';
+          }
+        }
+      } catch(e) {}
+
+      // Invite card
       _renderInviteCard(u.id, u.name);
     }
-  } catch(e) {}
+  } catch(e) { console.error('initProfile error', e); }
   renderTrophies();
   renderLeagueAccuracy();
 }
@@ -1595,19 +1655,22 @@ function _renderPlayerPicker(lineup, events) {
       chip.innerHTML = '<span class="player-num">' + (p.number || '') + '</span>' + p.name;
       chip.title = p.pos || '';
       chip.onclick = () => {
-        // Toggle selection
         const scorerInput = document.getElementById('scorer-select');
+        const indicator = document.getElementById('fgs-pick-indicator');
+        const pickName = document.getElementById('fgs-pick-name');
         if (isSelected || isOff) {
           // Deselect
           if (scorerInput) scorerInput.value = '';
-          container.querySelectorAll('.player-chip').forEach(c => c.classList.remove('selected-player'));
-          // Also deselect from other grids
           document.querySelectorAll('.player-chip.selected-player').forEach(c => c.classList.remove('selected-player'));
+          if (indicator) indicator.style.display = 'none';
         } else {
-          // Clear all selections
+          // Clear all, select this one
           document.querySelectorAll('.player-chip.selected-player').forEach(c => c.classList.remove('selected-player'));
           chip.classList.add('selected-player');
           if (scorerInput) scorerInput.value = p.name;
+          // Show pick indicator
+          if (indicator) { indicator.style.display = 'flex'; }
+          if (pickName) pickName.textContent = (p.number ? '#' + p.number + ' ' : '') + p.name;
         }
       };
       container.appendChild(chip);
@@ -1625,6 +1688,14 @@ function _renderPlayerPicker(lineup, events) {
   if (awayLbl) awayLbl.textContent = (lineup.away?.team || '').toUpperCase() + (lineup.away?.formation ? '  ' + lineup.away.formation : '');
   renderGrid('lineup-away-players', lineup.away?.startXI || [], false);
   renderGrid('lineup-away-subs',    lineup.away?.substitutes || [], true);
+}
+
+function clearFGSPick() {
+  document.querySelectorAll('.player-chip.selected-player').forEach(c => c.classList.remove('selected-player'));
+  const inp = document.getElementById('scorer-select');
+  if (inp) inp.value = '';
+  const ind = document.getElementById('fgs-pick-indicator');
+  if (ind) ind.style.display = 'none';
 }
 
 function _renderEventsTimeline(events) {
@@ -2106,8 +2177,9 @@ const CLUBS_DB = {
   'Egyptian Premier League': { country: 'Egypt', continent: 'africa', clubs: ['Al Ahly','Zamalek','Pyramids','Ismaily','El Geish','ENPPI','Ceramica','Smouha','Ittihad Alexandria','Farco'] },
 };
 
-let votedTodayMap = {}; // clubName -> true
-let clubLogosMap  = {}; // clubName -> logoUrl (from DB match data)
+let votedTodayMap  = {}; // clubName -> true
+let leagueVotedMap = {}; // leagueName -> clubName (the club they already voted for in this league)
+let clubLogosMap   = {}; // clubName -> logoUrl (from DB match data)
 // These are the 5 live leagues — all others get a "Coming Soon" treatment
 const ACTIVE_VOTE_LEAGUES = new Set([
   'Premier League', 'La Liga', 'UEFA Champions League', 'Egyptian Premier League', 'FIFA World Cup'
@@ -2122,8 +2194,12 @@ async function initVote() {
     ]);
     if (voteRes.ok) {
       const data = await voteRes.json();
-      votedTodayMap = {};
-      (data.votedToday || []).forEach(v => { votedTodayMap[v.clubName] = true; });
+      votedTodayMap  = {};
+      leagueVotedMap = {};
+      (data.votedToday || []).forEach(v => {
+        votedTodayMap[v.clubName] = true;
+        if (v.league) leagueVotedMap[v.league] = v.clubName;
+      });
     }
     if (logoRes.ok) {
       clubLogosMap = await logoRes.json();
@@ -2189,6 +2265,51 @@ function renderVoteLeagues() {
       ? '<div style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);color:rgba(255,255,255,0.55);font-size:0.6rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:100px;">Coming Soon</div>'
       : '';
 
+    const clubs = data.clubs.map(club => {
+      const voted   = votedTodayMap[club];              // this club was voted
+      const leagueWinner = leagueVotedMap[league];      // another club voted in same league
+      const blocked = !voted && leagueWinner;           // can't vote — league slot taken
+
+      const safe = club.replace(/"/g,'&quot;');
+      const safeCo = data.country.replace(/"/g,'&quot;');
+      const initials = club.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+      const colours = ['#e63946','#457b9d','#2a9d8f','#e9c46a','#f4a261','#6a0572','#1982c4','#8ac926','#ff595e','#6a0572'];
+      const badgeBg = colours[club.charCodeAt(0) % colours.length];
+      const logoUrl = clubLogosMap[club] || '';
+      const logoInner = logoUrl
+        ? '<img src="' + logoUrl + '" alt="' + safe + '" style="width:64px;height:64px;object-fit:contain;border-radius:50%;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><span style="display:none;width:64px;height:64px;border-radius:50%;background:' + badgeBg + ';align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff">' + initials + '</span>'
+        : '<span style="width:64px;height:64px;border-radius:50%;background:' + badgeBg + ';display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff">' + initials + '</span>';
+
+      // Voted: green highlight. Blocked: dimmed + lock icon. Normal: default.
+      let btnStyle = 'display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 10px;border-radius:14px;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;text-align:center;';
+      let clickHandler = 'castVote(this)';
+      if (voted) {
+        btnStyle += 'background:rgba(60,184,46,0.12);border:1.5px solid rgba(60,184,46,0.5);color:var(--green);';
+      } else if (blocked) {
+        btnStyle += 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);color:rgba(255,255,255,0.25);opacity:0.4;cursor:not-allowed;pointer-events:none;filter:grayscale(0.8);';
+        clickHandler = 'void(0)';
+      } else {
+        btnStyle += 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.75);';
+      }
+
+      const lockOverlay = blocked
+        ? '<div style="position:absolute;top:0;right:0;width:18px;height:18px;background:rgba(0,0,0,0.7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px">🔒</div>'
+        : '';
+
+      return '<button onclick="' + clickHandler + '" data-club="' + safe + '" data-country="' + safeCo + '" data-continent="' + data.continent + '" data-league="' + league.replace(/"/g,'&quot;') + '"' +
+        ' style="' + btnStyle + '">' +
+        '<div style="width:64px;height:64px;position:relative;">' +
+          logoInner +
+          lockOverlay +
+          (voted ? '<div style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;background:#29bf12;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;border:2px solid var(--bg-card)">✓</div>' : '') +
+        '</div>' +
+        '<span style="line-height:1.2;word-break:break-word">' + club + '</span>' +
+        (voted ? '<span style="font-size:0.65rem;font-weight:700;color:var(--green)">✓ Voted</span>' :
+         blocked ? '<span style="opacity:0.4;font-size:0.6rem">' + leagueWinner + '\u2019s league</span>' :
+         '<span style="opacity:0.45;font-size:0.65rem;font-weight:600">+50 XP</span>') +
+      '</button>';
+    }).join('');
+
     return '<div style="' + cardStyle + '">' +
       comingSoonBadge +
       '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.06)">' +
@@ -2199,50 +2320,32 @@ function renderVoteLeagues() {
         '</div>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">' +
-        data.clubs.map(club => {
-          const voted = votedTodayMap[club];
-          const safe = club.replace(/"/g,'&quot;');
-          const safeCo = data.country.replace(/"/g,'&quot;');
-          const initials = club.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-          const colours = ['#e63946','#457b9d','#2a9d8f','#e9c46a','#f4a261','#6a0572','#1982c4','#8ac926','#ff595e','#6a0572'];
-          const badgeBg = colours[club.charCodeAt(0) % colours.length];
-          const logoUrl = clubLogosMap[club] || '';
-          const logoInner = logoUrl
-            ? '<img src="' + logoUrl + '" alt="' + safe + '" style="width:64px;height:64px;object-fit:contain;border-radius:50%;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><span style="display:none;width:64px;height:64px;border-radius:50%;background:' + badgeBg + ';align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff">' + initials + '</span>'
-            : '<span style="width:64px;height:64px;border-radius:50%;background:' + badgeBg + ';display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff">' + initials + '</span>';
-          return '<button onclick="castVote(this)" data-club="' + safe + '" data-country="' + safeCo + '" data-continent="' + data.continent + '"' +
-            ' style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 10px;border-radius:14px;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;text-align:center;' +
-            (voted ? 'background:rgba(60,184,46,0.12);border:1.5px solid rgba(60,184,46,0.5);color:var(--green)' : 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.75)') + '">' +
-            // Logo: real crest or initials badge
-            '<div style="width:64px;height:64px;position:relative;">' +
-              logoInner +
-              (voted ? '<div style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;background:#29bf12;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;border:2px solid var(--bg-card)">✓</div>' : '') +
-            '</div>' +
-            '<span style="line-height:1.2;word-break:break-word">' + club + '</span>' +
-            (!voted ? '<span style="opacity:0.45;font-size:0.65rem;font-weight:600">+50 XP</span>' : '') +
-          '</button>';
-        }).join('') +
+        clubs +
       '</div>' +
-    '</div>'
-  ).join('');
+    '</div>';
+  }).join('');
 }
 
 async function castVote(el) {
-  const clubName = el.getAttribute ? el.getAttribute('data-club') : el;
-  const country = el.getAttribute ? el.getAttribute('data-country') : arguments[1];
+  const clubName  = el.getAttribute ? el.getAttribute('data-club')      : el;
+  const country   = el.getAttribute ? el.getAttribute('data-country')   : arguments[1];
   const continent = el.getAttribute ? el.getAttribute('data-continent') : (arguments[2] || 'world');
+  const league    = el.getAttribute ? el.getAttribute('data-league')    : (arguments[3] || '');
   try {
     const res = await fetch('/api/clubs/vote', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ clubName, country, continent }),
+      body: JSON.stringify({ clubName, league, country, continent }),
     });
     const data = await res.json();
     if (res.ok) {
       votedTodayMap[clubName] = true;
+      if (league) leagueVotedMap[league] = clubName;
       showNotification('+50 XP! Voted for ' + clubName, 'success');
       renderVoteLeagues();
       loadClubLeaderboard(state.voteLeaderboardPeriod || 'alltime');
+    } else if (data.error === 'already_voted_league') {
+      showNotification('You already voted for ' + data.votedFor + ' in the ' + league + ' today!', 'warning');
     } else {
       showNotification(data.error || 'Vote failed', 'warning');
     }
