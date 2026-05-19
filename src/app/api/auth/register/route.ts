@@ -7,6 +7,8 @@ import * as React from "react";
 import { sendEmail, sendAdminAlert } from "@/lib/email";
 import VerifyEmailEmail from "@/emails/VerifyEmailEmail";
 import AdminAlertEmail from "@/emails/AdminAlertEmail";
+import ReferralConvertedEmail from "@/emails/ReferralConvertedEmail";
+import ReferralWelcomeBonusEmail from "@/emails/ReferralWelcomeBonusEmail";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,7 +27,6 @@ export async function POST(req: NextRequest) {
           { status: 403 }
         );
       }
-      // Verify referrer actually exists
       const referrer = await prisma.user.findUnique({ where: { id: referrerId }, select: { id: true } });
       if (!referrer) {
         return NextResponse.json(
@@ -51,28 +52,61 @@ export async function POST(req: NextRequest) {
         password: hashedPassword,
         verificationToken,
         preferredLeagues: Array.isArray(preferredLeagues) ? preferredLeagues : [],
+        // Give new user their +200 XP welcome bonus immediately if referred
+        xp: referrerId ? 200 : 0,
         ...(referrerId ? { referredById: referrerId } : {}),
       },
     });
 
-    // Log referral record (XP awarded later on first prediction)
+    // ── Referral XP — fires on registration (not first prediction) ───────────
     if (referrerId) {
       try {
+        // Create referral record and mark as already awarded
         await prisma.referral.create({
-          data: { referrerId, referredId: newUser.id },
+          data: { referrerId, referredId: newUser.id, xpAwarded: true },
         });
       } catch {
         // Ignore duplicate — referral already exists
       }
+
+      // Award +200 XP to the referrer
+      const referrer = await prisma.user.update({
+        where: { id: referrerId },
+        data: { xp: { increment: 200 } },
+        select: { name: true, email: true, xp: true },
+      });
+
+      // Notify referrer (fire-and-forget)
+      if (referrer.email) {
+        sendEmail({
+          to: referrer.email,
+          subject: `🎉 ${name} just joined Matchkoo using your invite link — +200 XP earned!`,
+          react: React.createElement(ReferralConvertedEmail, {
+            name: referrer.name ?? "there",
+            friendName: name,
+            xpAwarded: 200,
+            newTotalXp: referrer.xp,
+          }),
+        }).catch((err) => console.error("[email] Referral converted email failed:", err));
+      }
+
+      // Notify new user of their welcome bonus (fire-and-forget)
+      sendEmail({
+        to: email,
+        subject: `🎁 Welcome bonus! ${referrer.name ?? "A friend"}'s invite earned you +200 XP`,
+        react: React.createElement(ReferralWelcomeBonusEmail, {
+          name,
+          referrerName: referrer.name ?? "Your friend",
+          xpAwarded: 200,
+          newTotalXp: 200,
+        }),
+      }).catch((err) => console.error("[email] Referral welcome bonus email failed:", err));
     }
 
     const base = process.env.NEXTAUTH_URL ?? "https://matchkoo.com";
     const verifyUrl = `${base}/api/auth/verify-email?token=${verificationToken}`;
 
     console.log("[register] Sending verification email to:", email);
-    console.log("[register] FROM env:", process.env.RESEND_FROM ?? "(not set, using default)");
-    console.log("[register] RESEND_API_KEY set:", !!process.env.RESEND_API_KEY);
-
     const verifyResult = await sendEmail({
       to: email,
       subject: "Verify your Matchkoo email ✉️",

@@ -40,14 +40,22 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || (session.user as any)?.role !== "ADMIN") {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    if (!session?.user) {
+      return NextResponse.json({ message: "You must be logged in to create a league" }, { status: 401 });
     }
 
-    const { name, game, description, prizePool, prizes, maxPlayers, startDate, type, registrationMode, inviteCode } = await req.json();
+    const { name, game, description, prizePool, prizes, maxPlayers, startDate, type, registrationMode, inviteCode, competition, scoringMode } = await req.json();
 
     if (!name || !game || !startDate) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+    }
+
+    // Only ADMINS can create public/official tournaments; regular users can only create INVITE_ONLY mini leagues
+    const isAdmin = (session.user as any)?.role === "ADMIN";
+    const effectiveMode = registrationMode || "INVITE_ONLY";
+
+    if (effectiveMode !== "INVITE_ONLY" && !isAdmin) {
+      return NextResponse.json({ message: "Only admins can create public tournaments" }, { status: 403 });
     }
 
     const tournament = await prisma.tournament.create({
@@ -60,11 +68,23 @@ export async function POST(req: NextRequest) {
         maxPlayers: parseInt(maxPlayers) || 100,
         startDate: new Date(startDate),
         type: type || "League",
-        registrationMode: registrationMode || "OPEN",
-        inviteCode: registrationMode === "INVITE_ONLY" ? (inviteCode || null) : null,
+        registrationMode: effectiveMode,
+        inviteCode: effectiveMode === "INVITE_ONLY" ? (inviteCode || null) : null,
+        competition: competition || "premier_league",
+        scoringMode: scoringMode || "global",
         createdByUserId: (session.user as any).id,
       },
     });
+
+    // Auto-register the creator into their own mini league
+    if (effectiveMode === "INVITE_ONLY") {
+      await prisma.registration.create({
+        data: {
+          userId: (session.user as any).id,
+          tournamentId: tournament.id,
+        },
+      });
+    }
 
     return NextResponse.json(tournament, { status: 201 });
   } catch (error) {

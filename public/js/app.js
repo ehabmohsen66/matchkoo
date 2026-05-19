@@ -10,6 +10,7 @@ const state = {
   currentContinent: 'europe',
   currentLeague: null,
   predFilter: 'upcoming',
+  fixtureLeagueFilter: 'all',  // active league pill on home upcoming fixtures
   lbScope: 'global',
   lbPeriod: 'week',
   spinDone: false,
@@ -33,12 +34,22 @@ function _detectLangFromPath(path) {
 
 function _detectPageFromPath(path) {
   const parts = path.split('/').filter(Boolean);
-  // e.g. ['ar','app','leagues'] or ['app','leagues']
+  // e.g. ['ar','app','leagues','premier-league'] or ['app','leagues']
   const appIdx = parts.indexOf('app');
   if (appIdx !== -1 && parts.length > appIdx + 1) {
     return parts[appIdx + 1]; // the segment after /app/
   }
   return 'home';
+}
+
+/** Returns the league/continent slug from a path like /app/leagues/premier-league */
+function _detectLeagueSlugFromPath(path) {
+  const parts = path.split('/').filter(Boolean);
+  const appIdx = parts.indexOf('app');
+  if (appIdx !== -1 && parts[appIdx + 1] === 'leagues' && parts.length > appIdx + 2) {
+    return parts[appIdx + 2]; // e.g. 'premier-league' or 'europe'
+  }
+  return null;
 }
 
 function _buildUrl(lang, page) {
@@ -70,6 +81,7 @@ function navigate(page, skipHistory = false) {
 
   // Initialize page content
   if (page === 'home') initHome();
+  if (page === 'live') initLivePage();
   if (page === 'leagues') initLeaguesPage();
   if (page === 'predictions') initPredictions();
   if (page === 'leaderboard') initLeaderboard();
@@ -103,6 +115,20 @@ window.addEventListener('popstate', (e) => {
     if (typeof applyTranslations === 'function') applyTranslations(lg);
   }
   navigate(pg, true);
+
+  // Restore league/continent state from URL
+  if (pg === 'leagues') {
+    const slug = e.state?.leagueSlug || _detectLeagueSlugFromPath(window.location.pathname);
+    const continentId = e.state?.continentId;
+    if (e.state?.leagueId && e.state?.leagueName) {
+      // Restore specific league fixture view
+      setTimeout(() => openLeagueFixtures(e.state.leagueId, e.state.leagueName, true), 50);
+    } else if (continentId) {
+      setTimeout(() => selectContinent(continentId, true), 50);
+    } else if (slug) {
+      setTimeout(() => _restoreLeagueFromSlug(slug), 50);
+    }
+  }
 });
 
 function toggleMobileSidebar() {
@@ -255,27 +281,139 @@ async function renderLiveMatches() {
   }
 }
 
+let _livePageMatches = null; // cache so filter doesn't re-fetch
+
+function setLiveLeagueFilter(league) {
+  state.liveLeagueFilter = league;
+  // Update active pill state
+  document.querySelectorAll('#live-league-filters .fix-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.league === league);
+  });
+  _renderLivePageMatches();
+}
+
+async function initLivePage() {
+  state.liveLeagueFilter = state.liveLeagueFilter || 'all';
+  // Reset pill to All on fresh navigate
+  document.querySelectorAll('#live-league-filters .fix-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.league === state.liveLeagueFilter);
+  });
+
+  _livePageMatches = null; // force fresh fetch
+  await _renderLivePageMatches();
+}
+
+async function _renderLivePageMatches() {
+  const container = document.getElementById('all-live-container');
+  if (!container) return;
+
+  try {
+    if (!_livePageMatches) {
+      container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;text-align:center;">Loading live matches...</div>';
+      const matches = await fetch('/api/matches').then(r => r.ok ? r.json() : []);
+      _livePageMatches = matches.filter(m => {
+        const tName = _normaliseTournamentName(m.tournament?.name);
+        return ACTIVE_LEAGUE_NAMES.includes(tName) && m.status === 'LIVE';
+      });
+    }
+
+    const activeLeague = state.liveLeagueFilter || 'all';
+    let filtered = _livePageMatches;
+
+    if (activeLeague !== 'all') {
+      filtered = filtered.filter(m => {
+        const tName = _normaliseTournamentName(m.tournament?.name);
+        if (activeLeague === 'english premier league') return tName === 'english premier league' || tName === 'premier league';
+        if (activeLeague === 'uefa champions league')  return tName === 'uefa champions league'  || tName === 'champions league';
+        return tName === activeLeague;
+      });
+    }
+
+    if (!filtered.length) {
+      const label = activeLeague === 'all' ? 'any league' : activeLeague.replace(/\b\w/g, c => c.toUpperCase());
+      container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding:32px;">No live matches for ' + label + ' right now.</div>';
+      return;
+    }
+
+    // Group by league
+    const grouped = {};
+    filtered.forEach(m => {
+      const baseName = (m.tournament?.name || 'Match').replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '');
+      if (!grouped[baseName]) grouped[baseName] = [];
+      grouped[baseName].push(m);
+    });
+
+    let html = '';
+    for (const [leagueName, items] of Object.entries(grouped)) {
+      html += '<div class="fixture-day-header" style="margin-top:8px;">' + leagueName + '</div>';
+      items.forEach(m => {
+        const matchId = m.id;
+        const min = m.minute ? m.minute + "'" : 'LIVE';
+        const homeLogo = m.homeLogo ? '<img src="'+m.homeLogo+'" width="24" height="24" style="border-radius:50%">' : '';
+        const scoreStr = (m.homeScore??0) + ' \u2013 ' + (m.awayScore??0);
+        html +=
+          '<div class="fixture-row" data-match-id="' + matchId + '" onclick="openRealMatchDetail(\'' + matchId + '\')" role="button" tabindex="0">' +
+            '<div class="fixture-league-badge">' + homeLogo + '</div>' +
+            '<div class="fixture-teams">' +
+              '<div class="fixture-league-name" style="color:var(--red)">' + min + '</div>' +
+              '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
+              '<div style="font-family:\'Russo One\',sans-serif;color:var(--text-primary);font-size:1.1rem;letter-spacing:1px">' + scoreStr + '</div>' +
+            '</div>' +
+          '</div>';
+      });
+    }
+
+    container.innerHTML = html;
+  } catch(e) {
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;text-align:center;">Failed to load live matches.</div>';
+  }
+}
+
 async function renderFixturesList() {
   const container = document.getElementById('fixtures-list');
   if (!container) return;
   container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;">Loading fixtures...</div>';
   try {
     const matches = await fetch('/api/matches').then(r => r.ok ? r.json() : []);
-    const today = new Date(); today.setHours(0,0,0,0);
-    const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+2);
-    
-    // Only show matches from active leagues
-    const todays = matches.filter(m => { 
-        const d = new Date(m.matchDate);
-        const tName = _normaliseTournamentName(m.tournament?.name);
-        const isActive = ACTIVE_LEAGUE_NAMES.includes(tName);
-        return isActive && d >= today && d < tomorrow; 
+    const now   = new Date();
+    const today = new Date(now); today.setHours(0,0,0,0);
+    const cutoff = new Date(today); cutoff.setDate(today.getDate() + 7);
+    const activeLeague = state.fixtureLeagueFilter || 'all';
+
+    let upcoming = matches.filter(m => {
+      const d = new Date(m.matchDate);
+      const tName = _normaliseTournamentName(m.tournament?.name);
+      const isActive = ACTIVE_LEAGUE_NAMES.includes(tName);
+      return isActive && d >= today && d < cutoff && m.status !== 'COMPLETED';
     });
-    if (!todays.length) {
-      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:0.88rem;">No matches scheduled today in your leagues. Check Leagues & Cups for upcoming fixtures.</div>';
+
+    if (activeLeague !== 'all') {
+      upcoming = upcoming.filter(m => {
+        const tName = _normaliseTournamentName(m.tournament?.name);
+        if (activeLeague === 'english premier league') return tName === 'english premier league' || tName === 'premier league';
+        if (activeLeague === 'fifa world cup')          return tName === 'fifa world cup' || tName === 'world cup';
+        if (activeLeague === 'uefa champions league')   return tName === 'uefa champions league' || tName === 'champions league';
+        return tName === activeLeague;
+      });
+    }
+
+    if (!upcoming.length) {
+      const label = activeLeague === 'all' ? 'your leagues' : activeLeague.replace(/\b\w/g, c => c.toUpperCase());
+      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:0.88rem;">No upcoming fixtures for ' + label + '. Check back soon.</div>';
       return;
     }
-    container.innerHTML = todays.map(m => {
+
+    upcoming.sort((a, b) => {
+      if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
+      if (b.status === 'LIVE' && a.status !== 'LIVE') return 1;
+      return new Date(a.matchDate) - new Date(b.matchDate);
+    });
+
+    const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    let lastLabel = '';
+    const rows = upcoming.map(m => {
       const matchId = m.id;
       const isDouble = state.doubleMarkedMatch === matchId;
       const doubleBg = isDouble ? '#ff9914' : 'rgba(255,153,20,0.1)';
@@ -284,24 +422,42 @@ async function renderFixturesList() {
       const timeStr = t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
       const hasPred = !!m.userPrediction;
       const baseName = (m.tournament?.name || 'Match').replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '');
-      const displayName = typeof t === 'function' ? t(baseName, window._currentLang || 'en') : baseName;
-      return '<div class="fixture-row" data-match-id="' + matchId + '" onclick="openRealMatchDetail(\'' + matchId + '\')" role="button" tabindex="0">' +
-        '<div class="fixture-league-badge">' + (m.homeLogo ? '<img src="'+m.homeLogo+'" width="24" height="24" style="border-radius:50%">' : flag) + '</div>' +
-        '<div class="fixture-teams">' +
-          '<div class="fixture-league-name">' + displayName + '</div>' +
-          '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
-        '</div>' +
-        '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
-          (hasPred ? '<span style="color:var(--green);font-size:1.1rem;font-weight:900" title="Predicted">&#10003;</span>' : '') +
-          '<span class="live-badge" style="display:' + (m.status==='LIVE'?'inline':'none') + ';color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE</span>' +
-          '<button onclick="event.stopPropagation();toggleDoubleXP(\'' + matchId + '\')" title="Double XP" style="background:'+doubleBg+';border:1px solid '+doubleBg+';color:'+doubleColor+';font-size:0.65rem;font-weight:800;padding:3px 8px;border-radius:100px;cursor:pointer">2x</button>' +
-          '<div class="fixture-time live-score-val" style="color:' + (m.status==='LIVE'?'#f21b3f':m.status==='COMPLETED'?'rgba(255,255,255,0.4)':'') + '">' + (m.status==='COMPLETED'?(m.homeScore+'\u2013'+m.awayScore):m.status==='LIVE'?((m.homeScore??0)+'\u2013'+(m.awayScore??0)):timeStr) + '</div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
+
+      const mDay = new Date(t); mDay.setHours(0,0,0,0);
+      const diffDays = Math.round((mDay - today) / 86400000);
+      const dayLabel = diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : DAY_NAMES[t.getDay()];
+      let sep = '';
+      if (dayLabel !== lastLabel) { lastLabel = dayLabel; sep = '<div class="fixture-day-header">' + dayLabel + '</div>'; }
+
+      const liveScore = m.status === 'LIVE' ? ((m.homeScore??0) + '\u2013' + (m.awayScore??0)) : '';
+
+      return sep +
+        '<div class="fixture-row" data-match-id="' + matchId + '" onclick="openRealMatchDetail(\'' + matchId + '\')" role="button" tabindex="0">' +
+          '<div class="fixture-league-badge">' + (m.homeLogo ? '<img src="'+m.homeLogo+'" width="24" height="24" style="border-radius:50%">' : '') + '</div>' +
+          '<div class="fixture-teams">' +
+            '<div class="fixture-league-name">' + baseName + '</div>' +
+            '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
+            (hasPred ? '<span style="color:var(--green);font-size:1.1rem;font-weight:900" title="Predicted">&#10003;</span>' : '') +
+            (m.status === 'LIVE' ? '<span class="live-badge" style="color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE ' + liveScore + '</span>' : '') +
+            '<button onclick="event.stopPropagation();toggleDoubleXP(\'' + matchId + '\')" title="Double XP" style="background:'+doubleBg+';border:1px solid '+doubleBg+';color:'+doubleColor+';font-size:0.65rem;font-weight:800;padding:3px 8px;border-radius:100px;cursor:pointer">2x</button>' +
+            '<div class="fixture-time live-score-val">' + (m.status === 'LIVE' ? '' : timeStr) + '</div>' +
+          '</div>' +
+        '</div>';
+    });
+    container.innerHTML = rows.join('');
   } catch(e) {
     container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;">Could not load fixtures</div>';
   }
+}
+
+function setFixtureLeagueFilter(league) {
+  state.fixtureLeagueFilter = league;
+  document.querySelectorAll('#fixtures-league-filters .fix-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.league === league);
+  });
+  renderFixturesList();
 }
 
 function toggleDoubleXP(matchId) {
@@ -390,14 +546,22 @@ function initLeaguesPage() {
   renderLeagues(state.currentContinent);
 }
 
-function selectContinent(id) {
+function selectContinent(id, skipHistory = false) {
   state.currentContinent = id;
   document.querySelectorAll('.continent-card').forEach(c => c.classList.remove('active-continent'));
-  document.getElementById(`cont-${id}`).classList.add('active-continent');
+  const el = document.getElementById(`cont-${id}`);
+  if (el) el.classList.add('active-continent');
 
   // Hide league fixtures if open
   document.getElementById('league-fixtures-section').classList.add('hidden');
   document.getElementById('leagues-section').classList.remove('hidden');
+
+  // Push continent URL: /app/leagues/europe
+  if (!skipHistory) {
+    const lang = window._currentLang || 'en';
+    const base = lang === 'en' ? '/app' : '/' + lang + '/app';
+    window.history.pushState({ page: 'leagues', continentId: id, lang }, '', base + '/leagues/' + id);
+  }
 
   renderLeagues(id);
 }
@@ -511,12 +675,12 @@ function renderLeagues(continentId) {
   }).join("");
 }
 
-// ── Follow / Unfollow a league from the Discover page ─────────────────────────
+// ── Join / Leave a league from the Discover page ─────────────────────────
 async function toggleFollow(leagueId, leagueName, canonicalName) {
   const btn = document.getElementById('follow-btn-' + leagueId);
   if (!btn) return;
 
-  const currentlyFollowed = btn.textContent.trim().startsWith('✕');
+  const currentlyFollowed = btn.textContent.trim().startsWith('✓');
   const action = currentlyFollowed ? 'unfollow' : 'follow';
 
   // Optimistic UI: disable + show spinner
@@ -526,12 +690,12 @@ async function toggleFollow(leagueId, leagueName, canonicalName) {
   const ok = await Backend.toggleLeagueFollow(canonicalName, action);
 
   if (ok) {
-    // Update button without full re-render
     const nowFollowed = action === 'follow';
     btn.textContent = nowFollowed ? '✓ Joined' : '+ Join';
-    btn.style.border = '1px solid rgba(111,232,64,0.5)';
-    btn.style.background = 'rgba(111,232,64,0.12)';
-    btn.style.color = '#6FE840';
+    // Joined → green; Left → subtle grey
+    btn.style.border   = '1px solid ' + (nowFollowed ? 'rgba(111,232,64,0.5)' : 'rgba(255,255,255,0.12)');
+    btn.style.background = nowFollowed ? 'rgba(111,232,64,0.12)' : 'rgba(255,255,255,0.04)';
+    btn.style.color    = nowFollowed ? '#6FE840' : 'rgba(255,255,255,0.55)';
 
     // Toast feedback
     const toast = document.createElement('div');
@@ -555,14 +719,22 @@ async function toggleFollow(leagueId, leagueName, canonicalName) {
   btn.disabled = false;
 }
 
-function openLeagueFixtures(leagueId, leagueName) {
+function openLeagueFixtures(leagueId, leagueName, skipHistory = false) {
   state.currentLeague = leagueId;
   document.getElementById('leagues-section').classList.add('hidden');
   document.getElementById('league-fixtures-section').classList.remove('hidden');
 
-  // Push URL: /app/leagues/<slug>
-  const slug = leagueName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  window.history.pushState({ page: 'leagues', leagueId, leagueName }, '', '/app/leagues/' + slug);
+  // Push unique URL: /app/leagues/{league-slug}
+  if (!skipHistory) {
+    const slug = leagueName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const lang = window._currentLang || 'en';
+    const base = lang === 'en' ? '/app' : '/' + lang + '/app';
+    window.history.pushState(
+      { page: 'leagues', leagueId, leagueName, leagueSlug: slug, continentId: state.currentContinent, lang },
+      '',
+      base + '/leagues/' + slug
+    );
+  }
   // Show prizes if available for this league
   const prizesSection = document.getElementById('league-prizes-section');
   const tournament = (DATA.continents.world?.leagues || []).find(l => l.id === leagueId || l._realId === leagueId);
@@ -581,8 +753,8 @@ function openLeagueFixtures(leagueId, leagueName) {
   container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;">Loading fixtures...</div>';
 
   // leagueId is a CUID (25 chars) when it is a real tournament synced from the admin panel.
-  // Static mock leagues use short ids like 'epl', 'caf-cl', etc.
-  const looksLikeRealId = leagueId.length > 10;
+  // Static mock leagues use short ids like 'epl', 'wc2026', etc.
+  const looksLikeRealId = leagueId && leagueId.length > 10;
 
   if (looksLikeRealId) {
     // Fetch both matches and tournament info (for prizes)
@@ -591,13 +763,12 @@ function openLeagueFixtures(leagueId, leagueName) {
       fetch('/api/tournaments').then(r => r.ok ? r.json() : []),
     ]).then(([matches, tournaments]) => {
       // Show prizes if admin configured them
-      const tournament = tournaments.find(t => t.id === leagueId);
-      const prizesSection = document.getElementById('league-prizes-section');
+      const t = tournaments.find(t => t.id === leagueId);
       if (prizesSection) {
-        if (tournament?.prizes) {
+        if (t?.prizes) {
           prizesSection.style.display = 'block';
           const prizesContent = document.getElementById('league-prizes-content');
-          if (prizesContent) prizesContent.textContent = tournament.prizes;
+          if (prizesContent) prizesContent.textContent = t.prizes;
         } else {
           prizesSection.style.display = 'none';
         }
@@ -605,16 +776,57 @@ function openLeagueFixtures(leagueId, leagueName) {
       if (matches && matches.length > 0) {
         _renderRealFixtures(container, matches, leagueName);
       } else {
-        _renderMockFixtures(container, leagueName);
+        _renderNoFixtures(container, leagueName);
       }
-    }).catch(() => _renderMockFixtures(container, leagueName));
+    }).catch(() => _renderNoFixtures(container, leagueName));
   } else {
-    _renderMockFixtures(container, leagueName);
+    // Static/short ID — resolve to real tournament CUID by name matching
+    fetch('/api/tournaments').then(r => r.ok ? r.json() : []).then(tournaments => {
+      const cleanTarget = leagueName.toLowerCase()
+        .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
+        .replace(/\s+\[\d+\]$/, '').trim();
+
+      const matched = tournaments.find(t => {
+        const cleanT = (t.name || '').toLowerCase()
+          .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
+          .replace(/\s+\[\d+\]$/, '').trim();
+        return cleanT === cleanTarget;
+      });
+
+      if (matched) {
+        // Found the real tournament — fetch its matches
+        return fetch('/api/matches?tournamentId=' + encodeURIComponent(matched.id))
+          .then(r => r.ok ? r.json() : [])
+          .then(matches => {
+            if (matches && matches.length > 0) {
+              _renderRealFixtures(container, matches, leagueName);
+            } else {
+              _renderNoFixtures(container, leagueName);
+            }
+          });
+      } else {
+        _renderNoFixtures(container, leagueName);
+      }
+    }).catch(() => _renderNoFixtures(container, leagueName));
   }
+}
+
+function _renderNoFixtures(container, leagueName) {
+  const name = leagueName || 'this league';
+  container.innerHTML =
+    '<div style="text-align:center;padding:48px 24px;">' +
+      '<div style="font-size:2.5rem;margin-bottom:16px">🏟️</div>' +
+      '<div style="font-weight:800;color:#fff;font-size:1.1rem;margin-bottom:8px">No Upcoming Fixtures</div>' +
+      '<div style="color:var(--text-muted);font-size:0.85rem;line-height:1.6">No ' + name + ' matches are scheduled yet.<br>Check back soon — fixtures update daily.</div>' +
+    '</div>';
 }
 
 /** Render real DB-backed fixtures, sorted by upcoming first then date, grouped by round */
 function _renderRealFixtures(container, matches, leagueName) {
+  // Cache every match so openRealMatchDetail can find it without re-fetching
+  if (!state._matchCache) state._matchCache = {};
+  matches.forEach(m => { state._matchCache[m.id] = m; });
+
   // Sort: UPCOMING/LIVE first (by date asc), then COMPLETED (by date desc)
   const sorted = [...matches].sort((a, b) => {
     const aLive = a.status === 'UPCOMING' || a.status === 'LIVE';
@@ -751,7 +963,7 @@ async function renderPredictions(filter) {
       // XP display
       let xpDisplay = 'Pending';
       if (p.match?.status === 'COMPLETED') {
-        xpDisplay = p.xpEarned > 0 ? '+' + p.xpEarned.toLocaleString() + ' XP' : '0 XP';
+        xpDisplay = p.xpEarned > 0 ? '+' + p.xpEarned.toLocaleString() + ' XP' : p.xpEarned < 0 ? p.xpEarned.toLocaleString() + ' XP' : '0 XP';
       }
 
       // Show actual result if completed
@@ -769,15 +981,131 @@ async function renderPredictions(filter) {
         picks,
         xpDisplay,
         resultLine,
+        // Raw fields for breakdown panel
+        _raw: p,
       };
     });
   } catch(e) {}
   
-  // Reset the league filter when switching tabs so we don't accidentally hide items
   const select = document.getElementById('pred-league-filter');
   if (select) select.value = 'ALL';
-
   applyLocalPredFilter(filter);
+}
+
+/** Build a full XP breakdown HTML for a completed prediction */
+function _buildXpBreakdown(pred, matchId) {
+  const p = pred._raw;
+  if (!p || p.match?.status !== 'COMPLETED' || p.match.homeScore == null) return '';
+
+  const hs = p.match.homeScore, as = p.match.awayScore;
+  const correctResult =
+    (p.homeScore > p.awayScore && hs > as) ||
+    (p.homeScore < p.awayScore && hs < as) ||
+    (p.homeScore === p.awayScore && hs === as);
+  const exactScore   = p.homeScore === hs && p.awayScore === as;
+  const actualBtts   = hs > 0 && as > 0;
+  const correctBtts  = p.btts !== null && p.btts !== undefined && p.btts === actualBtts;
+  const actualTotal  = hs + as;
+  const actualBucket = actualTotal >= 5 ? 5 : actualTotal;
+  const predBucket   = (p.totalGoals ?? -1) >= 5 ? 5 : (p.totalGoals ?? -1);
+  const correctTotalGoals = p.totalGoals !== null && p.totalGoals !== undefined && predBucket === actualBucket;
+  const correctFGS   = !!(p.firstGoalScorer && p.match.firstGoalScorer &&
+    p.firstGoalScorer.trim().toLowerCase() === p.match.firstGoalScorer.trim().toLowerCase());
+
+  const conf = p.confidence || 50;
+  const multiplier = 1 + ((conf - 50) / 50);
+
+  let baseXp = 0;
+  if (correctResult) baseXp += 50;
+  if (exactScore)    baseXp += 150;
+  if (p.firstGoalScorer) baseXp += correctFGS ? 100 : 0;
+  let xp = Math.round(baseXp * multiplier);
+  if (!correctResult) xp -= Math.round(50  * (conf / 100));
+  if (p.firstGoalScorer && !correctFGS) xp -= Math.round(100 * (conf / 100));
+  const bttsBonus  = correctBtts ? 75 : 0;
+  const tgBonus    = correctTotalGoals ? 75 : 0;
+  xp += bttsBonus + tgBonus;
+  const beforeDouble = xp;
+  if (p.isDouble && xp > 0) xp *= 2;
+  const storedXp = p.xpEarned ?? null;  // what was actually credited to their account
+  // Use fresh recalculation as the canonical total so components always add up
+  const displayXp = xp;
+
+  const tick  = s => `<span style="color:#4ade80;font-weight:800">${s}</span>`;
+  const cross = s => `<span style="color:#f87171;font-weight:800">${s}</span>`;
+  const rowStyle = 'display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.78rem;';
+  const labelStyle = 'color:rgba(255,255,255,0.55);';
+
+  const totalGoalLabel = p.totalGoals === null || p.totalGoals === undefined ? '—'
+    : (p.totalGoals >= 5 ? '5+' : String(p.totalGoals));
+  const actualTotalLabel = actualTotal >= 5 ? '5+' : String(actualTotal);
+  const bttsLabel = p.btts === null || p.btts === undefined ? '—' : (p.btts ? 'Yes' : 'No');
+  const fgsLabel  = p.firstGoalScorer || '—';
+  const actualFgsLabel = p.match.firstGoalScorer || '—';
+
+  return `
+  <div id="breakdown-${matchId}" style="display:none;margin-top:10px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;">
+    <!-- Predicted vs Actual table -->
+    <div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Prediction Breakdown</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:0.72rem;margin-bottom:12px;">
+      <div style="color:rgba(255,255,255,0.3);font-weight:700;">What</div>
+      <div style="color:rgba(255,255,255,0.3);font-weight:700;">Your Pick</div>
+      <div style="color:rgba(255,255,255,0.3);font-weight:700;">Actual</div>
+
+      <div style="${labelStyle}">Score</div>
+      <div>${p.homeScore}–${p.awayScore}</div>
+      <div>${correctResult ? tick(hs+'–'+as) : cross(hs+'–'+as)}</div>
+
+      ${p.btts !== null && p.btts !== undefined ? `
+      <div style="${labelStyle}">BTTS</div>
+      <div>${bttsLabel}</div>
+      <div>${correctBtts ? tick(actualBtts?'Yes':'No') : cross(actualBtts?'Yes':'No')}</div>
+      ` : ''}
+
+      ${p.totalGoals !== null && p.totalGoals !== undefined ? `
+      <div style="${labelStyle}">Total Goals</div>
+      <div>${totalGoalLabel}</div>
+      <div>${correctTotalGoals ? tick(actualTotalLabel) : cross(actualTotalLabel)}</div>
+      ` : ''}
+
+      ${p.firstGoalScorer ? `
+      <div style="${labelStyle}">1st Scorer</div>
+      <div style="font-size:0.68rem;">${fgsLabel}</div>
+      <div style="font-size:0.68rem;">${correctFGS ? tick(actualFgsLabel) : cross(actualFgsLabel)}</div>
+      ` : ''}
+    </div>
+
+    <!-- XP Components -->
+    <div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">XP Calculation</div>
+
+    ${correctResult   ? `<div style="${rowStyle}"><span style="${labelStyle}">✅ Correct result</span>${tick('+50 XP')}</div>` : `<div style="${rowStyle}"><span style="${labelStyle}">❌ Wrong result (penalty)</span>${cross('−'+Math.round(50*(conf/100))+' XP')}</div>`}
+    ${exactScore      ? `<div style="${rowStyle}"><span style="${labelStyle}">🎯 Exact scoreline</span>${tick('+150 XP')}</div>` : ''}
+    ${p.firstGoalScorer && correctFGS  ? `<div style="${rowStyle}"><span style="${labelStyle}">⚽ First goalscorer</span>${tick('+100 XP')}</div>` : ''}
+    ${p.firstGoalScorer && !correctFGS ? `<div style="${rowStyle}"><span style="${labelStyle}">⚽ Wrong goalscorer (penalty)</span>${cross('−'+Math.round(100*(conf/100))+' XP')}</div>` : ''}
+    ${bttsBonus  > 0  ? `<div style="${rowStyle}"><span style="${labelStyle}">🔵 Both teams scored</span>${tick('+75 XP')}</div>` : (p.btts !== null && p.btts !== undefined ? `<div style="${rowStyle}"><span style="${labelStyle}">🔵 BTTS wrong</span><span style="color:rgba(255,255,255,0.3)">0 XP</span></div>` : '')}
+    ${tgBonus    > 0  ? `<div style="${rowStyle}"><span style="${labelStyle}">🎱 Total goals correct</span>${tick('+75 XP')}</div>` : (p.totalGoals !== null && p.totalGoals !== undefined ? `<div style="${rowStyle}"><span style="${labelStyle}">🎱 Total goals wrong</span><span style="color:rgba(255,255,255,0.3)">0 XP</span></div>` : '')}
+    <div style="${rowStyle}"><span style="${labelStyle}">Confidence (${conf}%)</span><span style="color:var(--cyan)">×${multiplier.toFixed(1)}</span></div>
+    ${p.isDouble && beforeDouble > 0 ? `<div style="${rowStyle}"><span style="${labelStyle}">🃏 Double Joker</span><span style="color:var(--gold)">×2</span></div>` : ''}
+
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 0;margin-top:4px;border-top:1px solid rgba(255,255,255,0.12);">
+      <span style="font-size:0.78rem;font-weight:800;color:#fff;">Total XP (current rules)</span>
+      <span style="font-size:1rem;font-weight:900;color:${displayXp >= 0 ? '#4ade80' : '#f87171'}">${displayXp >= 0 ? '+' : ''}${displayXp} XP</span>
+    </div>
+    ${storedXp !== null && storedXp !== displayXp ? `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 0;font-size:0.72rem;">
+      <span style="color:rgba(255,180,0,0.7);">⚠️ Credited to account</span>
+      <span style="color:rgba(255,180,0,0.85);font-weight:800;">${storedXp >= 0 ? '+' : ''}${storedXp} XP (scored under previous rules)</span>
+    </div>` : ''}
+  </div>`;
+}
+
+function togglePredBreakdown(matchId) {
+  const el = document.getElementById('breakdown-' + matchId);
+  const btn = document.getElementById('breakdown-btn-' + matchId);
+  if (!el) return;
+  const open = el.style.display === 'block';
+  el.style.display = open ? 'none' : 'block';
+  if (btn) btn.textContent = open ? '📊 How was this scored?' : '▲ Hide breakdown';
 }
 
 function applyLocalPredFilter(statusFilterOverride) {
@@ -836,9 +1164,15 @@ function applyLocalPredFilter(statusFilterOverride) {
         const statusIcon = p.status === 'correct' ? '✅' : p.status === 'wrong' ? '❌' : '⏳';
         const statusLabel = p.status === 'correct' ? 'Correct' : p.status === 'wrong' ? 'Wrong' : 'Upcoming';
         const xpColor = p.status === 'correct' ? '#ffd700' : p.status === 'wrong' ? 'rgba(255,255,255,0.3)' : 'var(--text-secondary)';
+        
+        const isCompleted = p.status === 'correct' || p.status === 'wrong';
+        const breakdownHtml = isCompleted ? _buildXpBreakdown(p, mid) : '';
+        const breakdownBtn = isCompleted
+          ? `<button id="breakdown-btn-${mid}" onclick="event.stopPropagation();togglePredBreakdown('${mid}')" style="margin-top:8px;width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:7px;font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.45);cursor:pointer;">📊 How was this scored?</button>`
+          : '';
 
-        return '<div class="pred-item ' + p.status + '" role="listitem" style="cursor:pointer" onclick="openRealMatchDetail(\'' + mid + '\')">' +
-          '<div class="pred-item-header">' +
+        return '<div class="pred-item ' + p.status + '" role="listitem">' +
+          '<div class="pred-item-header" onclick="openRealMatchDetail(\'' + mid + '\')" style="cursor:pointer">' +
             '<span class="pred-item-league">' + (p.date || '') + '</span>' +
             '<div style="display:flex;align-items:center;gap:8px">' +
               (canEdit ? '<button onclick="event.stopPropagation();openRealMatchDetail(\'' + mid + '\')" style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(60,184,46,0.1);border:1px solid rgba(60,184,46,0.3);color:var(--green);cursor:pointer">Edit</button>' : '') +
@@ -849,6 +1183,8 @@ function applyLocalPredFilter(statusFilterOverride) {
           (p.resultLine ? '<div style="font-size:0.72rem;color:rgba(255,255,255,0.4);margin-bottom:4px">' + p.resultLine + '</div>' : '') +
           '<div class="pred-item-picks">' + p.picks.map(pick => '<span class="pred-pick-tag">' + pick + '</span>').join('') + '</div>' +
           '<div class="pred-item-xp" style="font-weight:800;color:' + xpColor + '">' + p.xpDisplay + '</div>' +
+          breakdownBtn +
+          breakdownHtml +
         '</div>';
       }).join('') +
     '</div>';
@@ -946,49 +1282,80 @@ async function loadMyLeagueRanks() {
   if (!listEl) return;
 
   try {
-    // Fetch user's registered tournaments
-    const [regRes, mlRes] = await Promise.all([
-      fetch('/api/leaderboard?myLeagues=true').then(r => r.ok ? r.json() : []),
-      fetch('/api/leaderboard?miniLeagues=true').then(r => r.ok ? r.json() : []),
-    ]);
+    const tournamentsRes = await fetch('/api/tournaments').then(r => r.ok ? r.json() : []);
 
-    if (!regRes || regRes.length === 0) {
-      listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px">You have not joined any leagues or cups yet. Go to Leagues & Cups to join!</div>';
+    // ── Official league rankings (prediction-based, no registration needed) ──
+    const officialTournaments = tournamentsRes.filter(t => t.registrationMode !== 'INVITE_ONLY');
+
+    if (!officialTournaments.length) {
+      listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px">No active leagues yet.</div>';
     } else {
-      listEl.innerHTML = regRes.map(item =>
-        '<div style="display:flex;align-items:center;gap:14px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05)">' +
-          '<div style="font-size:1.4rem">' + (item.type === 'Cup' ? '🏆' : '⚽') + '</div>' +
-          '<div style="flex:1">' +
-            '<div style="font-weight:700;color:#fff;font-size:0.88rem">' + item.name + '</div>' +
-            '<div style="font-size:0.7rem;color:rgba(255,255,255,0.4)">' + item.type + '</div>' +
-          '</div>' +
-          '<div style="text-align:right">' +
-            '<div style="font-weight:800;font-size:1.1rem;color:' + (item.rank <= 3 ? 'var(--gold)' : '#fff') + '">#' + item.rank + '</div>' +
-            '<div style="font-size:0.7rem;color:rgba(255,255,255,0.4)">' + item.xp.toLocaleString() + ' XP</div>' +
-          '</div>' +
-        '</div>'
-      ).join('');
+      listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;font-size:0.8rem;">Loading rankings...</div>';
+
+      // Fetch leaderboard for each official tournament in parallel
+      const rankResults = await Promise.all(
+        officialTournaments.map(t =>
+          fetch('/api/leaderboard?tournamentId=' + t.id)
+            .then(r => r.ok ? r.json() : [])
+            .then(rows => ({ tournament: t, rows }))
+        )
+      );
+
+      // Find my entry in each
+      const myEntries = rankResults
+        .map(({ tournament: t, rows }) => {
+          const me = rows.find(r => r.isMe);
+          if (!me) return null;
+          const comp = _compFromTournament(t);
+          return { t, me, comp, total: rows.length };
+        })
+        .filter(Boolean);
+
+      if (!myEntries.length) {
+        listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:0.85rem;">Make predictions on league matches to appear here!</div>';
+      } else {
+        listEl.innerHTML = myEntries.map(({ t, me, comp, total }) => {
+          const logoHtml = comp
+            ? `<img src="${comp.logo}" width="30" height="30" style="object-fit:contain;">`
+            : `<span style="font-size:1.3rem">⚽</span>`;
+          const name = (t.name || '').replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '').trim();
+          const rankColor = me.rank === 1 ? '#ffd700' : me.rank === 2 ? '#c0c0c0' : me.rank === 3 ? '#cd7f32' : '#fff';
+          return '<div style="display:flex;align-items:center;gap:14px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05)">' +
+            '<div style="width:34px;height:34px;display:flex;align-items:center;justify-content:center">' + logoHtml + '</div>' +
+            '<div style="flex:1">' +
+              '<div style="font-weight:700;color:#fff;font-size:0.88rem">' + name + '</div>' +
+              '<div style="font-size:0.7rem;color:rgba(255,255,255,0.4)">' + me.xp.toLocaleString() + ' XP · out of ' + total + ' predictors</div>' +
+            '</div>' +
+            '<div style="text-align:right">' +
+              '<div style="font-weight:800;font-size:1.1rem;color:' + rankColor + '">#' + me.rank + '</div>' +
+              '<div style="font-size:0.65rem;color:rgba(255,255,255,0.3)">' + Math.round((me.accuracy || 0)) + '% acc</div>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
     }
 
-    if (!mlRes || mlRes.length === 0) {
+    // ── My Mini Leagues — INVITE_ONLY tournaments the user has joined ──
+    const myMiniLeagues = tournamentsRes.filter(t => t.registrationMode === 'INVITE_ONLY' && t.userRegistered === true);
+
+    if (!myMiniLeagues.length) {
       if (miniListEl) miniListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:24px">No mini leagues joined yet</div>';
     } else {
-      if (miniListEl) miniListEl.innerHTML = mlRes.map(item =>
-        '<div style="display:flex;align-items:center;gap:14px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05)">' +
-          '<div style="font-size:1.4rem">👥</div>' +
+      if (miniListEl) miniListEl.innerHTML = myMiniLeagues.map(t => {
+        const comp = COMP_META[t.competition] || COMP_META['premier_league'];
+        const logoHtml = `<img src="${comp.logo}" width="30" height="30" style="object-fit:contain;">`;
+        return '<div style="display:flex;align-items:center;gap:14px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05);cursor:pointer" onclick="navigate(\'minileague\')">' +
+          '<div style="width:34px;height:34px;display:flex;align-items:center;justify-content:center">' + logoHtml + '</div>' +
           '<div style="flex:1">' +
-            '<div style="font-weight:700;color:#fff;font-size:0.88rem">' + item.name + '</div>' +
-            '<div style="font-size:0.7rem;color:rgba(255,255,255,0.4)">Code: ' + item.code + ' · ' + item.members + ' members</div>' +
+            '<div style="font-weight:700;color:#fff;font-size:0.88rem">' + t.name + '</div>' +
+            '<div style="font-size:0.7rem;color:rgba(255,255,255,0.4)">' + comp.label + ' · ' + (t._count?.registrations || 0) + ' members</div>' +
           '</div>' +
-          '<div style="text-align:right">' +
-            '<div style="font-weight:800;font-size:1.1rem;color:' + (item.rank <= 3 ? 'var(--gold)' : '#fff') + '">#' + item.rank + '</div>' +
-            '<div style="font-size:0.7rem;color:rgba(255,255,255,0.4)">' + item.xp.toLocaleString() + ' XP</div>' +
-          '</div>' +
-        '</div>'
-      ).join('');
+          '<div style="color:rgba(255,255,255,0.3);font-size:0.75rem">View →</div>' +
+        '</div>';
+      }).join('');
     }
   } catch(e) {
-    listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px">Could not load league ranks</div>';
+    if (listEl) listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px">Could not load league ranks</div>';
   }
 }
 
@@ -1056,41 +1423,214 @@ function renderLeaderboardTable(entries) {
 async function initMiniLeagues() {
   const container = document.getElementById('my-leagues-grid');
   if (!container) return;
+  // Reset to list view when re-initialising
+  const detailPanel = document.getElementById('mini-league-detail-panel');
+  const listView = document.getElementById('mini-league-list-view');
+  if (detailPanel) detailPanel.classList.add('hidden');
+  if (listView) listView.classList.remove('hidden');
+
   container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;">Loading leagues...</div>';
   try {
     const data = await fetch('/api/tournaments').then(r => r.ok ? r.json() : []);
-    if (!data.length) {
-      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:48px;font-size:0.9rem;">No mini leagues yet. Create one or join with an invite code below!</div>';
+
+    // Only show INVITE_ONLY mini leagues the user has actually joined
+    const myLeagues = data.filter(t => t.registrationMode === 'INVITE_ONLY' && t.userRegistered === true);
+
+    if (!myLeagues.length) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:48px;font-size:0.9rem;">You haven\'t joined any mini leagues yet.<br><span style="font-size:0.8rem;margin-top:4px;display:block;">Create one or join with an invite code below!</span></div>';
       return;
     }
-    container.innerHTML = data.map(ml => `
-    <div class="league-tile" role="button" tabindex="0">
-      <div class="league-tile-header">
-        <div class="league-tile-badge" style="background:var(--bg-card3)">${ml.type==='Cup'?'🏆':'⚽'}</div>
-        <div class="league-tile-info">
-          <div class="league-tile-name">${ml.name}</div>
-          <div class="league-tile-meta">${ml.type} · ${ml._count?.registrations||0} members</div>
+    container.innerHTML = myLeagues.map(ml => {
+      const comp = COMP_META[ml.competition] || COMP_META['premier_league'];
+      return `
+      <div class="league-tile" role="button" tabindex="0" onclick="openMiniLeagueDetail('${ml.id}')" style="cursor:pointer;">
+        <div class="league-tile-header">
+          <div class="league-tile-badge" style="background:rgba(0,0,0,0.3);width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex-shrink:0;">${_compBadge(comp, 32)}</div>
+          <div class="league-tile-info">
+            <div class="league-tile-name">${ml.name}</div>
+            <div class="league-tile-meta">${comp.label} · ${ml._count?.registrations||0} member${(ml._count?.registrations||0)===1?'':'s'}</div>
+          </div>
         </div>
-      </div>
-      <div class="league-tile-body">
-        <div class="league-rank-row">
-          <span class="league-rank-label">Status</span>
-          <span class="league-rank-value" style="color:${ml.userRegistered?'var(--green)':'rgba(255,255,255,0.4)'}">${ml.userRegistered?'✓ Joined':'Not joined'}</span>
+        <div class="league-tile-body">
+          <div class="league-rank-row">
+            <span class="league-rank-label">Invite Code</span>
+            <code style="font-size:0.75rem;color:var(--cyan);font-weight:700">${ml.inviteCode || '—'}</code>
+          </div>
+          <div class="league-rank-row" style="margin-top:6px;">
+            <span class="league-rank-label" style="color:rgba(255,255,255,0.3);font-size:0.7rem;">Tap to view ranking & fixtures →</span>
+          </div>
         </div>
-        <div class="league-members-row">
-          <span class="member-count-more">${ml._count?.registrations||0} members${ml.inviteCode?' · Code: <code style="font-size:0.65rem;color:var(--green)">'+ml.inviteCode+'</code>':''}</span>
-        </div>
-      </div>
-    </div>
-  `).join('');
+      </div>`;
+    }).join('');
   } catch(e) {
     container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;">Could not load leagues</div>';
   }
 }
 
+// Competition metadata
+const COMP_META = {
+  premier_league:          { label: 'Premier League',   logo: 'https://media.api-sports.io/football/leagues/39.png',  color: '#3d195b', accent: '#00ff85' },
+  la_liga:                 { label: 'La Liga',           logo: 'https://media.api-sports.io/football/leagues/140.png', color: '#ee8707', accent: '#fff' },
+  champions_league:        { label: 'Champions League', logo: 'https://media.api-sports.io/football/leagues/2.png',   color: '#001489', accent: '#f0c040' },
+  egyptian_premier_league: { label: 'Egyptian Premier', logo: 'https://media.api-sports.io/football/leagues/233.png', color: '#c8102e', accent: '#fff' },
+  world_cup:               { label: 'World Cup',        logo: 'https://media.api-sports.io/football/leagues/1.png',   color: '#006233', accent: '#ffd700' },
+};
+
+// Returns an <img> badge for a competition
+function _compBadge(comp, size = 32) {
+  return `<img src="${comp.logo}" width="${size}" height="${size}" style="object-fit:contain;filter:drop-shadow(0 0 4px rgba(0,0,0,0.4))">`;
+}
+
+// Derive COMP_META key from a tournament name (works for DB names like "La Liga 2025 [140]")
+function _compKeyFromName(name) {
+  const n = (name || '').toLowerCase()
+    .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
+    .replace(/\s+\[\d+\]$/, '')
+    .trim();
+  if (n.includes('egyptian')) return 'egyptian_premier_league';
+  if (n.includes('world cup') || n.includes('fifa world cup')) return 'world_cup';
+  if (n.includes('champions')) return 'champions_league';
+  if (n.includes('la liga')) return 'la_liga';
+  if (n.includes('premier league')) return 'premier_league';
+  return null;
+}
+
+// Get comp meta from tournament object — tries competition field first, falls back to name
+function _compFromTournament(t) {
+  if (t?.competition && t.competition !== 'premier_league') {
+    return COMP_META[t.competition] || null;
+  }
+  const keyFromName = _compKeyFromName(t?.name);
+  return keyFromName ? (COMP_META[keyFromName] || null) : null;
+}
+
 function openLeaguePage(id) {
-  // Future: navigate to individual league page
-  showNotification(`Opening ${DATA.miniLeagues.find(ml => ml.id === id)?.name}...`, 'info');
+  openMiniLeagueDetail(id);
+}
+
+async function openMiniLeagueDetail(leagueId) {
+  // Show a full-screen panel inside page-minileague
+  const panel = document.getElementById('mini-league-detail-panel');
+  if (!panel) return;
+  panel.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:48px;">Loading...</div>';
+  panel.classList.remove('hidden');
+  document.getElementById('mini-league-list-view').classList.add('hidden');
+
+  try {
+    const data = await fetch('/api/mini-leagues/' + leagueId).then(r => r.ok ? r.json() : null);
+    if (!data) { panel.innerHTML = '<div style="color:var(--red);padding:32px;">Failed to load league.</div>'; return; }
+
+    const comp = COMP_META[data.competition] || COMP_META['premier_league'];
+    const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+    // Build ranking rows
+    const rankHtml = data.ranking.length ? data.ranking.map((r, i) => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <div style="font-weight:800;min-width:28px;color:${i===0?'#ffd700':i===1?'#c0c0c0':i===2?'#cd7f32':'rgba(255,255,255,0.4)'};text-align:center">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>
+        <img src="${r.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+encodeURIComponent(r.name)}" width="34" height="34" style="border-radius:50%;border:2px solid ${r.isMe?'var(--green)':'rgba(255,255,255,0.1)'}">
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:0.9rem;color:${r.isMe?'var(--green)':'var(--text-primary)'}">
+            ${r.name}${r.isMe?' <span style="font-size:0.65rem;color:var(--green)">YOU</span>':''}
+          </div>
+        </div>
+        <div style="font-weight:800;color:var(--cyan);font-size:0.85rem">${(r.xp||0).toLocaleString()} XP</div>
+      </div>
+    `).join('') : '<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:0.85rem;">No predictions scored yet. Predict upcoming games!</div>';
+
+    // Build fixture rows
+    const today = new Date(); today.setHours(0,0,0,0);
+    let lastLabel = '';
+    const fixtureHtml = data.fixtures.length ? data.fixtures.map(m => {
+      const t = new Date(m.matchDate);
+      const mDay = new Date(t); mDay.setHours(0,0,0,0);
+      const diffDays = Math.round((mDay - today) / 86400000);
+      const dayLabel = diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : DAY_NAMES[t.getDay()];
+      const timeStr = t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      let sep = '';
+      if (dayLabel !== lastLabel) { lastLabel = dayLabel; sep = `<div class="fixture-day-header">${dayLabel}</div>`; }
+      const hasPred = !!m.userPrediction;
+      const homeLogo = m.homeLogo ? `<img src="${m.homeLogo}" width="24" height="24" style="border-radius:50%">` : '';
+      return sep + `
+        <div class="fixture-row" onclick="openRealMatchDetail('${m.id}')" role="button" tabindex="0" style="${hasPred?'border-left:3px solid var(--green);':''}">
+          <div class="fixture-league-badge">${homeLogo}</div>
+          <div class="fixture-teams">
+            <div class="fixture-league-name">${hasPred?'✓ Predicted':'Predict'}</div>
+            <div class="fixture-team-names">${m.homeTeam} vs ${m.awayTeam}</div>
+          </div>
+          <div style="margin-left:auto;color:var(--text-muted);font-size:0.8rem">${timeStr}</div>
+        </div>`;
+    }).join('') : '<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:0.85rem;">No upcoming fixtures for this competition in the next 7 days.</div>';
+
+    panel.innerHTML = `
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:52px;height:52px;border-radius:14px;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">${_compBadge(comp, 40)}</div>
+          <div>
+            <div style="font-size:1.1rem;font-weight:800;color:var(--text-primary)">${data.name}</div>
+            <div style="font-size:0.78rem;color:var(--text-muted)">${comp.label} · ${data.memberCount} member${data.memberCount===1?'':'s'}</div>
+          </div>
+        </div>
+        <button onclick="closeMiniLeagueDetail()" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-pill);padding:8px 16px;color:var(--text-primary);cursor:pointer;font-size:0.85rem;font-weight:700;">← Back</button>
+      </div>
+
+      <!-- Invite code -->
+      <div style="background:rgba(8,189,189,0.08);border:1px solid rgba(8,189,189,0.2);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:0.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Invite Code</span>
+        <code style="font-size:0.9rem;font-weight:800;color:var(--cyan);cursor:pointer;" onclick="navigator.clipboard.writeText('${data.inviteCode}');showNotification('Code copied!','success')">${data.inviteCode} 📋</code>
+      </div>
+
+      <!-- Live Now strip (hidden when no live matches) -->
+      ${data.liveMatches.length ? `
+      <div style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span class="live-dot"></span>
+          <span style="font-size:0.72rem;font-weight:800;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1.5px;">Live Now</span>
+        </div>
+        <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
+          ${data.liveMatches.map(m => {
+            const hl = m.homeLogo ? `<img src="${m.homeLogo}" width="20" height="20" style="border-radius:50%">` : '';
+            const al = m.awayLogo ? `<img src="${m.awayLogo}" width="20" height="20" style="border-radius:50%">` : '';
+            const min = m.minute ? m.minute + "'" : 'LIVE';
+            return `<div onclick="openRealMatchDetail('${m.id}')" style="flex-shrink:0;cursor:pointer;background:rgba(255,50,50,0.1);border:1px solid rgba(255,50,50,0.3);border-radius:12px;padding:10px 14px;min-width:160px;">
+              <div style="font-size:0.65rem;font-weight:800;color:var(--red);text-align:center;margin-bottom:6px;">${min}</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">${hl}<span style="font-size:0.65rem;color:rgba(255,255,255,0.7);text-align:center;line-height:1.2;">${m.homeTeam.split(' ').slice(-1)[0]}</span></div>
+                <div style="font-family:'Russo One',sans-serif;font-size:1rem;color:#fff;font-weight:900;letter-spacing:1px;">${m.homeScore??0}–${m.awayScore??0}</div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">${al}<span style="font-size:0.65rem;color:rgba(255,255,255,0.7);text-align:center;line-height:1.2;">${m.awayTeam.split(' ').slice(-1)[0]}</span></div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:16px;">
+        <button id="ml-tab-rank" onclick="switchMlTab('rank')" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid var(--cyan);color:var(--cyan);font-weight:800;font-size:0.85rem;cursor:pointer;">🏆 Ranking</button>
+        <button id="ml-tab-fix" onclick="switchMlTab('fix')" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-muted);font-weight:700;font-size:0.85rem;cursor:pointer;">📅 Fixtures</button>
+      </div>
+
+      <!-- Tab content -->
+      <div id="ml-tab-content-rank">${rankHtml}</div>
+      <div id="ml-tab-content-fix" class="hidden">${fixtureHtml}</div>
+    `;
+  } catch(e) {
+    panel.innerHTML = '<div style="color:var(--red);padding:32px;">Failed to load league detail.</div>';
+  }
+}
+
+function switchMlTab(tab) {
+  document.getElementById('ml-tab-content-rank').classList.toggle('hidden', tab !== 'rank');
+  document.getElementById('ml-tab-content-fix').classList.toggle('hidden', tab !== 'fix');
+  document.getElementById('ml-tab-rank').style.borderBottomColor = tab === 'rank' ? 'var(--cyan)' : 'transparent';
+  document.getElementById('ml-tab-rank').style.color = tab === 'rank' ? 'var(--cyan)' : 'rgba(255,255,255,0.4)';
+  document.getElementById('ml-tab-fix').style.borderBottomColor = tab === 'fix' ? 'var(--cyan)' : 'transparent';
+  document.getElementById('ml-tab-fix').style.color = tab === 'fix' ? 'var(--cyan)' : 'rgba(255,255,255,0.4)';
+}
+
+function closeMiniLeagueDetail() {
+  document.getElementById('mini-league-detail-panel').classList.add('hidden');
+  document.getElementById('mini-league-list-view').classList.remove('hidden');
 }
 
 async function createLeague() {
@@ -1099,6 +1639,8 @@ async function createLeague() {
     document.getElementById('league-name-input').style.borderColor = 'var(--red)';
     return;
   }
+  const competition = document.querySelector('input[name="mini_league_comp"]:checked')?.value || 'premier_league';
+  const scoringMode = document.querySelector('input[name="scoring"]:checked')?.value || 'global';
   const code = 'KO-' + name.replace(/\s/g,'').toUpperCase().slice(0,6) + '-' + Math.floor(1000+Math.random()*9000);
   try {
     const res = await fetch('/api/tournaments', {
@@ -1108,6 +1650,7 @@ async function createLeague() {
         name, game: 'Football', description: 'Mini League',
         prizePool: 'TBD', maxPlayers: 100, startDate: new Date().toISOString(),
         type: 'League', registrationMode: 'INVITE_ONLY', inviteCode: code,
+        competition, scoringMode,
       }),
     });
     const data = await res.json();
@@ -1257,7 +1800,7 @@ function _renderInviteCard(userId, userName) {
     </div>
     <div style="background:linear-gradient(135deg,rgba(111,232,64,0.06),rgba(60,184,46,0.03));border:1px solid rgba(111,232,64,0.18);border-radius:18px;padding:22px 20px;">
       <p style="color:rgba(255,255,255,0.65);font-size:0.88rem;line-height:1.6;margin:0 0 16px;">
-        Share your personal invite link. When a friend registers and makes their <strong style="color:#fff">first prediction</strong>, you both earn <strong style="color:#6FE840">+200 XP</strong>.
+        Share your personal invite link. When a friend registers using your link, you both earn <strong style="color:#6FE840">+200 XP</strong> instantly.
       </p>
       <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 14px;margin-bottom:16px;">
         <span id="invite-link-text" style="flex:1;font-size:0.78rem;color:rgba(255,255,255,0.55);word-break:break-all;font-family:monospace;">${refLink}</span>
@@ -1379,6 +1922,9 @@ function openMatchDetail(matchId) {
   } else {
     document.getElementById('match-modal-overlay').classList.remove('hidden');
   }
+  // Initialize the risk/reward panel with current slider value
+  const sliderVal = document.getElementById('confidence-slider')?.value || '70';
+  updateConfidence(sliderVal);
   document.body.style.overflow = 'hidden';
 }
 
@@ -1395,8 +1941,18 @@ function selectResult(choice, btn) {
 }
 
 function updateConfidence(val) {
-  const mult = (val / 100).toFixed(1);
-  document.getElementById('conf-value').textContent = `${val}% (×${mult})`;
+  const conf = parseInt(val);
+  // Multiplier label: 50%→×1.0, 75%→×1.5, 100%→×2.0
+  const multiplier = 1 + (conf - 50) / 50;
+  document.getElementById('conf-value').textContent = `${conf}% (×${multiplier.toFixed(1)})`;
+
+  // Risk / Reward panel — based on correct-result base of 50 XP
+  const reward  = Math.round(50 * multiplier);
+  const penalty = Math.round(50 * (conf / 100));
+  const rewardEl  = document.getElementById('conf-reward-text');
+  const penaltyEl = document.getElementById('conf-penalty-text');
+  if (rewardEl)  rewardEl.textContent  = `+${reward} XP`;
+  if (penaltyEl) penaltyEl.textContent = `−${penalty} XP`;
 }
 
 function updateScoreline() {
@@ -1553,8 +2109,15 @@ async function openRealMatchDetail(matchId) {
   }
   state._currentMatchId = matchId;
   try {
-    const matches = await fetch('/api/matches').then(r => r.ok ? r.json() : []);
-    const m = matches.find(x => x.id === matchId);
+    // Check cache first (populated by _renderRealFixtures for any league including WC)
+    let m = state._matchCache?.[matchId];
+
+    if (!m) {
+      // Cache miss — fall back to general fetch (only covers preferred leagues)
+      const fallback = await fetch('/api/matches').then(r => r.ok ? r.json() : []);
+      m = fallback.find(x => x.id === matchId);
+    }
+
     if (!m) { showNotification('Match not found', 'error'); return; }
     _applyMatchData(m);
 
@@ -1777,8 +2340,8 @@ async function submitPrediction() {
 }
 
 // ─── DAILY BONUS ─────────────────────────────────────────────────
-function openDailyBonus() {
-  state.spinDone = false;
+async function openDailyBonus() {
+  // First open the modal shell
   if (window.animateModalEnter) {
     window.animateModalEnter(
       document.getElementById('bonus-modal-overlay'),
@@ -1787,11 +2350,44 @@ function openDailyBonus() {
   } else {
     document.getElementById('bonus-modal-overlay').classList.remove('hidden');
   }
-  document.getElementById('spin-result').classList.add('hidden');
-  document.getElementById('spin-btn').disabled = false;
-  document.getElementById('spin-btn').textContent = 'SPIN!';
   document.body.style.overflow = 'hidden';
   drawWheel(0);
+  document.getElementById('spin-result').classList.add('hidden');
+
+  // Check whether the user has already spun today — always ask the server
+  // so closing + reopening the modal can't bypass the gate
+  const btn = document.getElementById('spin-btn');
+  btn.disabled = true;
+  btn.textContent = 'Checking…';
+
+  try {
+    const res = await fetch('/api/daily-spin');
+    const data = res.ok ? await res.json() : {};
+    if (data.spunToday) {
+      state.spinDone = true;
+      btn.disabled = true;
+      btn.textContent = 'Come back tomorrow!';
+      // Show what they already won today
+      if (data.prize) {
+        document.getElementById('spin-result').classList.remove('hidden');
+        document.getElementById('spin-result-text').textContent = `You already won ${data.prize} today!`;
+        document.getElementById('xp-counter').textContent = data.prize;
+      }
+    } else {
+      state.spinDone = false;
+      btn.disabled = false;
+      btn.textContent = 'SPIN!';
+    }
+  } catch(e) {
+    // On network error fall back to in-memory state
+    if (state.spinDone) {
+      btn.disabled = true;
+      btn.textContent = 'Come back tomorrow!';
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'SPIN!';
+    }
+  }
 }
 
 function closeDailyBonus() {
@@ -1808,48 +2404,104 @@ function drawWheel(angle) {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const prizes = DATA.spinPrizes;
-  const arc = (2 * Math.PI) / prizes.length;
-  const r = 130;
-  const cx = 140; const cy = 140;
+  const n = prizes.length;
+  const arc = (2 * Math.PI) / n;
+  const r = 162;      // canvas is 324×324
+  const cx = 162, cy = 162;
 
-  ctx.clearRect(0, 0, 280, 280);
+  ctx.clearRect(0, 0, 324, 324);
 
+  // ── Segments ──────────────────────────────────────────────────────────
   prizes.forEach((prize, i) => {
     const start = angle + i * arc - Math.PI / 2;
+    const end   = start + arc;
+    const mid   = start + arc / 2;
+
+    // Base fill
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, start, start + arc);
+    ctx.arc(cx, cy, r, start, end);
     ctx.closePath();
     ctx.fillStyle = prize.color;
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+
+    // Divider line
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
     ctx.lineWidth = 2;
     ctx.stroke();
 
+    // Glossy sheen (radial highlight from segment face)
+    const gx = cx + Math.cos(mid) * r * 0.5;
+    const gy = cy + Math.sin(mid) * r * 0.5;
+    const gloss = ctx.createRadialGradient(gx, gy, 0, gx, gy, r * 0.55);
+    gloss.addColorStop(0, 'rgba(255,255,255,0.22)');
+    gloss.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = gloss;
+    ctx.fill();
+
+    // Label (rotated to point outward)
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate(start + arc / 2);
+    ctx.rotate(mid);
     ctx.textAlign = 'right';
-    ctx.font = 'bold 12px "Nunito", sans-serif';
-    ctx.fillStyle = prize.textColor;
-    ctx.fillText(prize.label, r - 8, 5);
+
+    const labelX = r - 14;
+    const parts = prize.label.split(' ');
+    if (parts.length >= 2) {
+      ctx.font = 'bold 12px "Russo One", sans-serif';
+      ctx.fillStyle = prize.textColor || '#fff';
+      ctx.fillText(parts.slice(1).join(' '), labelX, -4);
+      ctx.font = '700 10px "Nunito", sans-serif';
+      ctx.fillStyle = (prize.textColor || '#fff') + 'bb';
+      ctx.fillText(parts[0], labelX, 8);
+    } else {
+      ctx.font = 'bold 12px "Russo One", sans-serif';
+      ctx.fillStyle = prize.textColor || '#fff';
+      ctx.fillText(prize.label, labelX, 5);
+    }
     ctx.restore();
   });
 
-  // Center circle
+  // ── Inner shadow ring ─────────────────────────────────────────────────
+  const shadow = ctx.createRadialGradient(cx, cy, r - 6, cx, cy, r);
+  shadow.addColorStop(0, 'rgba(0,0,0,0.5)');
+  shadow.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.beginPath();
-  ctx.arc(cx, cy, 24, 0, 2 * Math.PI);
-  ctx.fillStyle = '#FFFFFF';
+  ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+  ctx.fillStyle = shadow;
   ctx.fill();
-  ctx.strokeStyle = 'rgba(8, 189, 189, 0.8)';
+
+  // ── Gold hub ──────────────────────────────────────────────────────────
+  ctx.beginPath();
+  ctx.arc(cx, cy, 32, 0, 2 * Math.PI);
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.fill();
+
+  const hubGrad = ctx.createRadialGradient(cx - 9, cy - 9, 2, cx, cy, 30);
+  hubGrad.addColorStop(0, '#fff7a0');
+  hubGrad.addColorStop(0.4, '#f0b429');
+  hubGrad.addColorStop(1, '#7a4a00');
+  ctx.beginPath();
+  ctx.arc(cx, cy, 28, 0, 2 * Math.PI);
+  ctx.fillStyle = hubGrad;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.45)';
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  ctx.fillStyle = '#29bf12';
-  ctx.font = 'bold 18px "Russo One"';
+  // ── Football emoji in centre ──────────────────────────────────────────
+  ctx.font = '22px serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('⚽', cx, cy);
+  ctx.fillText('⚽', cx, cy + 1);
 }
 
 async function spinWheel() {
@@ -1861,48 +2513,58 @@ async function spinWheel() {
   btn.textContent = 'Spinning...';
 
   const prizes = DATA.spinPrizes;
-  const winIndex = Math.floor(Math.random() * prizes.length);
-  const arc = (2 * Math.PI) / prizes.length;
-  const fullRotations = 5 + Math.floor(Math.random() * 3);
-  const targetAngle = fullRotations * 2 * Math.PI + (prizes.length - winIndex) * arc;
+  const n = prizes.length;
+  const arc = (2 * Math.PI) / n;
+  const winIndex = Math.floor(Math.random() * n);
 
-  let currentAngle = 0;
-  const duration = 4000;
-  const start = performance.now();
+  // Spin 6–9 full rotations then land pointer at centre of winning segment
+  const fullRotations = 6 + Math.floor(Math.random() * 4);
+  const targetAngle = fullRotations * 2 * Math.PI
+    + (n - winIndex) * arc
+    - arc / 2;
 
-  function easeOut(t) {
-    return 1 - Math.pow(1 - t, 4);
+  const duration = 5000;
+  const startTime = performance.now();
+
+  // Elastic ease-out — wheel bounces slightly at the end (CodePen style)
+  function easeOutElastic(t) {
+    if (t <= 0 || t >= 1) return t;
+    const p = 0.38;
+    return Math.pow(2, -10 * t) * Math.sin((t - p / 4) * (2 * Math.PI) / p) + 1;
   }
 
   function animate(now) {
-    const elapsed = now - start;
+    const elapsed  = now - startTime;
     const progress = Math.min(elapsed / duration, 1);
-    currentAngle = easeOut(progress) * targetAngle;
-    drawWheel(currentAngle);
+    drawWheel(easeOutElastic(progress) * targetAngle);
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      // Show result
+      // ── Reveal result ──────────────────────────────────────────────
       const prize = prizes[winIndex];
-      document.getElementById('spin-result').classList.remove('hidden');
-      document.getElementById('spin-result-text').textContent = `You won ${prize.label}!`;
-      document.getElementById('xp-counter').textContent = prize.label.includes('XP') ? prize.label : prize.label + ' unlocked!';
-      document.getElementById('xp-counter').style.color = prize.textColor;
-      btn.textContent = 'Come back tomorrow!';
+      const resultEl = document.getElementById('spin-result');
+      resultEl.classList.remove('hidden');
+      document.getElementById('spin-result-text').textContent = `🎉 You won ${prize.label}!`;
+      const counter = document.getElementById('xp-counter');
+      counter.textContent = prize.label.includes('XP') ? '+' + prize.label : prize.label + ' unlocked!';
+      counter.style.color = prize.color;
+      counter.style.textShadow = `0 0 24px ${prize.color}88`;
+      btn.textContent = '🎊 Come back tomorrow!';
       floatXP(prize.label, document.getElementById('bonus-modal-overlay'));
 
-      // Award real XP in DB
+      // Award XP in DB
       const xpMatch = prize.label.match(/(\d+)\s*XP/);
       const xpAmount = xpMatch ? parseInt(xpMatch[1]) : 0;
       fetch('/api/daily-spin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prize: prize.label, xp: xpAmount }),
-      }).then(r => r.json()).then(d => {
-        if (d.xpAwarded) {
-          // Update XP display in sidebar
-          const xpEls = document.querySelectorAll('.user-xp, #profile-xp');
-          xpEls.forEach(el => {
+      }).then(r => {
+        if (r.status === 409) { btn.textContent = '🎊 Come back tomorrow!'; btn.disabled = true; return null; }
+        return r.json();
+      }).then(d => {
+        if (d && d.xpAwarded) {
+          document.querySelectorAll('.user-xp, #profile-xp').forEach(el => {
             const cur = parseInt((el.textContent || '0').replace(/\D/g, '')) || 0;
             el.textContent = (cur + d.xpAwarded).toLocaleString() + ' XP';
           });
@@ -2129,6 +2791,43 @@ function shareTrophy(el) {
     '<button onclick="this.parentElement.remove()" style="margin-top:14px;width:100%;padding:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);border-radius:12px;cursor:pointer">Cancel</button>';
   document.body.appendChild(share);
 }
+// ─── LEAGUE SLUG DEEP-LINK RESTORE ───────────────────────────────
+/** Resolves a URL slug (e.g. 'premier-league' or 'europe') to the
+ *  correct continent tab or league fixture view. Called on popstate
+ *  and initial deep-link load. */
+async function _restoreLeagueFromSlug(slug) {
+  // Check if it's a continent ID first
+  const CONTINENT_IDS = ['europe', 'africa', 'americas', 'asia', 'oceania', 'world'];
+  if (CONTINENT_IDS.includes(slug)) {
+    selectContinent(slug, true);
+    return;
+  }
+  // Otherwise try to match to a real tournament by slug
+  try {
+    const tournaments = await fetch('/api/tournaments').then(r => r.ok ? r.json() : []);
+    // Build slug from tournament name and compare
+    const matched = tournaments.find(t => {
+      const tSlug = (t.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      // Also try stripping year + [id]
+      const tSlugClean = (t.name || '')
+        .toLowerCase()
+        .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
+        .replace(/\s+\[\d+\]$/, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      return tSlug === slug || tSlugClean === slug;
+    });
+    if (matched) {
+      // Find the display name (clean version)
+      const displayName = matched.name
+        .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
+        .replace(/\s+\[\d+\]$/, '')
+        .trim();
+      openLeagueFixtures(matched.id, displayName, true);
+    }
+  } catch(e) { /* silent */ }
+}
+
 // ─── INIT ────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   const path = window.location.pathname;
@@ -2156,6 +2855,15 @@ window.addEventListener('DOMContentLoaded', () => {
   // Replace initial history entry so popstate works correctly
   window.history.replaceState({ page: initialPage, lang }, '', path);
 
+  // Deep-link: if opened directly at /app/leagues/{slug}, restore that view
+  if (initialPage === 'leagues') {
+    const leagueSlug = _detectLeagueSlugFromPath(path);
+    if (leagueSlug) {
+      // Wait for backend_api to hydrate DATA first, then restore
+      setTimeout(() => _restoreLeagueFromSlug(leagueSlug), 600);
+    }
+  }
+
   // XP bar animation on profile load
   setTimeout(() => {
     const xpFill = document.querySelector('.xp-fill');
@@ -2168,13 +2876,248 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 // ─── CLUBS VOTING PAGE ──────────────────────────────────────────
+// Static logo map: API-Football CDN for clubs, flagcdn.com for national teams
+// These are fallbacks when a team hasn't appeared in a synced match yet.
+const STATIC_LOGO_MAP = {
+  // ── Premier League ──────────────────────────────────────────────
+  'Arsenal':            'https://media.api-sports.io/football/teams/42.png',
+  'Aston Villa':        'https://media.api-sports.io/football/teams/66.png',
+  'Bournemouth':        'https://media.api-sports.io/football/teams/35.png',
+  'Brentford':          'https://media.api-sports.io/football/teams/55.png',
+  'Brighton':           'https://media.api-sports.io/football/teams/51.png',
+  'Chelsea':            'https://media.api-sports.io/football/teams/49.png',
+  'Crystal Palace':     'https://media.api-sports.io/football/teams/52.png',
+  'Everton':            'https://media.api-sports.io/football/teams/45.png',
+  'Fulham':             'https://media.api-sports.io/football/teams/36.png',
+  'Ipswich Town':       'https://media.api-sports.io/football/teams/57.png',
+  'Leicester City':     'https://media.api-sports.io/football/teams/46.png',
+  'Liverpool':          'https://media.api-sports.io/football/teams/40.png',
+  'Manchester City':    'https://media.api-sports.io/football/teams/50.png',
+  'Manchester United':  'https://media.api-sports.io/football/teams/33.png',
+  'Newcastle':          'https://media.api-sports.io/football/teams/34.png',
+  'Nottingham Forest':  'https://media.api-sports.io/football/teams/65.png',
+  'Southampton':        'https://media.api-sports.io/football/teams/41.png',
+  'Tottenham':          'https://media.api-sports.io/football/teams/47.png',
+  'West Ham':           'https://media.api-sports.io/football/teams/48.png',
+  'Wolverhampton':      'https://media.api-sports.io/football/teams/39.png',
+  // ── La Liga ─────────────────────────────────────────────────────
+  'Alaves':             'https://media.api-sports.io/football/teams/542.png',
+  'Almeria':            'https://media.api-sports.io/football/teams/727.png',
+  'Athletic Bilbao':    'https://media.api-sports.io/football/teams/531.png',
+  'Atletico Madrid':    'https://media.api-sports.io/football/teams/530.png',
+  'Barcelona':          'https://media.api-sports.io/football/teams/529.png',
+  'Betis':              'https://media.api-sports.io/football/teams/543.png',
+  'Celta Vigo':         'https://media.api-sports.io/football/teams/538.png',
+  'Getafe':             'https://media.api-sports.io/football/teams/546.png',
+  'Girona':             'https://media.api-sports.io/football/teams/547.png',
+  'Granada':            'https://media.api-sports.io/football/teams/715.png',
+  'Las Palmas':         'https://media.api-sports.io/football/teams/534.png',
+  'Mallorca':           'https://media.api-sports.io/football/teams/798.png',
+  'Osasuna':            'https://media.api-sports.io/football/teams/539.png',
+  'Rayo Vallecano':     'https://media.api-sports.io/football/teams/728.png',
+  'Real Madrid':        'https://media.api-sports.io/football/teams/541.png',
+  'Real Sociedad':      'https://media.api-sports.io/football/teams/548.png',
+  'Sevilla':            'https://media.api-sports.io/football/teams/536.png',
+  'Valencia':           'https://media.api-sports.io/football/teams/532.png',
+  'Valladolid':         'https://media.api-sports.io/football/teams/720.png',
+  'Villarreal':         'https://media.api-sports.io/football/teams/533.png',
+  // ── Serie A ─────────────────────────────────────────────────────
+  'AC Milan':           'https://media.api-sports.io/football/teams/489.png',
+  'Atalanta':           'https://media.api-sports.io/football/teams/499.png',
+  'Bologna':            'https://media.api-sports.io/football/teams/500.png',
+  'Cagliari':           'https://media.api-sports.io/football/teams/490.png',
+  'Como':               'https://media.api-sports.io/football/teams/1106.png',
+  'Empoli':             'https://media.api-sports.io/football/teams/511.png',
+  'Fiorentina':         'https://media.api-sports.io/football/teams/502.png',
+  'Genoa':              'https://media.api-sports.io/football/teams/508.png',
+  'Inter Milan':        'https://media.api-sports.io/football/teams/505.png',
+  'Juventus':           'https://media.api-sports.io/football/teams/496.png',
+  'Lazio':              'https://media.api-sports.io/football/teams/487.png',
+  'Lecce':              'https://media.api-sports.io/football/teams/867.png',
+  'Monza':              'https://media.api-sports.io/football/teams/1106.png',
+  'Napoli':             'https://media.api-sports.io/football/teams/492.png',
+  'Parma':              'https://media.api-sports.io/football/teams/503.png',
+  'Roma':               'https://media.api-sports.io/football/teams/497.png',
+  'Torino':             'https://media.api-sports.io/football/teams/586.png',
+  'Udinese':            'https://media.api-sports.io/football/teams/494.png',
+  'Venezia':            'https://media.api-sports.io/football/teams/517.png',
+  'Verona':             'https://media.api-sports.io/football/teams/504.png',
+  // ── Bundesliga ──────────────────────────────────────────────────
+  'Augsburg':           'https://media.api-sports.io/football/teams/170.png',
+  'Bayer Leverkusen':   'https://media.api-sports.io/football/teams/168.png',
+  'Bayern Munich':      'https://media.api-sports.io/football/teams/157.png',
+  'Borussia Dortmund':  'https://media.api-sports.io/football/teams/165.png',
+  'Borussia Mönchengladbach': 'https://media.api-sports.io/football/teams/163.png',
+  'Eintracht Frankfurt':'https://media.api-sports.io/football/teams/169.png',
+  'Freiburg':           'https://media.api-sports.io/football/teams/160.png',
+  'Hoffenheim':         'https://media.api-sports.io/football/teams/167.png',
+  'Mainz':              'https://media.api-sports.io/football/teams/164.png',
+  'RB Leipzig':         'https://media.api-sports.io/football/teams/173.png',
+  'Stuttgart':          'https://media.api-sports.io/football/teams/172.png',
+  'Union Berlin':       'https://media.api-sports.io/football/teams/182.png',
+  'Werder Bremen':      'https://media.api-sports.io/football/teams/162.png',
+  'Wolfsburg':          'https://media.api-sports.io/football/teams/161.png',
+  'Bochum':             'https://media.api-sports.io/football/teams/176.png',
+  'Heidenheim':         'https://media.api-sports.io/football/teams/674.png',
+  // ── Ligue 1 ─────────────────────────────────────────────────────
+  'PSG':                'https://media.api-sports.io/football/teams/85.png',
+  'Marseille':          'https://media.api-sports.io/football/teams/81.png',
+  'Lyon':               'https://media.api-sports.io/football/teams/80.png',
+  'Monaco':             'https://media.api-sports.io/football/teams/91.png',
+  'Lille':              'https://media.api-sports.io/football/teams/79.png',
+  'Nice':               'https://media.api-sports.io/football/teams/84.png',
+  'Lens':               'https://media.api-sports.io/football/teams/116.png',
+  'Rennes':             'https://media.api-sports.io/football/teams/94.png',
+  'Strasbourg':         'https://media.api-sports.io/football/teams/95.png',
+  'Nantes':             'https://media.api-sports.io/football/teams/83.png',
+  'Brest':              'https://media.api-sports.io/football/teams/130.png',
+  'Reims':              'https://media.api-sports.io/football/teams/93.png',
+  'Toulouse':           'https://media.api-sports.io/football/teams/96.png',
+  'Le Havre':           'https://media.api-sports.io/football/teams/1103.png',
+  'Montpellier':        'https://media.api-sports.io/football/teams/82.png',
+  'Angers':             'https://media.api-sports.io/football/teams/778.png',
+  'Auxerre':            'https://media.api-sports.io/football/teams/778.png',
+  'Saint-Etienne':      'https://media.api-sports.io/football/teams/97.png',
+  // ── Champions League ────────────────────────────────────────────
+  'Benfica':            'https://media.api-sports.io/football/teams/211.png',
+  'Bologna':            'https://media.api-sports.io/football/teams/500.png',
+  'Celtic':             'https://media.api-sports.io/football/teams/264.png',
+  'Club Brugge':        'https://media.api-sports.io/football/teams/462.png',
+  'Dinamo Zagreb':      'https://media.api-sports.io/football/teams/472.png',
+  'Feyenoord':          'https://media.api-sports.io/football/teams/715.png',
+  'Leverkusen':         'https://media.api-sports.io/football/teams/168.png',
+  'PSV Eindhoven':      'https://media.api-sports.io/football/teams/718.png',
+  'Red Star Belgrade':  'https://media.api-sports.io/football/teams/477.png',
+  'Salzburg':           'https://media.api-sports.io/football/teams/1084.png',
+  'Shakhtar Donetsk':   'https://media.api-sports.io/football/teams/255.png',
+  'Slovan Bratislava':  'https://media.api-sports.io/football/teams/543.png',
+  'Sporting CP':        'https://media.api-sports.io/football/teams/228.png',
+  'Sturm Graz':         'https://media.api-sports.io/football/teams/1084.png',
+  'Young Boys':         'https://media.api-sports.io/football/teams/1099.png',
+  // ── Egyptian Premier League ──────────────────────────────────────
+  'Al Ahly':            'https://media.api-sports.io/football/teams/462.png',
+  'Zamalek':            'https://media.api-sports.io/football/teams/463.png',
+  'Pyramids':           'https://media.api-sports.io/football/teams/2282.png',
+  'Ismaily':            'https://media.api-sports.io/football/teams/2283.png',
+  'El Geish':           'https://media.api-sports.io/football/teams/2285.png',
+  'Ceramica Cleopatra': 'https://media.api-sports.io/football/teams/2284.png',
+  'Future FC':          'https://media.api-sports.io/football/teams/2286.png',
+  'Wadi Degla':         'https://media.api-sports.io/football/teams/2287.png',
+  // ── FIFA World Cup — National Teams (flags via flagcdn.com) ──────
+  'Argentina':    'https://flagcdn.com/w80/ar.png',
+  'Australia':    'https://flagcdn.com/w80/au.png',
+  'Belgium':      'https://flagcdn.com/w80/be.png',
+  'Brazil':       'https://flagcdn.com/w80/br.png',
+  'Cameroon':     'https://flagcdn.com/w80/cm.png',
+  'Canada':       'https://flagcdn.com/w80/ca.png',
+  'Costa Rica':   'https://flagcdn.com/w80/cr.png',
+  'Croatia':      'https://flagcdn.com/w80/hr.png',
+  'Denmark':      'https://flagcdn.com/w80/dk.png',
+  'Ecuador':      'https://flagcdn.com/w80/ec.png',
+  'England':      'https://flagcdn.com/w80/gb-eng.png',
+  'France':       'https://flagcdn.com/w80/fr.png',
+  'Germany':      'https://flagcdn.com/w80/de.png',
+  'Ghana':        'https://flagcdn.com/w80/gh.png',
+  'Iran':         'https://flagcdn.com/w80/ir.png',
+  'Japan':        'https://flagcdn.com/w80/jp.png',
+  'Mexico':       'https://flagcdn.com/w80/mx.png',
+  'Morocco':      'https://flagcdn.com/w80/ma.png',
+  'Netherlands':  'https://flagcdn.com/w80/nl.png',
+  'Poland':       'https://flagcdn.com/w80/pl.png',
+  'Portugal':     'https://flagcdn.com/w80/pt.png',
+  'Qatar':        'https://flagcdn.com/w80/qa.png',
+  'Saudi Arabia': 'https://flagcdn.com/w80/sa.png',
+  'Senegal':      'https://flagcdn.com/w80/sn.png',
+  'Serbia':       'https://flagcdn.com/w80/rs.png',
+  'South Korea':  'https://flagcdn.com/w80/kr.png',
+  'Spain':        'https://flagcdn.com/w80/es.png',
+  'Switzerland':  'https://flagcdn.com/w80/ch.png',
+  'Tunisia':      'https://flagcdn.com/w80/tn.png',
+  'USA':          'https://flagcdn.com/w80/us.png',
+  'Uruguay':      'https://flagcdn.com/w80/uy.png',
+  'Wales':        'https://flagcdn.com/w80/gb-wls.png',
+  // ── Saudi Pro League ─────────────────────────────────────────────
+  'Al Hilal':     'https://media.api-sports.io/football/teams/2932.png',
+  'Al Nassr':     'https://media.api-sports.io/football/teams/2930.png',
+  'Al Ittihad':   'https://media.api-sports.io/football/teams/2934.png',
+  'Al Ahli':      'https://media.api-sports.io/football/teams/2937.png',
+  'Al Ettifaq':   'https://media.api-sports.io/football/teams/2924.png',
+  'Al Shabab':    'https://media.api-sports.io/football/teams/2929.png',
+};
+
 const CLUBS_DB = {
-  'Premier League': { country: 'England', continent: 'europe', clubs: ['Arsenal','Chelsea','Liverpool','Manchester City','Manchester United','Tottenham','Newcastle','Aston Villa','West Ham','Brighton'] },
-  'La Liga': { country: 'Spain', continent: 'europe', clubs: ['Real Madrid','Barcelona','Atletico Madrid','Sevilla','Real Sociedad','Villarreal','Athletic Bilbao','Valencia','Betis','Celta Vigo'] },
-  'Serie A': { country: 'Italy', continent: 'europe', clubs: ['AC Milan','Inter Milan','Juventus','Napoli','Roma','Lazio','Atalanta','Fiorentina','Torino','Udinese'] },
-  'Bundesliga': { country: 'Germany', continent: 'europe', clubs: ['Bayern Munich','Borussia Dortmund','RB Leipzig','Bayer Leverkusen','Eintracht Frankfurt','Union Berlin','Freiburg','Wolfsburg','Mainz','Cologne'] },
-  'Ligue 1': { country: 'France', continent: 'europe', clubs: ['PSG','Marseille','Lyon','Monaco','Lille','Nice','Lens','Rennes','Strasbourg','Nantes'] },
-  'Egyptian Premier League': { country: 'Egypt', continent: 'africa', clubs: ['Al Ahly','Zamalek','Pyramids','Ismaily','El Geish','ENPPI','Ceramica','Smouha','Ittihad Alexandria','Farco'] },
+  // ── EUROPE ──────────────────────────────────────────────────────
+  'Premier League': { country: 'England', continent: 'europe', clubs: [
+    'Arsenal','Aston Villa','Bournemouth','Brentford','Brighton',
+    'Chelsea','Crystal Palace','Everton','Fulham','Ipswich Town',
+    'Leicester City','Liverpool','Manchester City','Manchester United','Newcastle',
+    'Nottingham Forest','Southampton','Tottenham','West Ham','Wolverhampton'
+  ]},
+  'La Liga': { country: 'Spain', continent: 'europe', clubs: [
+    'Alaves','Almeria','Athletic Bilbao','Atletico Madrid','Barcelona',
+    'Betis','Celta Vigo','Getafe','Girona','Granada',
+    'Las Palmas','Mallorca','Osasuna','Rayo Vallecano','Real Madrid',
+    'Real Sociedad','Sevilla','Valencia','Valladolid','Villarreal'
+  ]},
+  'Serie A': { country: 'Italy', continent: 'europe', clubs: [
+    'AC Milan','Atalanta','Bologna','Cagliari','Como',
+    'Empoli','Fiorentina','Genoa','Inter Milan','Juventus',
+    'Lazio','Lecce','Monza','Napoli','Parma',
+    'Roma','Torino','Udinese','Venezia','Verona'
+  ]},
+  'Bundesliga': { country: 'Germany', continent: 'europe', clubs: [
+    'Augsburg','Bayer Leverkusen','Bayern Munich','Borussia Dortmund','Borussia Mönchengladbach',
+    'Eintracht Frankfurt','Freiburg','Hamburg','Heidenheim','Hoffenheim',
+    'Mainz','RB Leipzig','St. Pauli','Stuttgart','Union Berlin',
+    'Werder Bremen','Wolfsburg','Bochum','Holstein Kiel','Kickers Offenbach'
+  ]},
+  'Ligue 1': { country: 'France', continent: 'europe', clubs: [
+    'Angers','Auxerre','Brest','Le Havre','Lens',
+    'Lille','Lyon','Marseille','Monaco','Montpellier',
+    'Nantes','Nice','PSG','Reims','Rennes',
+    'Saint-Etienne','Strasbourg','Toulouse','Niza','Valenciennes'
+  ]},
+  'UEFA Champions League': { country: 'Europe', continent: 'europe', clubs: [
+    'Arsenal','Aston Villa','Atletico Madrid','Barcelona','Bayern Munich',
+    'Benfica','Bologna','Borussia Dortmund','Brest','Celtic',
+    'Club Brugge','Dinamo Zagreb','Feyenoord','Girona','Inter Milan',
+    'Juventus','Leverkusen','Lille','Liverpool','Manchester City',
+    'Monaco','PSG','PSV Eindhoven','RB Leipzig','Real Madrid',
+    'Red Star Belgrade','Salzburg','Shakhtar Donetsk','Slovan Bratislava','Sporting CP',
+    'Sturm Graz','Young Boys'
+  ]},
+  // ── AFRICA ──────────────────────────────────────────────────────
+  'Egyptian Premier League': { country: 'Egypt', continent: 'africa', clubs: [
+    'Al Ahly','Al Mokawloon','Asyut Cement','Ceramica Cleopatra','El Entag El Harby',
+    'El Geish','El Gouna','ENPPI','Farco','Future FC',
+    'Haras El Hodood','Ismaily','Ittihad Alexandria','National Bank','Pyramids',
+    'Smouha','Tala\'a El Gaish','Wadi Degla','Zamalek','Ghazl El Mahalla'
+  ]},
+  'Saudi Pro League': { country: 'Saudi Arabia', continent: 'asia', clubs: [
+    'Al Ahli','Al Ettifaq','Al Fateh','Al Fayha','Al Hazem',
+    'Al Hilal','Al Ittihad','Al Nassr','Al Okhdood','Al Qadsiah',
+    'Al Raed','Al Riyadh','Al Shabab','Al Tai','Al Wehda',
+    'Al Khaleej','Damac','Nassaji','Al Qadisiyah','Al Taawoun'
+  ]},
+  // ── AMERICAS ───────────────────────────────────────────────────
+  'MLS': { country: 'USA', continent: 'americas', clubs: [
+    'Atlanta United','Austin FC','Charlotte FC','Chicago Fire','Colorado Rapids',
+    'Columbus Crew','D.C. United','FC Cincinnati','FC Dallas','Houston Dynamo',
+    'Inter Miami','LA Galaxy','LAFC','Minnesota United','Nashville SC',
+    'New England Revolution','New York City FC','New York Red Bulls','Orlando City','Philadelphia Union',
+    'Portland Timbers','Real Salt Lake','San Jose Earthquakes','Seattle Sounders','Sporting KC',
+    'St. Louis City','Toronto FC','Vancouver Whitecaps','CF Montreal','New York Red Bulls II'
+  ]},
+  // ── WORLD ───────────────────────────────────────────────────────
+  'FIFA World Cup': { country: 'International', continent: 'world', clubs: [
+    'Argentina','Australia','Belgium','Brazil','Cameroon',
+    'Canada','Croatia','Denmark','Ecuador','England',
+    'France','Germany','Ghana','Iran','Japan',
+    'Mexico','Morocco','Netherlands','Poland','Portugal',
+    'Qatar','Saudi Arabia','Senegal','Serbia','South Korea',
+    'Spain','Switzerland','Tunisia','USA','Uruguay',
+    'Wales','Costa Rica'
+  ]},
 };
 
 let votedTodayMap  = {}; // clubName -> true
@@ -2204,7 +3147,14 @@ async function initVote() {
     if (logoRes.ok) {
       clubLogosMap = await logoRes.json();
     }
-  } catch(e) {}
+    // Merge static fallback logos — DB logos take priority, static fills the gaps
+    Object.entries(STATIC_LOGO_MAP).forEach(([club, url]) => {
+      if (!clubLogosMap[club]) clubLogosMap[club] = url;
+    });
+  } catch(e) {
+    // Even on fetch error, use static logos so the page isn't blank
+    clubLogosMap = { ...STATIC_LOGO_MAP };
+  }
   
   selectVoteContinent('europe');
   loadClubLeaderboard('alltime');

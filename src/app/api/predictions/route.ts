@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import * as React from "react";
 import { sendEmail } from "@/lib/email";
-import ReferralConvertedEmail from "@/emails/ReferralConvertedEmail";
+
 
 // GET /api/predictions — user's own predictions, grouped data included
 export async function GET(req: NextRequest) {
@@ -24,7 +24,9 @@ export async function GET(req: NextRequest) {
       },
       include: {
         match: {
-          include: {
+          select: {
+            homeTeam: true, awayTeam: true, matchDate: true, status: true,
+            homeScore: true, awayScore: true, firstGoalScorer: true,
             tournament: { select: { id: true, name: true, type: true, prizes: true } },
           },
         },
@@ -78,42 +80,6 @@ export async function POST(req: NextRequest) {
       update: { homeScore, awayScore, firstGoalScorer, confidence: confidence ?? 50, isDouble: isDouble ?? false, btts: btts ?? null, totalGoals: totalGoals ?? null, updatedAt: new Date() },
       create: { userId: session.user.id, matchId, homeScore, awayScore, firstGoalScorer, confidence: confidence ?? 50, isDouble: isDouble ?? false, btts: btts ?? null, totalGoals: totalGoals ?? null },
     });
-
-    // ── Referral XP on first prediction ──────────────────────────────────────
-    const predCount = await prisma.prediction.count({ where: { userId: session.user.id } });
-    if (predCount === 1) {
-      const referral = await prisma.referral.findUnique({ where: { referredId: session.user.id } });
-      if (referral && !referral.xpAwarded) {
-        // Award XP to referrer and get their details for the email
-        const referrer = await prisma.user.update({
-          where: { id: referral.referrerId },
-          data: { xp: { increment: 200 } },
-          select: { email: true, name: true, xp: true },
-        });
-        await prisma.referral.update({
-          where: { referredId: session.user.id },
-          data: { xpAwarded: true },
-        });
-
-        // Notify referrer
-        const referredUser = await prisma.user.findUnique({
-          where: { id: session.user.id },
-          select: { name: true },
-        });
-        if (referrer.email) {
-          sendEmail({
-            to: referrer.email,
-            subject: `🎉 Your friend ${referredUser?.name ?? "someone"} just made their first prediction — +200 XP earned!`,
-            react: React.createElement(ReferralConvertedEmail, {
-              name: referrer.name ?? "there",
-              friendName: referredUser?.name ?? "Your friend",
-              xpAwarded: 200,
-              newTotalXp: referrer.xp,
-            }),
-          }).catch((err) => console.error(`[email] Failed to send referral converted email to ${referrer.email}:`, err));
-        }
-      }
-    }
 
     return NextResponse.json(prediction, { status: 201 });
   } catch (error) {

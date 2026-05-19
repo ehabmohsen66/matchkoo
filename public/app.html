@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Matchkoo — The world's #1 football prediction and social gaming platform. Predict matches, earn XP, climb global leaderboards, and compete with friends.">
+  <meta name="description"
+    content="Matchkoo — The world's #1 football prediction and social gaming platform. Predict matches, earn XP, climb global leaderboards, and compete with friends.">
   <title>Matchkoo — Football Prediction Platform</title>
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Russo+One&family=Cairo:wght@400;600;700&family=Noto+Kufi+Arabic:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/main.v6.css?v=8">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Russo+One&family=Cairo:wght@400;600;700&family=Noto+Kufi+Arabic:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.v6.css?v=10">
   <link rel="stylesheet" href="/css/animations.css?v=6">
   <script type="importmap">
   {
@@ -21,6 +26,7 @@
   </script>
   <script type="module" src="js/motion.js"></script>
 </head>
+
 <body data-page="home">
   <!-- Dynamic Glowing Background -->
   <div class="dynamic-bg" id="dynamic-bg"></div>
@@ -28,46 +34,79 @@
   <!-- ─── SIDEBAR NAV ─────────────────────────────────────────────── -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo" onclick="navigate('home')" style="cursor:pointer;padding:12px 16px;text-align:center;">
-      <img src="/matchkoo-logo.png" alt="Matchkoo" style="width:100%;max-width:200px;height:auto;object-fit:contain;display:block;margin:0 auto;"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <img src="/matchkoo-logo.png" alt="Matchkoo"
+        style="width:100%;max-width:200px;height:auto;object-fit:contain;display:block;margin:0 auto;"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
       <div style="display:none;align-items:center;justify-content:center;gap:8px">
-        <svg viewBox="0 0 32 32" fill="none" width="34" height="34"><circle cx="16" cy="16" r="14" stroke="#29bf12" stroke-width="2"/><path d="M16 5L18.5 12H26L20 16.5L22.5 23.5L16 19L9.5 23.5L12 16.5L6 12H13.5Z" fill="#29bf12"/></svg>
-        <span style="font-family:'Russo One',sans-serif;font-size:1.15rem;color:#fff;letter-spacing:1.5px">MATCHKOO</span>
+        <svg viewBox="0 0 32 32" fill="none" width="34" height="34">
+          <circle cx="16" cy="16" r="14" stroke="#29bf12" stroke-width="2" />
+          <path d="M16 5L18.5 12H26L20 16.5L22.5 23.5L16 19L9.5 23.5L12 16.5L6 12H13.5Z" fill="#29bf12" />
+        </svg>
+        <span
+          style="font-family:'Russo One',sans-serif;font-size:1.15rem;color:#fff;letter-spacing:1.5px">MATCHKOO</span>
       </div>
     </div>
 
 
     <nav class="sidebar-nav">
       <button class="nav-item active" data-page="home" onclick="navigate('home')" id="nav-home">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
         <span>Home</span>
       </button>
       <button class="nav-item" data-page="leagues" onclick="navigate('leagues')" id="nav-leagues">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
         <span>Leagues & Cups</span>
       </button>
       <button class="nav-item" data-page="predictions" onclick="navigate('predictions')" id="nav-predictions">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
         <span>Predictions</span>
       </button>
       <button class="nav-item" data-page="leaderboard" onclick="navigate('leaderboard')" id="nav-leaderboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
         <span>Leaderboard</span>
       </button>
       <button class="nav-item" data-page="minileague" onclick="navigate('minileague')" id="nav-minileague">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
         <span>Mini Leagues</span>
       </button>
       <button class="nav-item" data-page="profile" onclick="navigate('profile')" id="nav-profile">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
         <span>Profile</span>
       </button>
       <button class="nav-item" data-page="vote" onclick="navigate('vote')" id="nav-vote">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path
+            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+        </svg>
         <span>Vote</span>
       </button>
       <a href="/admin" class="nav-item admin-link admin-only" id="nav-admin" style="display:none">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+          <line x1="3" y1="9" x2="21" y2="9" />
+          <line x1="9" y1="21" x2="9" y2="9" />
+        </svg>
         <span>Admin</span>
       </a>
 
@@ -92,16 +131,15 @@
         <div class="user-xp-sm">12,450 XP</div>
       </div>
       <div class="streak-indicator">
-        <svg viewBox="0 0 24 24" fill="#ff9914" width="16" height="16"><path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z"/></svg>
+        <svg viewBox="0 0 24 24" fill="#ff9914" width="16" height="16">
+          <path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z" />
+        </svg>
         <span>7</span>
       </div>
     </div>
 
     <!-- Sign Out button -->
-    <button
-      onclick="event.stopPropagation(); handleSignOut()"
-      id="sidebar-signout-btn"
-      style="
+    <button onclick="event.stopPropagation(); handleSignOut()" id="sidebar-signout-btn" style="
         display: flex; align-items: center; gap: 10px;
         width: calc(100% - 24px); margin: 0 12px 16px;
         padding: 10px 14px; border-radius: 12px;
@@ -109,14 +147,12 @@
         color: rgba(255,255,255,0.55); font-size: 0.8rem; font-weight: 700;
         cursor: pointer; font-family: inherit; text-align: left;
         transition: all 0.2s;
-      "
-      onmouseover="this.style.background='rgba(242,27,63,0.18)';this.style.color='#F21B3F'"
-      onmouseout="this.style.background='rgba(242,27,63,0.08)';this.style.color='rgba(255,255,255,0.55)'"
-    >
+      " onmouseover="this.style.background='rgba(242,27,63,0.18)';this.style.color='#F21B3F'"
+      onmouseout="this.style.background='rgba(242,27,63,0.08)';this.style.color='rgba(255,255,255,0.55)'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-        <polyline points="16 17 21 12 16 7"/>
-        <line x1="21" y1="12" x2="9" y2="12"/>
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <polyline points="16 17 21 12 16 7" />
+        <line x1="21" y1="12" x2="9" y2="12" />
       </svg>
       <span id="signout-label">Sign Out</span>
     </button>
@@ -127,7 +163,11 @@
   <header class="mobile-header">
     <div class="mobile-header-left">
       <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" id="mobile-menu-btn" aria-label="Toggle menu">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
       </button>
       <select id="lang-select-mobile" class="lang-select lang-select-sm" onchange="changeLanguage(this.value)">
         <option value="en">EN</option>
@@ -139,10 +179,12 @@
     </div>
     <div class="mobile-logo" onclick="navigate('home')" style="cursor:pointer">
       <img src="/matchkoo-logo.png" alt="Matchkoo" style="height:44px;object-fit:contain;"
-           onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\'font-family:Russo One,sans-serif;color:#fff;font-size:0.95rem;letter-spacing:1px\'>MATCHKOO</span>')">
+        onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\'font-family:Russo One,sans-serif;color:#fff;font-size:0.95rem;letter-spacing:1px\'>MATCHKOO</span>')">
     </div>
     <div class="mobile-streak">
-      <svg viewBox="0 0 24 24" fill="#ff9914" width="16" height="16"><path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z"/></svg>
+      <svg viewBox="0 0 24 24" fill="#ff9914" width="16" height="16">
+        <path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z" />
+      </svg>
       <span>7</span>
     </div>
   </header>
@@ -170,7 +212,9 @@
         </div>
         <div class="hero-divider"></div>
         <div class="hero-stat streak-stat">
-          <svg viewBox="0 0 24 24" fill="#ff9914" width="18" height="18"><path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z"/></svg>
+          <svg viewBox="0 0 24 24" fill="#ff9914" width="18" height="18">
+            <path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z" />
+          </svg>
           <span class="stat-num fire">7</span>
           <span class="stat-lbl">Streak · 2× XP</span>
         </div>
@@ -179,16 +223,16 @@
       <!-- Daily Bonus Banner -->
       <div class="daily-bonus-banner" id="daily-bonus-banner" onclick="openDailyBonus()">
         <div class="bonus-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="28" height="28"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="28" height="28">
+            <polygon
+              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
         </div>
         <div class="bonus-text">
-          <div class="bonus-title">Daily Bonus Ready!</div>
-          <div class="bonus-sub">Spin to win XP & prediction boosts</div>
+          <div class="bonus-title">Premium Wheel Ready!</div>
+          <div class="bonus-sub">Spin for legendary rewards</div>
         </div>
         <button class="bonus-cta">Spin Now</button>
-        <button class="bonus-close" onclick="event.stopPropagation(); closeDailyBonus()" aria-label="Close">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
       </div>
 
       <!-- Section: Featured Live Matches -->
@@ -197,18 +241,27 @@
           <h2 class="section-title">
             <span class="live-dot"></span> Live Now
           </h2>
-          <button class="see-all-btn" onclick="navigate('leagues')">See all</button>
+          <button class="see-all-btn" onclick="navigate('live')">See all</button>
         </div>
         <div class="match-cards-scroll" id="live-now-cards">
           <div style="color:rgba(255,255,255,0.3);font-size:0.85rem;padding:20px 0;">Loading live matches...</div>
         </div>
       </section>
 
-      <!-- Section: Today's Fixtures -->
+      <!-- Section: Upcoming Fixtures -->
       <section class="content-section">
         <div class="section-header">
-          <h2 class="section-title">Today's Fixtures</h2>
+          <h2 class="section-title">Upcoming Fixtures</h2>
           <button class="see-all-btn" onclick="navigate('leagues')">See all</button>
+        </div>
+        <!-- League filter pills -->
+        <div class="fixtures-league-filters" id="fixtures-league-filters">
+          <button class="fix-pill active" data-league="all" onclick="setFixtureLeagueFilter('all')">All</button>
+          <button class="fix-pill" data-league="english premier league" onclick="setFixtureLeagueFilter('english premier league')">EPL</button>
+          <button class="fix-pill" data-league="la liga" onclick="setFixtureLeagueFilter('la liga')">La Liga</button>
+          <button class="fix-pill" data-league="uefa champions league" onclick="setFixtureLeagueFilter('uefa champions league')">UCL</button>
+          <button class="fix-pill" data-league="egyptian premier league" onclick="setFixtureLeagueFilter('egyptian premier league')">Egypt</button>
+          <!-- <button class="fix-pill" data-league="fifa world cup" onclick="setFixtureLeagueFilter('fifa world cup')">World Cup</button> -->
         </div>
         <div class="fixtures-list" id="fixtures-list">
           <!-- Injected by JS -->
@@ -219,7 +272,10 @@
       <section class="content-section">
         <div class="section-header">
           <h2 class="section-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="18" height="18"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="18" height="18">
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
             Weekly Challenges
           </h2>
           <span class="challenge-timer">Resets in 3d 14h</span>
@@ -227,13 +283,18 @@
         <div class="challenges-grid">
           <div class="challenge-card">
             <div class="challenge-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#29bf12" stroke-width="2" width="24" height="24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#29bf12" stroke-width="2" width="24" height="24">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
             </div>
             <div class="challenge-info">
               <div class="challenge-name">Speed Demon</div>
               <div class="challenge-desc">Predict 5 matches within 1 hr of kickoff</div>
               <div class="challenge-progress">
-                <div class="progress-bar"><div class="progress-fill" style="width:60%"></div></div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width:60%"></div>
+                </div>
                 <span>3/5</span>
               </div>
             </div>
@@ -241,13 +302,18 @@
           </div>
           <div class="challenge-card">
             <div class="challenge-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="24" height="24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="24" height="24">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
             </div>
             <div class="challenge-info">
               <div class="challenge-name">Scoreline Sniper</div>
               <div class="challenge-desc">Get 3 correct exact scorelines this week</div>
               <div class="challenge-progress">
-                <div class="progress-bar"><div class="progress-fill" style="width:33%"></div></div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width:33%"></div>
+                </div>
                 <span>1/3</span>
               </div>
             </div>
@@ -255,13 +321,20 @@
           </div>
           <div class="challenge-card">
             <div class="challenge-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#abff4f" stroke-width="2" width="24" height="24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#abff4f" stroke-width="2" width="24" height="24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
             </div>
             <div class="challenge-info">
               <div class="challenge-name">World Traveller</div>
               <div class="challenge-desc">Submit predictions in 4 different leagues</div>
               <div class="challenge-progress">
-                <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width:75%"></div>
+                </div>
                 <span>3/4</span>
               </div>
             </div>
@@ -291,6 +364,31 @@
           <div style="color:var(--text-muted);font-size:0.85rem;padding:12px">Loading...</div>
         </div>
       </section>
+    </div>
+
+    <!-- ════════════════ ALL LIVE MATCHES PAGE ════════════════ -->
+    <div class="page hidden" id="page-live">
+      <div class="page-header-block" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div>
+          <h1 class="page-title"><span class="live-dot" style="margin-right:6px"></span>Live Now</h1>
+          <p class="page-sub">All active matches grouped by league</p>
+        </div>
+        <button class="icon-btn" onclick="navigate('home')" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-pill);padding:8px 16px;color:var(--text-primary);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:700;flex-shrink:0;">
+          Back
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+      <!-- League filter pills -->
+      <div class="fixtures-league-filters" id="live-league-filters">
+        <button class="fix-pill active" data-league="all" onclick="setLiveLeagueFilter('all')">All</button>
+        <button class="fix-pill" data-league="english premier league" onclick="setLiveLeagueFilter('english premier league')">EPL</button>
+        <button class="fix-pill" data-league="la liga" onclick="setLiveLeagueFilter('la liga')">La Liga</button>
+        <button class="fix-pill" data-league="uefa champions league" onclick="setLiveLeagueFilter('uefa champions league')">UCL</button>
+        <button class="fix-pill" data-league="egyptian premier league" onclick="setLiveLeagueFilter('egyptian premier league')">Egypt</button>
+      </div>
+      <div id="all-live-container" style="display:flex;flex-direction:column;gap:24px;padding-top:12px;">
+        <div style="color:var(--text-muted);font-size:0.85rem;text-align:center;">Loading live matches...</div>
+      </div>
     </div>
 
     <!-- ════════════════ DISCOVER PAGE ════════════════ -->
@@ -346,19 +444,26 @@
       <div class="league-fixtures-section hidden" id="league-fixtures-section">
         <div class="section-header">
           <button class="back-btn" onclick="backToLeagues()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
             Back
           </button>
           <h3 class="league-fixtures-title" id="league-fixtures-title">Premier League Fixtures</h3>
         </div>
 
         <!-- Prizes Section (shown only if admin configured prizes) -->
-        <div id="league-prizes-section" style="display:none;background:linear-gradient(135deg,rgba(255,153,20,0.08),rgba(60,184,46,0.08));border:1px solid rgba(255,153,20,0.2);border-radius:14px;padding:16px;margin-bottom:16px">
+        <div id="league-prizes-section"
+          style="display:none;background:linear-gradient(135deg,rgba(255,153,20,0.08),rgba(60,184,46,0.08));border:1px solid rgba(255,153,20,0.2);border-radius:14px;padding:16px;margin-bottom:16px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
             <span style="font-size:1.2rem">🏆</span>
-            <span style="font-size:0.75rem;font-weight:800;color:#ff9914;letter-spacing:1.5px;text-transform:uppercase">Prize Pool</span>
+            <span
+              style="font-size:0.75rem;font-weight:800;color:#ff9914;letter-spacing:1.5px;text-transform:uppercase">Prize
+              Pool</span>
           </div>
-          <pre id="league-prizes-content" style="margin:0;font-family:inherit;font-size:0.82rem;color:rgba(255,255,255,0.75);white-space:pre-wrap;line-height:1.6"></pre>
+          <pre id="league-prizes-content"
+            style="margin:0;font-family:inherit;font-size:0.82rem;color:rgba(255,255,255,0.75);white-space:pre-wrap;line-height:1.6"></pre>
         </div>
 
         <div class="fixtures-full-list" id="fixtures-full-list">
@@ -396,7 +501,8 @@
       </div>
 
       <div style="padding: 0 20px 16px;">
-        <select id="pred-league-filter" class="form-input" onchange="applyLocalPredFilter()" style="padding:10px 14px;font-size:0.85rem;background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1)">
+        <select id="pred-league-filter" class="form-input" onchange="applyLocalPredFilter()"
+          style="padding:10px 14px;font-size:0.85rem;background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1)">
           <option value="ALL">All Leagues & Cups</option>
         </select>
       </div>
@@ -440,7 +546,9 @@
           </div>
           <div class="podium-card rank1">
             <div class="crown-icon">
-              <svg viewBox="0 0 24 24" fill="#ff9914" width="30" height="30"><path d="M2 20h20l-2-10-6 5-2-8-2 8-6-5-2 10z"/></svg>
+              <svg viewBox="0 0 24 24" fill="#ff9914" width="30" height="30">
+                <path d="M2 20h20l-2-10-6 5-2-8-2 8-6-5-2 10z" />
+              </svg>
             </div>
             <div class="podium-avatar">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=marcus" alt="Marcus">
@@ -485,7 +593,9 @@
           </div>
         </div>
         <div class="yrb-right">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="20" height="20"><polyline points="18 15 12 9 6 15"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="20" height="20">
+            <polyline points="18 15 12 9 6 15" />
+          </svg>
           <span>↑142 today</span>
         </div>
       </div>
@@ -496,11 +606,16 @@
 
       <!-- My Leagues Ranks (shown only when myleagues tab active) -->
       <div id="my-leagues-ranks" style="display:none">
-        <div style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:16px 0 12px">My Rank Per League / Cup</div>
+        <div
+          style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:16px 0 12px">
+          My League Rankings</div>
+        <div style="font-size:0.7rem;color:rgba(255,255,255,0.35);padding-bottom:8px;">Your rank among all predictors in each competition</div>
         <div id="my-leagues-ranks-list">
           <div style="text-align:center;color:var(--text-muted);padding:32px">Loading your league ranks...</div>
         </div>
-        <div style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:16px 0 12px;margin-top:8px;border-top:1px solid rgba(255,255,255,0.06)">My Mini Leagues</div>
+        <div
+          style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:16px 0 12px;margin-top:8px;border-top:1px solid rgba(255,255,255,0.06)">
+          My Mini Leagues</div>
         <div id="my-minileagues-ranks-list">
           <div style="text-align:center;color:var(--text-muted);padding:32px">No mini leagues joined yet</div>
         </div>
@@ -509,24 +624,36 @@
 
     <!-- ════════════════ MINI LEAGUES PAGE ════════════════ -->
     <div class="page hidden" id="page-minileague">
-      <div class="page-header-block">
-        <h1 class="page-title">Mini Leagues</h1>
-        <button class="create-league-btn" onclick="openCreateLeague()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Create League
-        </button>
-      </div>
 
-      <div class="my-leagues-grid" id="my-leagues-grid">
-        <!-- Injected by JS -->
-      </div>
+      <!-- Detail panel (hidden until tile clicked) -->
+      <div id="mini-league-detail-panel" class="hidden"></div>
 
-      <div class="join-league-section">
-        <h3 class="sub-section-title">Join a League</h3>
-        <div class="join-input-row">
-          <input type="text" class="join-input" placeholder="Enter invite code (e.g. KO-ALPHA-7821)" id="join-code-input">
-          <button class="join-btn" onclick="joinLeague()">Join</button>
+      <!-- List view -->
+      <div id="mini-league-list-view">
+        <div class="page-header-block">
+          <h1 class="page-title">Mini Leagues</h1>
+          <button class="create-league-btn" onclick="openCreateLeague()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Create League
+          </button>
         </div>
+
+        <div class="join-league-section">
+          <h3 class="sub-section-title">Join a League</h3>
+          <div class="join-input-row">
+            <input type="text" class="join-input" placeholder="Enter invite code (e.g. KO-ALPHA-7821)"
+              id="join-code-input">
+            <button class="join-btn" onclick="joinLeague()">Join</button>
+          </div>
+        </div>
+
+        <div class="my-leagues-grid" id="my-leagues-grid">
+          <!-- Injected by JS -->
+        </div>
+
       </div>
     </div>
 
@@ -535,7 +662,8 @@
       <!-- Profile Hero -->
       <div class="profile-hero">
         <div class="profile-avatar-wrap">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=kickoff" alt="Profile avatar" class="profile-avatar" id="profile-avatar-img">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=kickoff" alt="Profile avatar" class="profile-avatar"
+            id="profile-avatar-img">
           <div class="level-badge-lg" id="profile-level-badge">...</div>
         </div>
         <div class="profile-info">
@@ -550,7 +678,9 @@
               <span id="profile-level-label">—</span>
               <span id="profile-xp">— XP</span>
             </div>
-            <div class="xp-bar"><div class="xp-fill" id="xp-fill-bar" style="width:0%"></div></div>
+            <div class="xp-bar">
+              <div class="xp-fill" id="xp-fill-bar" style="width:0%"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -559,28 +689,45 @@
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-card-icon green">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><polyline points="22 4 12 14.01 9 11.01"/><polyline points="22 4 12 14.01 9 11.01"/><line x1="22" y1="4" x2="12" y2="14.01"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+              <polyline points="22 4 12 14.01 9 11.01" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+              <line x1="22" y1="4" x2="12" y2="14.01" />
+            </svg>
           </div>
           <div class="stat-card-num">67.3%</div>
           <div class="stat-card-lbl">Accuracy</div>
         </div>
         <div class="stat-card">
           <div class="stat-card-icon orange">
-            <svg viewBox="0 0 24 24" fill="#ff9914" width="22" height="22"><path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="#ff9914" width="22" height="22">
+              <path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z" />
+            </svg>
           </div>
           <div class="stat-card-num">7</div>
           <div class="stat-card-lbl">Current Streak</div>
         </div>
         <div class="stat-card">
           <div class="stat-card-icon gold">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="22" height="22"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="22" height="22">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+              <path d="M4 22h16" />
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
+            </svg>
           </div>
           <div class="stat-card-num">23</div>
           <div class="stat-card-lbl">Best Streak</div>
         </div>
         <div class="stat-card">
           <div class="stat-card-icon purple">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#abff4f" stroke-width="2" width="22" height="22"><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#abff4f" stroke-width="2" width="22" height="22">
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
           </div>
           <div class="stat-card-num">847</div>
           <div class="stat-card-lbl">Correct Preds</div>
@@ -606,7 +753,9 @@
         <div class="boosts-grid">
           <div class="boost-card" onclick="useBoost('double-xp')">
             <div class="boost-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="28" height="28"><path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="28" height="28">
+                <path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z" />
+              </svg>
             </div>
             <div class="boost-name">Double XP</div>
             <div class="boost-desc">2× XP on next correct prediction</div>
@@ -614,7 +763,9 @@
           </div>
           <div class="boost-card" onclick="useBoost('scoreline-shield')">
             <div class="boost-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#29bf12" stroke-width="2" width="28" height="28"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#29bf12" stroke-width="2" width="28" height="28">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
             </div>
             <div class="boost-name">Scoreline Shield</div>
             <div class="boost-desc">Near-miss still earns full XP</div>
@@ -622,7 +773,10 @@
           </div>
           <div class="boost-card" onclick="useBoost('wildcard')">
             <div class="boost-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#abff4f" stroke-width="2" width="28" height="28"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#abff4f" stroke-width="2" width="28" height="28">
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
             </div>
             <div class="boost-name">Wildcard</div>
             <div class="boost-desc">Cancel any prediction before kickoff</div>
@@ -644,7 +798,8 @@
     <div class="page hidden" id="page-vote">
       <div class="page-header-block">
         <h1 class="page-title">❤️ Vote Your Team</h1>
-        <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:4px">Vote once per day per club · Earn +50 XP each vote</p>
+        <p style="color:var(--text-secondary);font-size:0.85rem;margin-top:4px">Vote once per day per club · Earn +50 XP
+          each vote</p>
       </div>
 
       <!-- Continent Selector -->
@@ -686,14 +841,17 @@
       <!-- Club Leaderboard -->
       <div style="background:var(--bg-card);border-radius:16px;padding:20px;border:1px solid rgba(255,255,255,0.06)">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-          <div style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase">🏆 Top Clubs</div>
+          <div
+            style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase">
+            🏆 Top Clubs</div>
           <div style="display:flex;gap:6px">
             <button id="vote-tab-weekly" class="vote-period-tab" onclick="loadClubLeaderboard('weekly')"
               style="font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:rgba(255,255,255,0.5);cursor:pointer">Weekly</button>
             <button id="vote-tab-monthly" class="vote-period-tab" onclick="loadClubLeaderboard('monthly')"
               style="font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:rgba(255,255,255,0.5);cursor:pointer">Monthly</button>
             <button id="vote-tab-alltime" class="vote-period-tab active" onclick="loadClubLeaderboard('alltime')"
-              style="font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid var(--green);background:rgba(60,184,46,0.1);color:var(--green);cursor:pointer">All Time</button>
+              style="font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid var(--green);background:rgba(60,184,46,0.1);color:var(--green);cursor:pointer">All
+              Time</button>
           </div>
         </div>
         <div id="club-leaderboard-list">
@@ -711,7 +869,10 @@
       <div class="modal-header">
         <div class="modal-league-tag" id="modal-league-tag">Premier League</div>
         <button class="modal-close-btn" onclick="closeMatchModal()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
         </button>
       </div>
 
@@ -720,8 +881,9 @@
         <div class="modal-team">
           <div class="modal-badge" id="modal-home-badge">
             <svg viewBox="0 0 60 60" fill="none" width="60" height="60" id="modal-home-svg">
-              <circle cx="30" cy="30" r="28" fill="#C8102E"/>
-              <text x="30" y="37" text-anchor="middle" fill="white" font-size="16" font-weight="bold" font-family="sans-serif">MU</text>
+              <circle cx="30" cy="30" r="28" fill="#C8102E" />
+              <text x="30" y="37" text-anchor="middle" fill="white" font-size="16" font-weight="bold"
+                font-family="sans-serif">MU</text>
             </svg>
           </div>
           <div class="modal-team-name" id="modal-home-name">Man United</div>
@@ -734,8 +896,9 @@
         <div class="modal-team modal-team-right">
           <div class="modal-badge" id="modal-away-badge">
             <svg viewBox="0 0 60 60" fill="none" width="60" height="60" id="modal-away-svg">
-              <circle cx="30" cy="30" r="28" fill="#EF0107"/>
-              <text x="30" y="37" text-anchor="middle" fill="white" font-size="16" font-weight="bold" font-family="sans-serif">ARS</text>
+              <circle cx="30" cy="30" r="28" fill="#EF0107" />
+              <text x="30" y="37" text-anchor="middle" fill="white" font-size="16" font-weight="bold"
+                font-family="sans-serif">ARS</text>
             </svg>
           </div>
           <div class="modal-team-name" id="modal-away-name">Arsenal</div>
@@ -763,15 +926,22 @@
         <div class="live-chat-section">
           <div class="live-chat-header">Match Chat</div>
           <div class="live-chat-feed" id="live-chat-feed">
-            <div class="chat-msg"><span class="chat-user">🇧🇷 Alex K.</span><span class="chat-text">Arsenal holding strong! 🔴</span></div>
-            <div class="chat-msg"><span class="chat-user">🇩🇪 Marcus T.</span><span class="chat-text">Rashford needs to step up</span></div>
-            <div class="chat-msg"><span class="chat-user">🇫🇷 Sofia L.</span><span class="chat-text">I called 2-1 away! 🎯</span></div>
-            <div class="chat-msg you-msg"><span class="chat-user">🇪🇬 You</span><span class="chat-text">Let's go Arsenal!</span></div>
+            <div class="chat-msg"><span class="chat-user">🇧🇷 Alex K.</span><span class="chat-text">Arsenal holding
+                strong! 🔴</span></div>
+            <div class="chat-msg"><span class="chat-user">🇩🇪 Marcus T.</span><span class="chat-text">Rashford needs to
+                step up</span></div>
+            <div class="chat-msg"><span class="chat-user">🇫🇷 Sofia L.</span><span class="chat-text">I called 2-1 away!
+                🎯</span></div>
+            <div class="chat-msg you-msg"><span class="chat-user">🇪🇬 You</span><span class="chat-text">Let's go
+                Arsenal!</span></div>
           </div>
           <div class="chat-input-row">
             <input type="text" class="chat-input" placeholder="React to the match..." id="chat-input">
             <button class="chat-send" onclick="sendChatMsg()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
             </button>
           </div>
         </div>
@@ -795,8 +965,26 @@
           <div class="confidence-wrap">
             <span class="conf-label">Confidence</span>
             <div class="conf-slider-wrap">
-              <input type="range" class="conf-slider" id="confidence-slider" min="50" max="100" value="70" oninput="updateConfidence(this.value)">
+              <input type="range" class="conf-slider" id="confidence-slider" min="50" max="100" value="70"
+                oninput="updateConfidence(this.value)">
               <span class="conf-value" id="conf-value">70% (×1.4)</span>
+            </div>
+            <!-- Risk / Reward live indicator -->
+            <div id="conf-risk-reward" style="display:flex;gap:10px;margin-top:8px;font-size:0.72rem;font-weight:700;">
+              <div
+                style="flex:1;background:rgba(60,184,46,0.08);border:1px solid rgba(60,184,46,0.25);border-radius:10px;padding:6px 10px;text-align:center;">
+                <div
+                  style="color:rgba(255,255,255,0.4);font-size:0.62rem;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:2px">
+                  ✅ If Correct</div>
+                <div id="conf-reward-text" style="color:#3CB82E;">+100 XP</div>
+              </div>
+              <div
+                style="flex:1;background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.25);border-radius:10px;padding:6px 10px;text-align:center;">
+                <div
+                  style="color:rgba(255,255,255,0.4);font-size:0.62rem;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:2px">
+                  ❌ If Wrong</div>
+                <div id="conf-penalty-text" style="color:#e74c3c;">−35 XP</div>
+              </div>
             </div>
           </div>
         </div>
@@ -808,9 +996,11 @@
             <span class="pred-xp-badge xp-high">500 XP</span>
           </div>
           <div class="scoreline-input">
-            <input type="number" class="score-input" id="score-home-input" min="0" max="20" value="1" onchange="updateScoreline()">
+            <input type="number" class="score-input" id="score-home-input" min="0" max="20" value="1"
+              onchange="updateScoreline()">
             <span class="score-dash">—</span>
-            <input type="number" class="score-input" id="score-away-input" min="0" max="20" value="2" onchange="updateScoreline()">
+            <input type="number" class="score-input" id="score-away-input" min="0" max="20" value="2"
+              onchange="updateScoreline()">
           </div>
         </div>
 
@@ -821,36 +1011,55 @@
             <span class="pred-xp-badge xp-highest">300 XP</span>
           </div>
           <!-- Instruction -->
-          <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:0.78rem;color:rgba(255,255,255,0.5);line-height:1.4;">
+          <div
+            style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:0.78rem;color:rgba(255,255,255,0.5);line-height:1.4;">
             <span style="font-size:1.1rem;">⚽</span>
-            <span>Pick <strong style="color:rgba(255,255,255,0.8)">one player</strong> from either team who you think scores the <strong style="color:rgba(255,255,255,0.8)">very first goal</strong>. Optional — skip to leave blank.</span>
+            <span>Pick <strong style="color:rgba(255,255,255,0.8)">one player</strong> from either team who you think
+              scores the <strong style="color:rgba(255,255,255,0.8)">very first goal</strong>. Optional — skip to leave
+              blank.</span>
           </div>
           <!-- Your pick indicator (hidden until a player is selected) -->
-          <div id="fgs-pick-indicator" style="display:none;align-items:center;gap:8px;background:rgba(41,191,18,0.08);border:1px solid rgba(41,191,18,0.25);border-radius:10px;padding:8px 12px;margin-bottom:10px;">
-            <span style="font-size:0.7rem;font-weight:800;letter-spacing:1px;color:var(--green);text-transform:uppercase;">Your Pick</span>
+          <div id="fgs-pick-indicator"
+            style="display:none;align-items:center;gap:8px;background:rgba(41,191,18,0.08);border:1px solid rgba(41,191,18,0.25);border-radius:10px;padding:8px 12px;margin-bottom:10px;">
+            <span
+              style="font-size:0.7rem;font-weight:800;letter-spacing:1px;color:var(--green);text-transform:uppercase;">Your
+              Pick</span>
             <span id="fgs-pick-name" style="font-weight:700;color:#fff;font-size:0.88rem;flex:1;"></span>
-            <button onclick="clearFGSPick()" style="font-size:0.7rem;padding:3px 10px;border-radius:100px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;">✕ Clear</button>
+            <button onclick="clearFGSPick()"
+              style="font-size:0.7rem;padding:3px 10px;border-radius:100px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;">✕
+              Clear</button>
           </div>
           <!-- Loading state -->
           <div id="lineup-loading" style="text-align:center;padding:16px;color:rgba(255,255,255,0.4);font-size:0.82rem">
-            <div style="display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.2);border-top-color:#3CB82E;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:6px"></div><br>Loading lineup...
+            <div
+              style="display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.2);border-top-color:#3CB82E;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:6px">
+            </div><br>Loading lineup...
           </div>
           <!-- Player picker grid (populated by JS) -->
           <div id="player-picker" style="display:none">
             <div id="lineup-home-section" style="margin-bottom:12px">
-              <div class="lineup-team-label" id="lineup-home-label" style="font-size:0.7rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px"></div>
+              <div class="lineup-team-label" id="lineup-home-label"
+                style="font-size:0.7rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px">
+              </div>
               <div class="player-grid" id="lineup-home-players"></div>
-              <div style="font-size:0.68rem;color:rgba(255,255,255,0.35);margin:6px 0 4px;font-weight:600;letter-spacing:1px;text-transform:uppercase">BENCH</div>
+              <div
+                style="font-size:0.68rem;color:rgba(255,255,255,0.35);margin:6px 0 4px;font-weight:600;letter-spacing:1px;text-transform:uppercase">
+                BENCH</div>
               <div class="player-grid" id="lineup-home-subs"></div>
             </div>
             <div id="lineup-away-section">
-              <div class="lineup-team-label" id="lineup-away-label" style="font-size:0.7rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px"></div>
+              <div class="lineup-team-label" id="lineup-away-label"
+                style="font-size:0.7rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px">
+              </div>
               <div class="player-grid" id="lineup-away-players"></div>
-              <div style="font-size:0.68rem;color:rgba(255,255,255,0.35);margin:6px 0 4px;font-weight:600;letter-spacing:1px;text-transform:uppercase">BENCH</div>
+              <div
+                style="font-size:0.68rem;color:rgba(255,255,255,0.35);margin:6px 0 4px;font-weight:600;letter-spacing:1px;text-transform:uppercase">
+                BENCH</div>
               <div class="player-grid" id="lineup-away-subs"></div>
             </div>
             <!-- No lineup yet message -->
-            <div id="no-lineup-msg" style="display:none;text-align:center;padding:16px 12px;color:rgba(255,255,255,0.35);font-size:0.82rem">
+            <div id="no-lineup-msg"
+              style="display:none;text-align:center;padding:16px 12px;color:rgba(255,255,255,0.35);font-size:0.82rem">
               ⏳ Lineup not released yet — usually available ~1 hour before kickoff
             </div>
           </div>
@@ -889,7 +1098,10 @@
         </div>
 
         <button class="submit-prediction-btn" onclick="submitPrediction()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="22 4 12 14.01 9 11.01"/><line x1="22" y1="4" x2="12" y2="14.01"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <polyline points="22 4 12 14.01 9 11.01" />
+            <line x1="22" y1="4" x2="12" y2="14.01" />
+          </svg>
           Lock In Predictions
         </button>
       </div>
@@ -898,32 +1110,61 @@
 
   <!-- ─── DAILY BONUS SPIN MODAL ──────────────────────────────────── -->
   <div class="modal-overlay hidden" id="bonus-modal-overlay" onclick="closeBonusModal()">
-    <div class="bonus-modal" onclick="event.stopPropagation()">
-      <button class="modal-close-btn" onclick="closeBonusModal()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <div class="bonus-modal" onclick="event.stopPropagation()" style="max-width:440px;padding:28px 24px 32px;">
+      <button class="modal-close-btn" onclick="closeBonusModal()" style="position:absolute;top:16px;right:16px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
       </button>
-      <div class="bonus-modal-title">Daily Bonus Spin</div>
-      <div class="wheel-wrap">
-        <div class="wheel-pointer">▼</div>
-        <canvas id="spin-wheel" width="280" height="280"></canvas>
+
+      <!-- Header -->
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:0.65rem;font-weight:800;color:var(--orange);letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;">Daily Bonus</div>
+        <div style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:1px;">🎡 Spin The Wheel</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin-top:4px;">One spin per day — wins real XP</div>
       </div>
-      <button class="spin-btn" id="spin-btn" onclick="spinWheel()">SPIN!</button>
-      <div class="spin-result hidden" id="spin-result">
-        <div class="spin-result-icon">🎉</div>
-        <div class="spin-result-text" id="spin-result-text">You won 250 XP!</div>
-        <div class="xp-counter" id="xp-counter">+250 XP</div>
+
+      <!-- Wheel container -->
+      <div style="position:relative;display:flex;justify-content:center;align-items:center;margin-bottom:20px;">
+        <!-- Pointer arrow -->
+        <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);z-index:10;filter:drop-shadow(0 2px 6px rgba(255,153,20,0.8));">
+          <svg width="28" height="28" viewBox="0 0 28 28">
+            <polygon points="14,26 2,2 26,2" fill="#FF9914" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <!-- Gold rim -->
+        <div style="width:336px;height:336px;border-radius:50%;background:conic-gradient(#c8860a,#ffe066,#c8860a,#ffe066,#c8860a);padding:6px;box-shadow:0 0 0 3px rgba(255,153,20,0.15),0 8px 32px rgba(0,0,0,0.6);">
+          <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;background:#111;">
+            <canvas id="spin-wheel" width="324" height="324"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spin button -->
+      <button class="spin-btn" id="spin-btn" onclick="spinWheel()">⚡ SPIN NOW</button>
+
+      <!-- Result -->
+      <div class="spin-result hidden" id="spin-result" style="margin-top:16px;">
+        <div class="spin-result-icon" style="font-size:2rem;margin-bottom:4px;">🎉</div>
+        <div class="spin-result-text" id="spin-result-text" style="font-size:0.9rem;color:rgba(255,255,255,0.7);">You won!</div>
+        <div class="xp-counter" id="xp-counter" style="font-size:2rem;font-weight:900;margin-top:4px;">+250 XP</div>
       </div>
     </div>
   </div>
 
   <!-- ─── CREATE LEAGUE MODAL ────────────────────────────────────── -->
   <div class="modal-overlay hidden" id="create-league-modal">
-    <div class="modal-sheet create-league-sheet" onclick="event.stopPropagation()" style="display:flex;flex-direction:column;max-height:90vh;overflow:hidden;">
+    <div class="modal-sheet create-league-sheet" onclick="event.stopPropagation()"
+      style="display:flex;flex-direction:column;max-height:90vh;overflow:hidden;">
       <div class="modal-drag-handle"></div>
       <div class="modal-header" style="flex-shrink:0;">
         <h3 class="create-league-title">Create Mini League</h3>
         <button class="modal-close-btn" onclick="closeCreateLeague()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
         </button>
       </div>
       <div class="create-league-form" style="flex:1;overflow-y:auto;padding-bottom:8px;">
@@ -934,10 +1175,13 @@
         <div class="form-group">
           <label class="form-label">Competitions to Include</label>
           <div class="comp-checkboxes">
-            <label class="comp-check"><input type="radio" name="mini_league_comp" value="premier_league" checked> Premier League</label>
+            <label class="comp-check"><input type="radio" name="mini_league_comp" value="premier_league" checked>
+              Premier League</label>
             <label class="comp-check"><input type="radio" name="mini_league_comp" value="la_liga"> La Liga</label>
-            <label class="comp-check"><input type="radio" name="mini_league_comp" value="champions_league"> Champions League</label>
-            <label class="comp-check"><input type="radio" name="mini_league_comp" value="egyptian_premier_league"> Egyptian Premier League</label>
+            <label class="comp-check"><input type="radio" name="mini_league_comp" value="champions_league"> Champions
+              League</label>
+            <label class="comp-check"><input type="radio" name="mini_league_comp" value="egyptian_premier_league">
+              Egyptian Premier League</label>
             <label class="comp-check"><input type="radio" name="mini_league_comp" value="world_cup"> World Cup</label>
           </div>
         </div>
@@ -982,31 +1226,55 @@
   <!-- ─── MOBILE NAV BAR ──────────────────────────────────────────── -->
   <nav class="mobile-nav">
     <button class="mobile-nav-item active" onclick="navigate('home')" id="mnav-home">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
       <span>Home</span>
     </button>
     <button class="mobile-nav-item" onclick="navigate('leagues')" id="mnav-leagues">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
       <span>Leagues & Cups</span>
     </button>
     <button class="mobile-nav-item" onclick="navigate('predictions')" id="mnav-predictions">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+        <polyline points="22 4 12 14.01 9 11.01" />
+      </svg>
       <span>Predict</span>
     </button>
     <button class="mobile-nav-item" onclick="navigate('leaderboard')" id="mnav-leaderboard">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+        <line x1="18" y1="20" x2="18" y2="10" />
+        <line x1="12" y1="20" x2="12" y2="4" />
+        <line x1="6" y1="20" x2="6" y2="14" />
+      </svg>
       <span>Ranks</span>
     </button>
     <button class="mobile-nav-item" onclick="navigate('minileague')" id="mnav-minileague">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
       <span>Leagues</span>
     </button>
     <button class="mobile-nav-item" onclick="navigate('vote')" id="mnav-vote">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+        <path
+          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
       <span>Vote</span>
     </button>
     <button class="mobile-nav-item" onclick="navigate('profile')" id="mnav-profile">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
       <span>Profile</span>
     </button>
   </nav>
@@ -1016,12 +1284,28 @@
       <div class="modal-header">
         <h3 class="create-league-title" id="auth-title">Join KickOff</h3>
         <button class="modal-close-btn" onclick="closeAuthModal()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
         </button>
       </div>
       <div class="auth-form-wrap">
         <button class="google-auth-btn" onclick="continueWithGoogle()">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+            <path
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              fill="#4285F4" />
+            <path
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              fill="#34A853" />
+            <path
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              fill="#FBBC05" />
+            <path
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              fill="#EA4335" />
+          </svg>
           Continue with Google
         </button>
         <div class="auth-divider"><span>OR</span></div>
@@ -1038,10 +1322,11 @@
     </div>
   </div>
 
-  <script src="/js/backend_api.js?v=3.0"></script>
+  <script src="/js/backend_api.js?v=5.7"></script>
   <script src="/js/teams_db.js?v=2.6"></script>
-  <script src="/js/data.js?v=2.8"></script>
+  <script src="/js/data.js?v=5.7"></script>
   <script src="/js/i18n.js?v=2.6"></script>
-  <script src="/js/app.js?v=5.2"></script>
+  <script src="/js/app.js?v=7.9"></script>
 </body>
+
 </html>

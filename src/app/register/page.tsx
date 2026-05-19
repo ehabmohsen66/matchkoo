@@ -164,7 +164,7 @@ function RegisterForm() {
 
           {referrerId && (
             <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(111,232,64,0.1)", border:"1px solid rgba(111,232,64,0.25)", borderRadius:100, padding:"5px 14px", marginTop:12, color:"#6FE840", fontSize:"0.78rem", fontWeight:700 }}>
-              🎉 Invited · +200 XP on first prediction
+              🎉 Invited · +200 XP on registration
             </div>
           )}
 

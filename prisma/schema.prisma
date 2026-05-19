@@ -65,6 +65,8 @@ model Tournament {
   startDate        DateTime
   registrationMode String   @default("OPEN") // OPEN or INVITE_ONLY
   inviteCode       String?  // required when INVITE_ONLY
+  competition      String?  @default("premier_league") // mini league competition key
+  scoringMode      String?  @default("global")         // "global" | "simple"
 
   createdByUserId String
   createdByUser   User     @relation("AdminTournaments", fields: [createdByUserId], references: [id])
@@ -120,6 +122,7 @@ model Prediction {
   totalGoals      Int?                  // predicted total goals in match
   xpEarned        Int?    // populated after match result
   status          String? // "pending" | "correct" | "wrong"
+  emailSent       Boolean @default(false) // result email dispatched
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)

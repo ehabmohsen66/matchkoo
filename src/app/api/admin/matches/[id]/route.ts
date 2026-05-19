@@ -31,8 +31,11 @@ export async function PATCH(
   // If match completed, calculate XP for all predictions
   if (status === "COMPLETED" && homeScore !== undefined && awayScore !== undefined) {
     const predictions = await prisma.prediction.findMany({
-      where: { matchId: id },
-      include: { user: { select: { id: true, email: true, name: true } } },
+      where: {
+        matchId: id,
+        status: null, // only unsettled — prevents double XP if re-submitted or cron already ran
+      },
+      include: { user: { select: { id: true, email: true, name: true, streak: true, bestStreak: true } } },
     });
 
     for (const pred of predictions) {
@@ -44,25 +47,52 @@ export async function PATCH(
       const exactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
       const correctFGS = !!(firstGoalScorer && pred.firstGoalScorer?.toLowerCase() === firstGoalScorer.toLowerCase());
 
-      if (exactScore) xp += 30;
-      else if (correctResult) xp += 10;
-      if (correctFGS) xp += 15;
+      // Base XP
+      let baseXp = 0;
+      if (correctResult) baseXp += 50;
+      if (exactScore)    baseXp += 150;
+      if (correctFGS)    baseXp += 100;
 
-      // Confidence multiplier: 50→×1.0, 75→×1.5, 100→×2.0
+      // Confidence multiplier: 50%=1.0×, 100%=2.0×
       const multiplier = 1 + ((pred.confidence - 50) / 50);
-      xp = Math.round(xp * multiplier);
+      xp = Math.round(baseXp * multiplier);
 
-      // Double XP joker
-      if (pred.isDouble) xp *= 2;
+      // Confidence Penalty (Risk vs Reward)
+      if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));
+      if (pred.firstGoalScorer && !correctFGS) xp -= Math.round(100 * (pred.confidence / 100));
 
-      await prisma.prediction.update({ where: { id: pred.id }, data: { xpEarned: xp } });
+      // BTTS bonus — 75 XP flat (no confidence multiplier)
+      const actualBtts = homeScore > 0 && awayScore > 0;
+      if (pred.btts !== null && pred.btts !== undefined && pred.btts === actualBtts) xp += 75;
 
-      // Update user total XP
+      // Total Goals bucket bonus — 75 XP flat
+      const actualTotal  = homeScore + awayScore;
+      const actualBucket = actualTotal >= 5 ? 5 : actualTotal;
+      const predBucket   = (pred.totalGoals ?? -1) >= 5 ? 5 : (pred.totalGoals ?? -1);
+      if (pred.totalGoals !== null && pred.totalGoals !== undefined && predBucket === actualBucket) xp += 75;
+
+      // Double joker: rewards only, not penalties
+      if (pred.isDouble && xp > 0) xp *= 2;
+
+      // Streak
+      const newStreak = correctResult ? (pred.user as any).streak + 1 : 0;
+
+      await prisma.prediction.update({ where: { id: pred.id }, data: { xpEarned: xp, status: correctResult ? "correct" : "wrong" } });
+
+      // Update user total XP + stats
       const updatedUser = await prisma.user.update({
         where: { id: pred.userId },
-        data: { xp: { increment: xp } },
+        data: {
+          xp:              { increment: xp },
+          streak:          newStreak,
+          bestStreak:      { set: Math.max((pred.user as any).bestStreak ?? 0, newStreak) },
+          predictionCount: { increment: 1 },
+          correctCount:    { increment: correctResult ? 1 : 0 },
+        },
         select: { xp: true },
       });
+
+      const newTotalXp = updatedUser.xp;
 
       // Send match result email — log failures instead of swallowing them
       if (pred.user.email) {

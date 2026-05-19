@@ -113,7 +113,7 @@ export async function getUpcomingFixtures(daysAhead: number = 7): Promise<ApiFix
 /** Convert API-Football status → Matchkoo Match status */
 export function toMatchStatus(short: string): "UPCOMING" | "LIVE" | "COMPLETED" {
   if (["NS", "TBD", "PST"].includes(short)) return "UPCOMING";
-  if (["1H", "2H", "ET", "BT", "P", "SUSP", "INT", "LIVE"].includes(short)) return "LIVE";
+  if (["1H", "HT", "2H", "ET", "BT", "P", "SUSP", "INT", "LIVE"].includes(short)) return "LIVE";
   return "COMPLETED"; // FT, AET, PEN, ABD, AWD, WO
 }
 

@@ -155,7 +155,7 @@ const Backend = {
           'la liga':                { continent: 'europe', staticId: 'laliga',  country: '🇪🇸', emoji: '🇪🇸', logo: 'https://media.api-sports.io/football/leagues/140.png', canonicalName: 'La Liga' },
           'uefa champions league':  { continent: 'europe', staticId: 'ucl',     country: '🇪🇺', emoji: '⭐', logo: 'https://media.api-sports.io/football/leagues/2.png', canonicalName: 'UEFA Champions League' },
           'egyptian premier league':{ continent: 'africa', staticId: 'egipt',   country: '🇪🇬', emoji: '🇪🇬', logo: 'https://tmssl.akamaized.net//images/logo/header/egy1.png?lm=1741338264', canonicalName: 'Egyptian Premier League' },
-          'fifa world cup':         { continent: 'world',  staticId: 'wc2026',  country: '🌍', emoji: '🏆', logo: 'https://media.api-sports.io/football/leagues/1.png', canonicalName: 'FIFA World Cup' },
+          'fifa world cup':         { continent: 'world',  staticId: 'wc2026',  country: '🌍', emoji: '🏆', logo: '/images/wc2026-logo.png', canonicalName: 'FIFA World Cup' },
         };
 
         tournamentsRes.forEach(t => {

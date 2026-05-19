@@ -167,7 +167,23 @@ export async function POST(req: NextRequest) {
             if (correctScorer) baseXp += 100;
             const multiplier = 1 + ((pred.confidence - 50) / 50);
             let xp = Math.round(baseXp * multiplier);
-            if (pred.isDouble) xp *= 2;
+
+            // Confidence Penalty
+            if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));
+            if (pred.firstGoalScorer && !correctScorer) xp -= Math.round(100 * (pred.confidence / 100));
+
+            // BTTS bonus — 75 XP flat
+            const actualBtts2 = hs > 0 && as > 0;
+            if (pred.btts !== null && pred.btts !== undefined && pred.btts === actualBtts2) xp += 75;
+
+            // Total Goals bucket bonus — 75 XP flat
+            const actualTotal2  = hs + as;
+            const actualBucket2 = actualTotal2 >= 5 ? 5 : actualTotal2;
+            const predBucket2   = (pred.totalGoals ?? -1) >= 5 ? 5 : (pred.totalGoals ?? -1);
+            if (pred.totalGoals !== null && pred.totalGoals !== undefined && predBucket2 === actualBucket2) xp += 75;
+
+            // Double joker applies to rewards only, not penalties
+            if (pred.isDouble && xp > 0) xp *= 2;
 
             const newStreak = correctResult ? pred.user.streak + 1 : 0;
             const newBest   = Math.max(pred.user.bestStreak, newStreak);
@@ -251,6 +267,59 @@ export async function POST(req: NextRequest) {
               }
             }
           }
+        }
+      }
+    }
+
+    // ── Email Retry Sweep: re-send result emails that failed on first attempt ──
+    // Runs on every update-live cycle. Finds settled predictions where emailSent
+    // is still false (email failed or was skipped) and re-attempts delivery.
+    if (mode === "update-live") {
+      const unsentPreds = await prisma.prediction.findMany({
+        where: { emailSent: false, status: { not: null }, xpEarned: { not: null } },
+        include: {
+          user:  { select: { email: true, name: true, xp: true } },
+          match: { select: { homeTeam: true, awayTeam: true, homeScore: true, awayScore: true } },
+        },
+        take: 20, // cap per run to avoid timeouts
+      });
+
+      for (const pred of unsentPreds) {
+        const m = pred.match;
+        if (!pred.user.email || m.homeScore === null || m.awayScore === null) continue;
+
+        const hs = m.homeScore!, as_ = m.awayScore!;
+        const correctResult =
+          (pred.homeScore > pred.awayScore && hs > as_) ||
+          (pred.homeScore < pred.awayScore && hs < as_) ||
+          (pred.homeScore === pred.awayScore && hs === as_);
+        const exactScore = pred.homeScore === hs && pred.awayScore === as_;
+
+        await new Promise(r => setTimeout(r, 300)); // stagger
+        const emailResult = await sendEmail({
+          to: pred.user.email,
+          subject: exactScore
+            ? `🎯 Perfect call! ${m.homeTeam} ${hs}–${as_} ${m.awayTeam}`
+            : correctResult
+            ? `✅ Result correct! ${m.homeTeam} vs ${m.awayTeam}`
+            : `⚽ Match result: ${m.homeTeam} ${hs}–${as_} ${m.awayTeam}`,
+          react: React.createElement(MatchResultEmail, {
+            name:           pred.user.name ?? "there",
+            homeTeam:       m.homeTeam,
+            awayTeam:       m.awayTeam,
+            actualScore:    `${hs} – ${as_}`,
+            predictedScore: `${pred.homeScore} – ${pred.awayScore}`,
+            resultCorrect:  correctResult,
+            scoreCorrect:   exactScore,
+            xpEarned:       pred.xpEarned ?? 0,
+            newTotalXp:     pred.user.xp,
+            firstGoalScorer: pred.firstGoalScorer ?? undefined,
+          }),
+        }).catch((err) => { console.error(`[email-retry] Failed for ${pred.user.email}:`, err); return null; });
+
+        if (emailResult) {
+          await prisma.prediction.update({ where: { id: pred.id }, data: { emailSent: true } });
+          console.log(`[email-retry] Sent result email to ${pred.user.email} for ${m.homeTeam} vs ${m.awayTeam}`);
         }
       }
     }
@@ -356,12 +425,15 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
       // ── XP Engine: fires when match transitions to COMPLETED ──────────────
       if (status === "COMPLETED" && existing.status !== "COMPLETED" && homeScore !== null && awayScore !== null) {
         const predictions = await prisma.prediction.findMany({
-          where: { matchId: existing.id },
+          where: {
+            matchId: existing.id,
+            status: null, // only unsettled — admin PATCH may have already processed some
+          },
           include: { user: { select: { id: true, xp: true, streak: true, bestStreak: true, predictionCount: true, correctCount: true } } },
         });
 
         for (const pred of predictions) {
-          // ── 1. Determine outcome ─────────────────────────────────────────
+// ── 1. Determine outcome ─────────────────────────────────────────
           const correctResult =
             (pred.homeScore > pred.awayScore  && homeScore > awayScore)  ||
             (pred.homeScore < pred.awayScore  && homeScore < awayScore)  ||
@@ -373,26 +445,44 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
 
           const predStatus = correctResult ? "correct" : "wrong";
 
-          // ── 2. Base XP ───────────────────────────────────────────────────
-          let baseXp = 0;
-          if (correctResult) baseXp += 50;     // correct result
-          if (exactScore)    baseXp += 150;    // exact scoreline bonus (total 200)
-          if (correctScorer) baseXp += 100;    // first goalscorer bonus
+          // ── 2. BTTS (Both Teams to Score) — 75 XP flat, no confidence multiplier ─
+          const actualBtts = homeScore > 0 && awayScore > 0;
+          const correctBtts = pred.btts !== null && pred.btts !== undefined && pred.btts === actualBtts;
 
-          // ── 3. Confidence multiplier: 50%=1.0×, 75%=1.5×, 100%=2.0× ────
+          // ── 3. Total Goals bucket — 75 XP flat ───────────────────────────────
+          const actualTotal = homeScore + awayScore;
+          const actualBucket = actualTotal >= 5 ? 5 : actualTotal; // 5+ bucket = 5
+          const predBucket   = (pred.totalGoals ?? -1) >= 5 ? 5 : (pred.totalGoals ?? -1);
+          const correctTotalGoals = pred.totalGoals !== null && pred.totalGoals !== undefined && predBucket === actualBucket;
+
+          // ── 4. Base XP ───────────────────────────────────────────────────────
+          let baseXp = 0;
+          if (correctResult)     baseXp += 50;   // correct result
+          if (exactScore)        baseXp += 150;  // exact scoreline bonus (total 200)
+          if (correctScorer)     baseXp += 100;  // first goalscorer bonus
+
+          // ── 5. Confidence multiplier: 50%=1.0×, 75%=1.5×, 100%=2.0× ────────
           const multiplier = 1 + ((pred.confidence - 50) / 50);
           let xp = Math.round(baseXp * multiplier);
 
-          // ── 4. Double marker ─────────────────────────────────────────────
-          if (pred.isDouble) xp *= 2;
+          // ── 6. Confidence Penalty (Risk vs Reward) ───────────────────────────
+          if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));
+          if (pred.firstGoalScorer && !correctScorer) xp -= Math.round(100 * (pred.confidence / 100));
 
-          // ── 5. Streak update ─────────────────────────────────────────────
+          // ── 7. Bonus predictions (flat, no confidence multiplier/penalty) ────
+          if (correctBtts)       xp += 75;
+          if (correctTotalGoals) xp += 75;
+
+          // ── 8. Double marker (rewards only, never amplifies penalties) ────────
+          if (pred.isDouble && xp > 0) xp *= 2;
+
+          // ── 9. Streak update ─────────────────────────────────────────────────
           const newStreak    = correctResult ? pred.user.streak + 1 : 0;
           const newBest      = Math.max(pred.user.bestStreak, newStreak);
           const newPredCount = pred.user.predictionCount + 1;
           const newCorrect   = pred.user.correctCount + (correctResult ? 1 : 0);
 
-          // Streak bonus XP (awarded on top)
+          // Streak bonus XP (awarded on top of penalty-adjusted XP)
           let streakBonus = 0;
           if (correctResult) {
             if (newStreak === 10) streakBonus = 500;
@@ -421,9 +511,11 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
             select: { email: true, name: true, xp: true },
           });
 
-          // ── 8. Send match result email ────────────────────────────────────
-          if (updatedUser.email) {
-            sendEmail({
+          // ── 8. Send match result email (guarded by emailSent to prevent duplicates) ──
+          if (updatedUser.email && !pred.emailSent) {
+            // Small stagger to avoid Resend rate-limit when many matches complete at once
+            await new Promise(r => setTimeout(r, 400));
+            const emailResult = await sendEmail({
               to: updatedUser.email,
               subject: exactScore
                 ? `🎯 Perfect call! ${existing.homeTeam} ${homeScore}–${awayScore} ${existing.awayTeam}`
@@ -443,7 +535,11 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
                 firstGoalScorer: pred.firstGoalScorer ?? undefined,
                 scorerCorrect:   correctScorer || undefined,
               }),
-            }).catch((err) => console.error(`[email] Failed to send result email to ${updatedUser.email}:`, err));
+            }).catch((err) => { console.error(`[email] Failed to send result email to ${updatedUser.email}:`, err); return null; });
+            // Mark email as sent only if it succeeded — allows retry on next cron run
+            if (emailResult && (emailResult as any).success !== false) {
+              await prisma.prediction.update({ where: { id: pred.id }, data: { emailSent: true } });
+            }
 
             // ── 9. Streak milestone email ────────────────────────────────
             if (correctResult && [3, 5, 10].includes(newStreak) && streakBonus > 0) {
