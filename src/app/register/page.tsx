@@ -249,15 +249,15 @@ function RegisterForm() {
                 })}
               </div>
 
-              <div style={{ display:"flex", gap:10, marginTop:20 }}>
-                <button onClick={() => setStep(1)} style={{ flex:1, padding:"12px", borderRadius:100, border:"1px solid rgba(255,255,255,0.12)", background:"transparent", color:"rgba(255,255,255,0.6)", fontWeight:700, fontSize:"0.9rem", cursor:"pointer", fontFamily:"inherit" }}>← Back</button>
+              <div style={{ display:"flex", flexDirection:"column", gap:10, marginTop:20 }}>
                 <button onClick={handleSubmit} disabled={loading}
-                  style={{ flex:2, padding:"13px", borderRadius:100, border:"none", background: loading ? "rgba(60,184,46,0.5)" : "linear-gradient(135deg,#3CB82E,#6FE840)", color:"#000", fontWeight:800, fontSize:"1rem", cursor: loading ? "not-allowed" : "pointer", fontFamily:"inherit", letterSpacing:"0.02em", transition:"transform 0.15s, box-shadow 0.15s" }}
+                  style={{ width:"100%", padding:"14px", borderRadius:100, border:"none", background: loading ? "rgba(60,184,46,0.5)" : "linear-gradient(135deg,#3CB82E,#6FE840)", color:"#000", fontWeight:800, fontSize:"0.95rem", cursor: loading ? "not-allowed" : "pointer", fontFamily:"inherit", letterSpacing:"0.02em", transition:"transform 0.15s, box-shadow 0.15s", whiteSpace:"nowrap" }}
                   onMouseEnter={e=>{ if(!loading){ (e.currentTarget).style.transform="translateY(-1px)"; (e.currentTarget).style.boxShadow="0 6px 24px rgba(111,232,64,0.35)"; }}}
                   onMouseLeave={e=>{ (e.currentTarget).style.transform=""; (e.currentTarget).style.boxShadow=""; }}
                 >
                   {loading ? "Creating account…" : selected.size === 0 ? "Skip & Create Account →" : `Create Account (${selected.size} league${selected.size>1?"s":""}) →`}
                 </button>
+                <button onClick={() => setStep(1)} style={{ width:"100%", padding:"11px", borderRadius:100, border:"1px solid rgba(255,255,255,0.12)", background:"transparent", color:"rgba(255,255,255,0.5)", fontWeight:600, fontSize:"0.85rem", cursor:"pointer", fontFamily:"inherit" }}>← Back</button>
               </div>
 
               {error && <div style={{ marginTop:12, background:"rgba(248,113,113,0.1)", border:"1px solid rgba(248,113,113,0.3)", color:"#F87171", padding:"10px 16px", borderRadius:10, fontSize:"0.9rem" }}>{error}</div>}
