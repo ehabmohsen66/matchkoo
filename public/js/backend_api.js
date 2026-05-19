@@ -133,12 +133,13 @@ const Backend = {
           xp: (u.xp || 0).toLocaleString(),
           acc: u.accuracy ? `${u.accuracy}%` : '—',
           seed: u.name?.toLowerCase().replace(/\s/g, '') || `user${i}`,
-          isYou: u.id === this.user?.id,
+          isYou: u.isMe || u.userId === this.user?.id,
         }));
 
         // Update "Your Rank" banner
-        const myRank = lbRes.findIndex(u => u.id === this.user?.id);
-        if (myRank >= 0) {
+        const myEntry = lbRes.find(u => u.isMe || u.userId === this.user?.id);
+        const myRank  = myEntry ? (myEntry.rank ? myEntry.rank - 1 : lbRes.indexOf(myEntry)) : -1;
+        if (myEntry && myRank >= 0) {
           const yrRank = document.querySelector('.yrb-rank');
           const yrName = document.querySelector('.yrb-name');
           const yrXp   = document.querySelector('.yrb-xp');
