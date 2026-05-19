@@ -22,6 +22,8 @@ const Backend = {
           image: session.user.image || null,
           role: (session.user.role || 'USER').toLowerCase(),
           xp: session.user.xp || 0,
+          streak: (session.user as any).streak ?? 0,
+          predictionCount: (session.user as any).predictionCount ?? 0,
         };
         this._updateAuthState();
         await this._hydrateData();
@@ -242,6 +244,35 @@ const Backend = {
     if (xpFill) xpFill.style.width = `${Math.min((this.user.xp / 20000) * 100, 100)}%`;
 
     // Note: ticker fallback rank is set separately in leaderboard hydration below
+
+    // Sidebar streak badge — show real streak if active, else prediction count
+    const streakBadge = document.getElementById('sidebar-streak-badge');
+    const streakVal   = document.getElementById('sidebar-streak-val');
+    const streakIcon  = document.getElementById('sidebar-streak-icon');
+    const userStreak  = this.user.streak ?? 0;
+    const predCount   = this.user.predictionCount ?? 0;
+
+    if (streakVal) {
+      if (userStreak > 0) {
+        // Active streak — show ⚡ N in orange
+        streakVal.textContent = userStreak.toString();
+        if (streakIcon) streakIcon.style.display = 'inline';
+        if (streakBadge) {
+          streakBadge.title = `${userStreak}-game winning streak! 🔥`;
+          streakBadge.style.borderColor = 'rgba(255,153,20,0.5)';
+        }
+      } else {
+        // No active streak — show 🎯 prediction count instead
+        if (streakIcon) streakIcon.style.display = 'none';
+        streakVal.textContent = '🎯 ' + predCount;
+        if (streakBadge) {
+          streakBadge.title = `${predCount} total predictions made`;
+          streakBadge.style.background  = 'rgba(8,189,189,0.1)';
+          streakBadge.style.borderColor = 'rgba(8,189,189,0.3)';
+          streakBadge.style.color       = 'var(--cyan)';
+        }
+      }
+    }
   },
 
   async logout() {
