@@ -142,6 +142,17 @@ const Backend = {
           if (yrRank) yrRank.textContent = `#${myRank + 1}`;
           if (yrName) yrName.textContent = `You (${this.user.name?.split(' ')[0]})`;
           if (yrXp)   yrXp.textContent = `${(this.user.xp || 0).toLocaleString()} XP`;
+
+          // Update ticker fallback stats with real rank + streak
+          const tickerRankEl   = document.getElementById('ticker-stat-rank');
+          const tickerStreakEl = document.getElementById('ticker-stat-streak');
+          const myUser = lbRes[myRank];
+          if (tickerRankEl) tickerRankEl.textContent = `#${(myRank + 1).toLocaleString()}`;
+          if (tickerStreakEl) tickerStreakEl.textContent = (myUser?.streak || this.user?.streak || 0).toString();
+
+          // Cache for ticker refresh cycles
+          window._cachedUserRank   = myRank + 1;
+          window._cachedUserStreak = myUser?.streak || 0;
         }
       }
 
@@ -241,9 +252,7 @@ const Backend = {
     const xpFill = document.querySelector('.xp-fill');
     if (xpFill) xpFill.style.width = `${Math.min((this.user.xp / 20000) * 100, 100)}%`;
 
-    // Hero stats strip XP total
-    const statNums = document.querySelectorAll('.stat-num');
-    if (statNums[0]) statNums[0].textContent = '2.4M'; // platform total
+    // Note: ticker fallback rank is set separately in leaderboard hydration below
   },
 
   async logout() {
