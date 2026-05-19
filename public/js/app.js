@@ -544,44 +544,90 @@ async function renderFixturesList() {
     });
 
     const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    let lastLabel = '';
-    const rows = upcoming.map(m => {
-      const matchId = m.id;
-      const isDouble = state.doubleMarkedMatch === matchId;
-      const doubleBg = isDouble ? '#ff9914' : 'rgba(255,153,20,0.1)';
-      const doubleColor = isDouble ? '#000' : '#ff9914';
-      const t = new Date(m.matchDate);
-      const timeStr = t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-      const hasPred = !!m.userPrediction;
-      const baseName = (m.tournament?.name || 'Match').replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '');
+    const VISIBLE_PER_DAY = 3;
 
+    // ── Group matches by day ───────────────────────────────────────────
+    const groups = {};
+    const groupOrder = [];
+    upcoming.forEach(m => {
+      const t = new Date(m.matchDate);
       const mDay = new Date(t); mDay.setHours(0,0,0,0);
       const diffDays = Math.round((mDay - today) / 86400000);
       const dayLabel = diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : DAY_NAMES[t.getDay()];
-      let sep = '';
-      if (dayLabel !== lastLabel) { lastLabel = dayLabel; sep = '<div class="fixture-day-header">' + dayLabel + '</div>'; }
-
-      const liveScore = m.status === 'LIVE' ? ((m.homeScore??0) + '\u2013' + (m.awayScore??0)) : '';
-
-      return sep +
-        '<div class="fixture-row" data-match-id="' + matchId + '" onclick="openRealMatchDetail(\'' + matchId + '\')" role="button" tabindex="0">' +
-          '<div class="fixture-league-badge">' + (m.homeLogo ? '<img src="'+m.homeLogo+'" width="24" height="24" style="border-radius:50%">' : '') + '</div>' +
-          '<div class="fixture-teams">' +
-            '<div class="fixture-league-name">' + baseName + '</div>' +
-            '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
-          '</div>' +
-          '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
-            (hasPred ? '<span style="color:var(--green);font-size:1.1rem;font-weight:900" title="Predicted">&#10003;</span>' : '') +
-            (m.status === 'LIVE' ? '<span class="live-badge" style="color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE ' + liveScore + '</span>' : '') +
-            
-            '<div class="fixture-time live-score-val">' + (m.status === 'LIVE' ? '' : timeStr) + '</div>' +
-          '</div>' +
-        '</div>';
+      if (!groups[dayLabel]) { groups[dayLabel] = []; groupOrder.push(dayLabel); }
+      groups[dayLabel].push(m);
     });
-    container.innerHTML = rows.join('');
+
+    // ── Render each day group ──────────────────────────────────────────
+    const parts = [];
+    groupOrder.forEach(dayLabel => {
+      const dayMatches = groups[dayLabel];
+      parts.push('<div class="fixture-day-header">' + dayLabel + '</div>');
+
+      dayMatches.forEach((m, idx) => {
+        const matchId  = m.id;
+        const t        = new Date(m.matchDate);
+        const timeStr  = t.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+        const hasPred  = !!m.userPrediction;
+        const baseName = (m.tournament?.name || 'Match').replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '');
+        const liveScore = m.status === 'LIVE' ? ((m.homeScore??0) + '\u2013' + (m.awayScore??0)) : '';
+        const hidden    = idx >= VISIBLE_PER_DAY;
+
+        parts.push(
+          '<div class="fixture-row' + (hidden ? ' fx-hidden' : '') + '" ' +
+            'data-match-id="' + matchId + '" ' +
+            'data-day="' + dayLabel.replace(/"/g,'') + '" ' +
+            (hidden ? 'style="display:none" ' : '') +
+            'onclick="openRealMatchDetail(\'' + matchId + '\')" role="button" tabindex="0">' +
+            '<div class="fixture-league-badge">' +
+              (m.homeLogo ? '<img src="' + m.homeLogo + '" width="24" height="24" style="border-radius:50%">' : '') +
+            '</div>' +
+            '<div class="fixture-teams">' +
+              '<div class="fixture-league-name">' + baseName + '</div>' +
+              '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
+              (hasPred ? '<span style="color:var(--green);font-size:1.1rem;font-weight:900" title="Predicted">&#10003;</span>' : '') +
+              (m.status === 'LIVE' ? '<span class="live-badge" style="color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE ' + liveScore + '</span>' : '') +
+              '<div class="fixture-time live-score-val">' + (m.status === 'LIVE' ? '' : timeStr) + '</div>' +
+            '</div>' +
+          '</div>'
+        );
+      });
+
+      // "Show more" button if day has more than VISIBLE_PER_DAY matches
+      const extra = dayMatches.length - VISIBLE_PER_DAY;
+      if (extra > 0) {
+        parts.push(
+          '<button class="fx-show-more" ' +
+            'data-day="' + dayLabel.replace(/"/g,'') + '" ' +
+            'onclick="showMoreFixtures(this)" ' +
+            'style="width:100%;margin:6px 0 12px;padding:9px 14px;background:rgba(255,255,255,0.04);' +
+                   'border:1px dashed rgba(255,255,255,0.12);border-radius:10px;color:rgba(255,255,255,0.45);' +
+                   'font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s;letter-spacing:0.02em;" ' +
+            'onmouseover="this.style.background=\'rgba(111,232,64,0.08)\';this.style.color=\'#6FE840\';this.style.borderColor=\'rgba(111,232,64,0.25)\'" ' +
+            'onmouseout="this.style.background=\'rgba(255,255,255,0.04)\';this.style.color=\'rgba(255,255,255,0.45)\';this.style.borderColor=\'rgba(255,255,255,0.12)\'">' +
+            '+ Show ' + extra + ' more match' + (extra !== 1 ? 'es' : '') +
+          '</button>'
+        );
+      }
+    });
+
+    container.innerHTML = parts.join('');
   } catch(e) {
     container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;">Could not load fixtures</div>';
   }
+}
+
+// Reveals hidden fixture rows for a given day group
+function showMoreFixtures(btn) {
+  const day = btn.getAttribute('data-day');
+  const container = btn.closest('#fixtures-list') || document;
+  container.querySelectorAll('.fixture-row.fx-hidden[data-day="' + day + '"]').forEach(el => {
+    el.style.display = '';
+    el.classList.remove('fx-hidden');
+  });
+  btn.remove();
 }
 
 function setFixtureLeagueFilter(league) {
