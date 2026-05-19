@@ -573,7 +573,7 @@ async function renderFixturesList() {
           '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
             (hasPred ? '<span style="color:var(--green);font-size:1.1rem;font-weight:900" title="Predicted">&#10003;</span>' : '') +
             (m.status === 'LIVE' ? '<span class="live-badge" style="color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE ' + liveScore + '</span>' : '') +
-            '<button onclick="event.stopPropagation();toggleDoubleXP(\'' + matchId + '\')" title="Double XP" style="background:'+doubleBg+';border:1px solid '+doubleBg+';color:'+doubleColor+';font-size:0.65rem;font-weight:800;padding:3px 8px;border-radius:100px;cursor:pointer">2x</button>' +
+            
             '<div class="fixture-time live-score-val">' + (m.status === 'LIVE' ? '' : timeStr) + '</div>' +
           '</div>' +
         '</div>';
