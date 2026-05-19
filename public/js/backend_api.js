@@ -282,19 +282,8 @@ const Backend = {
   },
 
   async logout() {
-    try {
-      // NextAuth CSRF-aware signout
-      const csrfRes = await fetch('/api/auth/csrf');
-      const { csrfToken } = await csrfRes.json();
-      await fetch('/api/auth/signout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `csrfToken=${csrfToken}&callbackUrl=/`,
-      });
-    } catch (e) {
-      console.warn('Signout error:', e);
-    }
-    window.location.href = '/';
+    // Navigate to /signout — the dedicated Next.js page calls NextAuth signOut() reliably
+    window.location.href = '/signout';
   },
 
   // ─── PREDICTIONS ─────────────────────────────────────────────────
