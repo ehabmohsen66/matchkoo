@@ -145,6 +145,13 @@ const Backend = {
           if (yrRank) yrRank.textContent = `#${myRank + 1}`;
           if (yrName) yrName.textContent = `You (${this.user.name?.split(' ')[0]})`;
           if (yrXp)   yrXp.textContent = `${(this.user.xp || 0).toLocaleString()} XP`;
+
+          // ── Sidebar global rank badge ──────────────────────────────
+          const rankVal = document.getElementById('sidebar-rank-val');
+          if (rankVal) rankVal.textContent = `#${(myRank + 1).toLocaleString()}`;
+
+          // Cache for ticker fallback refresh cycles
+          window._cachedUserRank = myRank + 1;
         }
       }
 
@@ -223,25 +230,38 @@ const Backend = {
       const adminLink = document.getElementById('nav-admin');
       if (adminLink) adminLink.style.display = 'flex';
     }
-    // Sidebar user info
-    const nameEl = document.querySelector('.user-name-sm');
-    const xpEl   = document.querySelector('.user-xp-sm');
+
+    // ── Sidebar user info (use IDs — never class queries that can mismatch) ──
+    const nameEl  = document.getElementById('sidebar-username');
+    const xpEl    = document.getElementById('sidebar-xp');
     if (nameEl) nameEl.textContent = this.user.name.split(' ')[0];
     if (xpEl)   xpEl.textContent   = `${(this.user.xp || 0).toLocaleString()} XP`;
 
-    // Avatar
+    // ── Level badge letter based on XP ───────────────────────────────
+    const levelBadge = document.getElementById('sidebar-level-badge');
+    if (levelBadge) {
+      const xp = this.user.xp || 0;
+      const { letter, cls } = xp >= 50000 ? { letter:'L', cls:'legend'   }
+                            : xp >= 20000 ? { letter:'P', cls:'platinum' }
+                            : xp >= 10000 ? { letter:'G', cls:'gold'     }
+                            : xp >= 3000  ? { letter:'S', cls:'silver'   }
+                            :               { letter:'B', cls:'bronze'   };
+      levelBadge.textContent = letter;
+      levelBadge.className   = `level-badge-sm ${cls}`;
+    }
+
+    // ── Avatar — gender-aware ─────────────────────────────────────────
     const avatarImg = document.querySelector('.sidebar-user .user-avatar-sm img');
     if (avatarImg) {
-      const seed   = encodeURIComponent(this.user.name);
+      const seed     = encodeURIComponent(this.user.name);
       const isFemale = this.user.gender === 'female';
-      // Male → avataaars (classic), Female → lorelei (feminine illustrated style)
       const avatarUrl = isFemale
         ? `https://api.dicebear.com/7.x/lorelei/svg?seed=${seed}&backgroundColor=1e1e2e`
         : `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
       avatarImg.src = this.user.image || avatarUrl;
     }
 
-    // Profile page
+    // ── Profile page fields ───────────────────────────────────────────
     const profileName = document.querySelector('.profile-name');
     if (profileName) profileName.textContent = this.user.name;
     const profileXpLabel = document.querySelector('.xp-label-row span:last-child');
@@ -249,36 +269,8 @@ const Backend = {
     const xpFill = document.querySelector('.xp-fill');
     if (xpFill) xpFill.style.width = `${Math.min((this.user.xp / 20000) * 100, 100)}%`;
 
-    // Note: ticker fallback rank is set separately in leaderboard hydration below
-
-    // Sidebar streak badge — show real streak if active, else prediction count
-    const streakBadge = document.getElementById('sidebar-streak-badge');
-    const streakVal   = document.getElementById('sidebar-streak-val');
-    const streakIcon  = document.getElementById('sidebar-streak-icon');
-    const userStreak  = this.user.streak ?? 0;
-    const predCount   = this.user.predictionCount ?? 0;
-
-    if (streakVal) {
-      if (userStreak > 0) {
-        // Active streak — show ⚡ N in orange
-        streakVal.textContent = userStreak.toString();
-        if (streakIcon) streakIcon.style.display = 'inline';
-        if (streakBadge) {
-          streakBadge.title = `${userStreak}-game winning streak! 🔥`;
-          streakBadge.style.borderColor = 'rgba(255,153,20,0.5)';
-        }
-      } else {
-        // No active streak — show 🎯 prediction count instead
-        if (streakIcon) streakIcon.style.display = 'none';
-        streakVal.textContent = '🎯 ' + predCount;
-        if (streakBadge) {
-          streakBadge.title = `${predCount} total predictions made`;
-          streakBadge.style.background  = 'rgba(8,189,189,0.1)';
-          streakBadge.style.borderColor = 'rgba(8,189,189,0.3)';
-          streakBadge.style.color       = 'var(--cyan)';
-        }
-      }
-    }
+    // ── Rank badge — shows "—" until leaderboard hydration fills it in ─
+    // (populated in _hydrateData leaderboard section below)
   },
 
   async logout() {

@@ -124,17 +124,15 @@
     <div class="sidebar-user" onclick="navigate('profile')" style="cursor:pointer;">
       <div class="user-avatar-sm">
         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=kickoff" alt="User avatar">
-        <div class="level-badge-sm gold">G</div>
+        <div class="level-badge-sm gold" id="sidebar-level-badge">G</div>
       </div>
       <div class="user-info-sm">
-        <div class="user-name-sm">Ihab</div>
-        <div class="user-xp-sm">12,450 XP</div>
+        <div class="user-name-sm" id="sidebar-username">—</div>
+        <div class="user-xp-sm" id="sidebar-xp">— XP</div>
       </div>
-      <div class="streak-indicator" id="sidebar-streak-badge">
-        <svg viewBox="0 0 24 24" fill="#ff9914" width="16" height="16" id="sidebar-streak-icon">
-          <path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z" />
-        </svg>
-        <span id="sidebar-streak-val">—</span>
+      <div class="streak-indicator" id="sidebar-rank-badge" title="Your global rank">
+        <span style="font-size:0.75rem;opacity:0.7">🏆</span>
+        <span id="sidebar-rank-val">—</span>
       </div>
     </div>
 
@@ -1309,7 +1307,7 @@
     </div>
   </div>
 
-  <script src="/js/backend_api.js?v=6.0"></script>
+  <script src="/js/backend_api.js?v=6.1"></script>
   <script src="/js/teams_db.js?v=2.6"></script>
   <script src="/js/data.js?v=5.7"></script>
   <script src="/js/i18n.js?v=2.6"></script>
