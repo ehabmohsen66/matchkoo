@@ -144,7 +144,92 @@ function initHome() {
   initChallenges();
   _checkDailySpinStatus();
   _startLiveScorePolling(); // auto-refresh live scores
+  initLiveTicker();         // live events ticker strip
 }
+
+// ─── LIVE EVENTS TICKER ──────────────────────────────────────────
+let _tickerInterval = null;
+
+async function initLiveTicker() {
+  await _refreshTicker();
+  // Refresh every 90 seconds
+  if (_tickerInterval) clearInterval(_tickerInterval);
+  _tickerInterval = setInterval(_refreshTicker, 90000);
+}
+
+async function _refreshTicker() {
+  const track    = document.getElementById('ticker-track');
+  const viewport = document.getElementById('ticker-viewport');
+  const fallback = document.getElementById('ticker-fallback');
+  if (!track) return;
+
+  try {
+    const res  = await fetch('/api/live-events');
+    if (!res.ok) throw new Error('Failed');
+    const data = await res.json();
+    const events = data.events || [];
+
+    if (events.length === 0) {
+      // No live events — show fallback stats
+      viewport && (viewport.style.display = 'none');
+      if (fallback) {
+        fallback.style.display = 'flex';
+        // Populate from user data if available
+        const rankEl   = document.getElementById('ticker-stat-rank');
+        const streakEl = document.getElementById('ticker-stat-streak');
+        if (rankEl   && window._cachedUserRank)   rankEl.textContent   = '#' + window._cachedUserRank;
+        if (streakEl && window._cachedUserStreak) streakEl.textContent = window._cachedUserStreak;
+      }
+      return;
+    }
+
+    // Live events found — show ticker
+    if (fallback) fallback.style.display = 'none';
+    if (viewport) viewport.style.display = 'flex';
+
+    // Get user's preferred leagues for filtering (optional — show all if not set)
+    const userLeagues = (window.Backend && Backend.preferredLeagues) || [];
+
+    // Filter by user's leagues if they have preferences set
+    let filtered = events;
+    if (userLeagues.length > 0) {
+      const userLower = userLeagues.map(l => l.toLowerCase());
+      filtered = events.filter(evt => {
+        const t = (evt.tournament || '').toLowerCase();
+        return userLower.some(ul => t.includes(ul) || ul.includes(t));
+      });
+      // Fallback to all if none match (e.g. user preferences not loaded yet)
+      if (filtered.length === 0) filtered = events;
+    }
+
+    // Build ticker items
+    const items = filtered.map(evt => {
+      const isGoal = evt.type === 'Goal';
+      const icon   = isGoal ? '⚽' : '🟥';
+      const extra  = evt.detail === 'Penalty' ? ' <span style="font-size:0.7rem;opacity:0.7">(P)</span>'
+                   : evt.detail === 'Own Goal' ? ' <span style="font-size:0.7rem;opacity:0.7">(OG)</span>'
+                   : '';
+      const player = evt.playerName || evt.teamName || '';
+      const score  = evt.homeTeam + ' <span class="ticker-score">' + evt.score + '</span> ' + evt.awayTeam;
+      return `<span class="ticker-item">${icon} <strong>${player}</strong>${extra} <span style="opacity:0.5">${evt.time}'</span> · ${score} <span class="ticker-sep">|</span></span>`;
+    }).join('');
+
+    // Duplicate content for seamless infinite loop
+    track.innerHTML = items + items;
+
+    // Adjust speed: faster with more events, slower with fewer
+    const duration = Math.max(18, Math.min(60, filtered.length * 5));
+    track.style.animationDuration = duration + 's';
+
+  } catch {
+    // Silent fail — leave placeholder or last state
+    if (track.querySelector('.ticker-placeholder')) {
+      track.innerHTML = '<span class="ticker-no-live">No live matches right now</span>';
+      if (viewport) viewport.style.display = 'flex';
+    }
+  }
+}
+
 
 async function loadHomeWidgets() {
   // Top Predictors widget
