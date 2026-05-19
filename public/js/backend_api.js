@@ -22,9 +22,9 @@ const Backend = {
           image: session.user.image || null,
           role: (session.user.role || 'USER').toLowerCase(),
           xp: session.user.xp || 0,
-          streak: (session.user as any).streak ?? 0,
-          predictionCount: (session.user as any).predictionCount ?? 0,
-          gender: (session.user as any).gender ?? 'male',
+          streak: session.user.streak ?? 0,
+          predictionCount: session.user.predictionCount ?? 0,
+          gender: session.user.gender ?? 'male',
         };
         this._updateAuthState();
         await this._hydrateData();
