@@ -24,6 +24,7 @@ const Backend = {
           xp: session.user.xp || 0,
           streak: (session.user as any).streak ?? 0,
           predictionCount: (session.user as any).predictionCount ?? 0,
+          gender: (session.user as any).gender ?? 'male',
         };
         this._updateAuthState();
         await this._hydrateData();
@@ -231,8 +232,13 @@ const Backend = {
     // Avatar
     const avatarImg = document.querySelector('.sidebar-user .user-avatar-sm img');
     if (avatarImg) {
-      avatarImg.src = this.user.image
-        || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(this.user.name)}`;
+      const seed   = encodeURIComponent(this.user.name);
+      const isFemale = this.user.gender === 'female';
+      // Male → avataaars (classic), Female → lorelei (feminine illustrated style)
+      const avatarUrl = isFemale
+        ? `https://api.dicebear.com/7.x/lorelei/svg?seed=${seed}&backgroundColor=1e1e2e`
+        : `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+      avatarImg.src = this.user.image || avatarUrl;
     }
 
     // Profile page

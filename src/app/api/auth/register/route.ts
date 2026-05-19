@@ -12,7 +12,7 @@ import ReferralWelcomeBonusEmail from "@/emails/ReferralWelcomeBonusEmail";
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, password, referrerId, preferredLeagues } = await req.json();
+    const { name, email, password, gender, referrerId, preferredLeagues } = await req.json();
 
     if (!email || !password || !name) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
         email,
         password: hashedPassword,
         verificationToken,
+        gender: gender === "female" ? "female" : "male", // validate input
         preferredLeagues: Array.isArray(preferredLeagues) ? preferredLeagues : [],
         // Give new user their +200 XP welcome bonus immediately if referred
         xp: referrerId ? 200 : 0,

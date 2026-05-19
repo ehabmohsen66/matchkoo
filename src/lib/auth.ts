@@ -24,7 +24,7 @@ export const authOptions: NextAuthOptions = {
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
-          select: { id: true, email: true, name: true, password: true, role: true, xp: true, streak: true, predictionCount: true, emailVerified: true },
+          select: { id: true, email: true, name: true, password: true, role: true, xp: true, streak: true, predictionCount: true, gender: true, emailVerified: true },
         });
 
         if (!user || !user.password) return null;
@@ -45,6 +45,7 @@ export const authOptions: NextAuthOptions = {
           xp: user.xp,
           streak: (user as any).streak ?? 0,
           predictionCount: (user as any).predictionCount ?? 0,
+          gender: (user as any).gender ?? "male",
         };
       },
     }),
@@ -59,6 +60,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).xp              = token.xp as number;
         (session.user as any).streak          = token.streak as number ?? 0;
         (session.user as any).predictionCount = token.predictionCount as number ?? 0;
+        (session.user as any).gender          = token.gender as string ?? "male";
       }
       return session;
     },
@@ -69,19 +71,21 @@ export const authOptions: NextAuthOptions = {
         token.xp              = (user as any).xp ?? 0;
         token.streak          = (user as any).streak ?? 0;
         token.predictionCount = (user as any).predictionCount ?? 0;
+        token.gender          = (user as any).gender ?? "male";
       }
       // Refresh XP from DB on every token refresh (so it stays current)
       if (token.id && !user) {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id as string },
-            select: { xp: true, role: true, streak: true, predictionCount: true },
+            select: { xp: true, role: true, streak: true, predictionCount: true, gender: true },
           });
           if (dbUser) {
             token.xp              = dbUser.xp;
             token.role            = dbUser.role;
             token.streak          = dbUser.streak;
             token.predictionCount = dbUser.predictionCount;
+            token.gender          = dbUser.gender ?? "male";
           }
         } catch {}
       }

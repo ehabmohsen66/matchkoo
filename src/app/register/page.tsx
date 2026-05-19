@@ -65,6 +65,7 @@ function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [gender, setGender] = useState<'male'|'female'|''>("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -85,6 +86,7 @@ function RegisterForm() {
     e.preventDefault();
     setError("");
     if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
+    if (!gender) { setError("Please select your gender to personalise your avatar."); return; }
     setStep(2);
   };
 
@@ -97,7 +99,7 @@ function RegisterForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name, email, password,
+          name, email, password, gender,
           referrerId: referrerId || undefined,
           preferredLeagues: Array.from(selected),
         }),
@@ -202,6 +204,39 @@ function RegisterForm() {
                 ))}
 
                 <p style={{ margin:"-4px 0 0", fontSize:"0.76rem", color:"rgba(255,255,255,0.28)" }}>Use at least 8 characters.</p>
+
+                {/* Gender selection */}
+                <div>
+                  <label style={{ display:"block", fontSize:"0.78rem", fontWeight:700, color:"rgba(255,255,255,0.38)", letterSpacing:"0.09em", marginBottom:10 }}>YOUR AVATAR</label>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+                    {([
+                      { val: "male"   as const, label: "Male",   emoji: "👨", color: "#1E40AF", accent: "#60A5FA", desc: "Male avatar" },
+                      { val: "female" as const, label: "Female", emoji: "👩", color: "#7C2D8C", accent: "#D946EF", desc: "Female avatar" },
+                    ]).map(g => (
+                      <motion.button
+                        key={g.val}
+                        type="button"
+                        onClick={() => setGender(g.val)}
+                        whileTap={{ scale: 0.97 }}
+                        style={{
+                          display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                          padding: "16px 12px", borderRadius: 14, border: "none", cursor: "pointer",
+                          background: gender === g.val ? `${g.color}CC` : "rgba(255,255,255,0.04)",
+                          outline: gender === g.val ? `2px solid ${g.accent}` : "1px solid rgba(255,255,255,0.08)",
+                          transition: "all 0.2s ease", fontFamily: "inherit",
+                        }}
+                      >
+                        <span style={{ fontSize: "2rem", lineHeight: 1 }}>{g.emoji}</span>
+                        <span style={{ color: gender === g.val ? g.accent : "rgba(255,255,255,0.65)", fontWeight: 700, fontSize: "0.88rem", letterSpacing: "0.04em", textTransform: "uppercase" }}>{g.label}</span>
+                        {gender === g.val && (
+                          <span style={{ width: 18, height: 18, borderRadius: "50%", background: g.accent, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <span style={{ color: "#000", fontSize: "0.6rem", fontWeight: 900 }}>✓</span>
+                          </span>
+                        )}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
 
                 <button type="submit" style={{ padding:"13px", marginTop:4, borderRadius:100, border:"none", background:"linear-gradient(135deg,#3CB82E,#6FE840)", color:"#000", fontWeight:800, fontSize:"1rem", cursor:"pointer", fontFamily:"inherit", letterSpacing:"0.02em", transition:"transform 0.15s, box-shadow 0.15s" }}
                   onMouseEnter={e=>{ (e.currentTarget).style.transform="translateY(-1px)"; (e.currentTarget).style.boxShadow="0 6px 24px rgba(111,232,64,0.35)"; }}
