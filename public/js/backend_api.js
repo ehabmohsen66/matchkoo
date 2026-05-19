@@ -231,9 +231,9 @@ const Backend = {
       if (adminLink) adminLink.style.display = 'flex';
     }
 
-    // ── Sidebar user info (use IDs — never class queries that can mismatch) ──
-    const nameEl  = document.getElementById('sidebar-username');
-    const xpEl    = document.getElementById('sidebar-xp');
+    // ── Sidebar user info — try ID first, fall back to class ──────────
+    const nameEl  = document.getElementById('sidebar-username') || document.querySelector('.user-name-sm');
+    const xpEl    = document.getElementById('sidebar-xp')       || document.querySelector('.user-xp-sm');
     if (nameEl) nameEl.textContent = this.user.name.split(' ')[0];
     if (xpEl)   xpEl.textContent   = `${(this.user.xp || 0).toLocaleString()} XP`;
 
