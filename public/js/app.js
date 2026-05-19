@@ -1894,12 +1894,13 @@ async function initProfile() {
         const lbRes = await fetch('/api/leaderboard?period=alltime&limit=5000');
         if (lbRes.ok) {
           const lbData = await lbRes.json();
-          const entries = lbData.entries || [];
-          const myIdx = entries.findIndex(e => e.id === u.id);
-          const globalRank = myIdx >= 0 ? myIdx + 1 : null;
+          const entries = Array.isArray(lbData) ? lbData : (lbData.entries || []);
+          const myEntry  = entries.find(e => e.isMe || e.userId === u.id);
+          const myIdx   = myEntry ? (entries.indexOf(myEntry)) : -1;
+          const globalRank = myEntry ? (myEntry.rank || myIdx + 1) : null;
           const rankEl = document.getElementById('profile-global-rank');
           if (rankEl) {
-            rankEl.textContent = globalRank ? '#' + globalRank.toLocaleString() + ' Global' : 'Unranked';
+            rankEl.textContent = globalRank ? '#' + globalRank.toLocaleString() + ' Globally' : 'Unranked';
             rankEl.style.opacity = '1';
           }
         }
