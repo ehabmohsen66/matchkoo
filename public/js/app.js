@@ -160,7 +160,6 @@ async function initLiveTicker() {
 async function _refreshTicker() {
   const track    = document.getElementById('ticker-track');
   const viewport = document.getElementById('ticker-viewport');
-  const fallback = document.getElementById('ticker-fallback');
   if (!track) return;
 
   try {
@@ -170,63 +169,111 @@ async function _refreshTicker() {
     const events = data.events || [];
 
     if (events.length === 0) {
-      // No live events — show fallback stats
-      viewport && (viewport.style.display = 'none');
-      if (fallback) {
-        fallback.style.display = 'flex';
-        // Populate from user data if available
-        const rankEl   = document.getElementById('ticker-stat-rank');
-        const streakEl = document.getElementById('ticker-stat-streak');
-        if (rankEl   && window._cachedUserRank)   rankEl.textContent   = '#' + window._cachedUserRank;
-        if (streakEl && window._cachedUserStreak) streakEl.textContent = window._cachedUserStreak;
-      }
+      // ── No live matches → show football news headlines ──────────
+      if (viewport) viewport.style.display = 'flex';
+      await _showNewsTicker(track);
       return;
     }
 
-    // Live events found — show ticker
-    if (fallback) fallback.style.display = 'none';
+    // ── Live events found — show goals/cards ticker ──────────────
     if (viewport) viewport.style.display = 'flex';
 
-    // Get user's preferred leagues for filtering (optional — show all if not set)
+    // Get user's preferred leagues for filtering
     const userLeagues = (window.Backend && Backend.preferredLeagues) || [];
 
-    // Filter by user's leagues if they have preferences set
     let filtered = events;
     if (userLeagues.length > 0) {
       const userLower = userLeagues.map(l => l.toLowerCase());
-      filtered = events.filter(evt => {
+      const byLeague = events.filter(evt => {
         const t = (evt.tournament || '').toLowerCase();
         return userLower.some(ul => t.includes(ul) || ul.includes(t));
       });
-      // Fallback to all if none match (e.g. user preferences not loaded yet)
-      if (filtered.length === 0) filtered = events;
+      if (byLeague.length > 0) filtered = byLeague;
     }
 
     // Build ticker items
     const items = filtered.map(evt => {
       const isGoal = evt.type === 'Goal';
       const icon   = isGoal ? '⚽' : '🟥';
-      const extra  = evt.detail === 'Penalty' ? ' <span style="font-size:0.7rem;opacity:0.7">(P)</span>'
-                   : evt.detail === 'Own Goal' ? ' <span style="font-size:0.7rem;opacity:0.7">(OG)</span>'
+      const extra  = evt.detail === 'Penalty' ? ' <span style="font-size:0.7rem;opacity:0.6">(P)</span>'
+                   : evt.detail === 'Own Goal' ? ' <span style="font-size:0.7rem;opacity:0.6">(OG)</span>'
                    : '';
       const player = evt.playerName || evt.teamName || '';
       const score  = evt.homeTeam + ' <span class="ticker-score">' + evt.score + '</span> ' + evt.awayTeam;
-      return `<span class="ticker-item">${icon} <strong>${player}</strong>${extra} <span style="opacity:0.5">${evt.time}'</span> · ${score} <span class="ticker-sep">|</span></span>`;
+      return `<span class="ticker-item">${icon} <strong>${player}</strong>${extra} <span style="opacity:0.45">${evt.time}'</span> · ${score} <span class="ticker-sep">|</span></span>`;
     }).join('');
 
-    // Duplicate content for seamless infinite loop
+    // Duplicate for seamless loop
     track.innerHTML = items + items;
-
-    // Adjust speed: faster with more events, slower with fewer
     const duration = Math.max(18, Math.min(60, filtered.length * 5));
     track.style.animationDuration = duration + 's';
 
   } catch {
-    // Silent fail — leave placeholder or last state
-    if (track.querySelector('.ticker-placeholder')) {
-      track.innerHTML = '<span class="ticker-no-live">No live matches right now</span>';
-      if (viewport) viewport.style.display = 'flex';
+    // Silent fail — try to show news instead
+    if (track.querySelector('.ticker-placeholder') || track.querySelector('.ticker-no-live')) {
+      await _showNewsTicker(track);
     }
+  }
+}
+
+// News keyword map per league (matches against headline text)
+const _NEWS_KEYWORDS = {
+  'english premier league': ['premier league','arsenal','chelsea','liverpool','manchester city','manchester united','tottenham','spurs','newcastle','aston villa','west ham','brighton','everton','brentford','fulham','wolves','nottingham','leicester','ipswich','bournemouth','crystal palace','southampton'],
+  'la liga': ['la liga','real madrid','barcelona','atletico','atletico madrid','sevilla','valencia','villarreal','real sociedad','athletic bilbao','real betis','osasuna','getafe','girona'],
+  'uefa champions league': ['champions league','ucl','europa league','europa conference','uefa'],
+  'egyptian premier league': ['egyptian','al ahly','zamalek','pyramids','al masry','ismaily','egypt football','caf'],
+  'fifa world cup': ['world cup','fifa','international','nations league'],
+};
+
+let _newsCache = null; // { items, cachedAt }
+const _NEWS_TTL = 30 * 60 * 1000; // 30 min
+
+async function _showNewsTicker(track) {
+  try {
+    // Use memory cache to avoid re-fetching on every 90s tick
+    if (!_newsCache || Date.now() - _newsCache.cachedAt > _NEWS_TTL) {
+      const res = await fetch('/api/football-news');
+      if (!res.ok) throw new Error('No news');
+      const data = await res.json();
+      _newsCache = { items: data.news || [], cachedAt: Date.now() };
+    }
+
+    let news = _newsCache.items;
+    if (!news.length) {
+      track.innerHTML = '<span class="ticker-no-live">📰 Football news unavailable right now</span>';
+      return;
+    }
+
+    // Filter by user's preferred leagues if they have any
+    const userLeagues = (window.Backend && Backend.preferredLeagues) || [];
+    if (userLeagues.length > 0) {
+      const keywords = userLeagues.flatMap(league => {
+        const key = league.toLowerCase();
+        for (const [k, kws] of Object.entries(_NEWS_KEYWORDS)) {
+          if (k.includes(key) || key.includes(k)) return kws;
+        }
+        return [key];
+      });
+      const filtered = news.filter(n =>
+        keywords.some(kw => n.title.toLowerCase().includes(kw))
+      );
+      if (filtered.length >= 3) news = filtered;
+    }
+
+    // Build ticker items
+    const items = news.map(n => {
+      const age = n.ageLabel ? `<span style="opacity:0.45;font-size:0.75rem"> · ${n.ageLabel}</span>` : '';
+      const src = `<span style="color:var(--cyan);font-size:0.75rem;opacity:0.7"> ${n.source}</span>`;
+      return `<span class="ticker-item">📰 <span style="color:var(--text-primary)">${n.title}</span>${src}${age} <span class="ticker-sep">|</span></span>`;
+    }).join('');
+
+    // Duplicate for seamless loop
+    track.innerHTML = items + items;
+    // Slower scroll for reading news (longer items)
+    const duration = Math.max(40, news.length * 6);
+    track.style.animationDuration = duration + 's';
+  } catch {
+    track.innerHTML = '<span class="ticker-no-live">📰 No news right now — check back soon</span>';
   }
 }
 

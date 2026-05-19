@@ -142,17 +142,6 @@ const Backend = {
           if (yrRank) yrRank.textContent = `#${myRank + 1}`;
           if (yrName) yrName.textContent = `You (${this.user.name?.split(' ')[0]})`;
           if (yrXp)   yrXp.textContent = `${(this.user.xp || 0).toLocaleString()} XP`;
-
-          // Update ticker fallback stats with real rank + streak
-          const tickerRankEl   = document.getElementById('ticker-stat-rank');
-          const tickerStreakEl = document.getElementById('ticker-stat-streak');
-          const myUser = lbRes[myRank];
-          if (tickerRankEl) tickerRankEl.textContent = `#${(myRank + 1).toLocaleString()}`;
-          if (tickerStreakEl) tickerStreakEl.textContent = (myUser?.streak || this.user?.streak || 0).toString();
-
-          // Cache for ticker refresh cycles
-          window._cachedUserRank   = myRank + 1;
-          window._cachedUserStreak = myUser?.streak || 0;
         }
       }
 
