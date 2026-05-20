@@ -1260,10 +1260,10 @@ async function renderPredictions(filter) {
   applyLocalPredFilter(filter);
 }
 
-/** Build a full XP breakdown HTML for a completed prediction */
-function _buildXpBreakdown(pred, matchId) {
+/** Generate a beautiful, rich XP breakdown HTML for a completed prediction in a pop-up modal */
+function _getScoringBreakdownHtml(pred) {
   const p = pred._raw;
-  if (!p || p.match?.status !== 'COMPLETED' || p.match.homeScore == null) return '';
+  if (!p || !p.match || p.match.homeScore == null) return '';
 
   const hs = p.match.homeScore, as = p.match.awayScore;
   const correctResult =
@@ -1295,14 +1295,13 @@ function _buildXpBreakdown(pred, matchId) {
   xp += bttsBonus + tgBonus;
   const beforeDouble = xp;
   if (p.isDouble && xp > 0) xp *= 2;
-  const storedXp = p.xpEarned ?? null;  // what was actually credited to their account
-  // Use fresh recalculation as the canonical total so components always add up
+  const storedXp = p.xpEarned ?? null;
   const displayXp = xp;
 
   const tick  = s => `<span style="color:#4ade80;font-weight:800">${s}</span>`;
   const cross = s => `<span style="color:#f87171;font-weight:800">${s}</span>`;
-  const rowStyle = 'display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.78rem;';
-  const labelStyle = 'color:rgba(255,255,255,0.55);';
+  const rowStyle = 'display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.85rem;';
+  const labelStyle = 'color:rgba(255,255,255,0.55);font-weight:600;';
 
   const totalGoalLabel = p.totalGoals === null || p.totalGoals === undefined ? '—'
     : (p.totalGoals >= 5 ? '5+' : String(p.totalGoals));
@@ -1312,68 +1311,116 @@ function _buildXpBreakdown(pred, matchId) {
   const actualFgsLabel = p.match.firstGoalScorer || '—';
 
   return `
-  <div id="breakdown-${matchId}" style="display:none;margin-top:10px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;">
-    <!-- Predicted vs Actual table -->
-    <div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Prediction Breakdown</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:0.72rem;margin-bottom:12px;">
-      <div style="color:rgba(255,255,255,0.3);font-weight:700;">What</div>
-      <div style="color:rgba(255,255,255,0.3);font-weight:700;">Your Pick</div>
-      <div style="color:rgba(255,255,255,0.3);font-weight:700;">Actual</div>
-
-      <div style="${labelStyle}">Score</div>
-      <div>${p.homeScore}–${p.awayScore}</div>
-      <div>${correctResult ? tick(hs+'–'+as) : cross(hs+'–'+as)}</div>
-
-      ${p.btts !== null && p.btts !== undefined ? `
-      <div style="${labelStyle}">BTTS</div>
-      <div>${bttsLabel}</div>
-      <div>${correctBtts ? tick(actualBtts?'Yes':'No') : cross(actualBtts?'Yes':'No')}</div>
-      ` : ''}
-
-      ${p.totalGoals !== null && p.totalGoals !== undefined ? `
-      <div style="${labelStyle}">Total Goals</div>
-      <div>${totalGoalLabel}</div>
-      <div>${correctTotalGoals ? tick(actualTotalLabel) : cross(actualTotalLabel)}</div>
-      ` : ''}
-
-      ${p.firstGoalScorer ? `
-      <div style="${labelStyle}">1st Scorer</div>
-      <div style="font-size:0.68rem;">${fgsLabel}</div>
-      <div style="font-size:0.68rem;">${correctFGS ? tick(actualFgsLabel) : cross(actualFgsLabel)}</div>
-      ` : ''}
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:1.15rem;font-weight:900;color:#fff;margin-bottom:4px;">${p.match.homeTeam} vs ${p.match.awayTeam}</div>
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:2px;text-transform:uppercase;letter-spacing:1px;">${pred.league} • ${pred.date}</div>
+      
+      <div style="display:inline-flex;align-items:center;gap:12px;margin-top:12px;padding:6px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:100px;">
+        <span style="font-size:0.78rem;font-weight:700;color:rgba(255,255,255,0.55);">Match Result</span>
+        <span style="font-size:0.95rem;font-weight:900;color:var(--cyan);letter-spacing:1px;">${hs} – ${as}</span>
+      </div>
     </div>
 
-    <!-- XP Components -->
-    <div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">XP Calculation</div>
+    <!-- Prediction Breakdown -->
+    <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;margin-bottom:20px;">
+      <div style="font-size:0.7rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">Prediction Breakdown</div>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 8px;font-size:0.82rem;">
+        <div style="color:rgba(255,255,255,0.3);font-weight:700;font-size:0.72rem;text-transform:uppercase;">What</div>
+        <div style="color:rgba(255,255,255,0.3);font-weight:700;font-size:0.72rem;text-transform:uppercase;">Your Pick</div>
+        <div style="color:rgba(255,255,255,0.3);font-weight:700;font-size:0.72rem;text-transform:uppercase;">Actual</div>
 
-    ${correctResult   ? `<div style="${rowStyle}"><span style="${labelStyle}">✅ Correct result</span>${tick('+50 XP')}</div>` : `<div style="${rowStyle}"><span style="${labelStyle}">❌ Wrong result (penalty)</span>${cross('−'+Math.round(50*(conf/100))+' XP')}</div>`}
-    ${exactScore      ? `<div style="${rowStyle}"><span style="${labelStyle}">🎯 Exact scoreline</span>${tick('+150 XP')}</div>` : ''}
-    ${p.firstGoalScorer && correctFGS  ? `<div style="${rowStyle}"><span style="${labelStyle}">⚽ First goalscorer</span>${tick('+100 XP')}</div>` : ''}
-    ${p.firstGoalScorer && !correctFGS ? `<div style="${rowStyle}"><span style="${labelStyle}">⚽ Wrong goalscorer (penalty)</span>${cross('−'+Math.round(100*(conf/100))+' XP')}</div>` : ''}
-    ${bttsBonus  > 0  ? `<div style="${rowStyle}"><span style="${labelStyle}">🔵 Both teams scored</span>${tick('+75 XP')}</div>` : (p.btts !== null && p.btts !== undefined ? `<div style="${rowStyle}"><span style="${labelStyle}">🔵 BTTS wrong</span><span style="color:rgba(255,255,255,0.3)">0 XP</span></div>` : '')}
-    ${tgBonus    > 0  ? `<div style="${rowStyle}"><span style="${labelStyle}">🎱 Total goals correct</span>${tick('+75 XP')}</div>` : (p.totalGoals !== null && p.totalGoals !== undefined ? `<div style="${rowStyle}"><span style="${labelStyle}">🎱 Total goals wrong</span><span style="color:rgba(255,255,255,0.3)">0 XP</span></div>` : '')}
-    <div style="${rowStyle}"><span style="${labelStyle}">Confidence (${conf}%)</span><span style="color:var(--cyan)">×${multiplier.toFixed(1)}</span></div>
-    ${p.isDouble && beforeDouble > 0 ? `<div style="${rowStyle}"><span style="${labelStyle}">🃏 Double Joker</span><span style="color:var(--gold)">×2</span></div>` : ''}
+        <div style="${labelStyle}">Scoreline</div>
+        <div style="color:#fff;font-weight:700;">${p.homeScore}–${p.awayScore}</div>
+        <div>${correctResult ? tick(hs+'–'+as) : cross(hs+'–'+as)}</div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 0;margin-top:4px;border-top:1px solid rgba(255,255,255,0.12);">
-      <span style="font-size:0.78rem;font-weight:800;color:#fff;">Total XP (current rules)</span>
-      <span style="font-size:1rem;font-weight:900;color:${displayXp >= 0 ? '#4ade80' : '#f87171'}">${displayXp >= 0 ? '+' : ''}${displayXp} XP</span>
+        ${p.btts !== null && p.btts !== undefined ? `
+        <div style="${labelStyle}">BTTS</div>
+        <div style="color:#fff;font-weight:700;">${bttsLabel}</div>
+        <div>${correctBtts ? tick(actualBtts?'Yes':'No') : cross(actualBtts?'Yes':'No')}</div>
+        ` : ''}
+
+        ${p.totalGoals !== null && p.totalGoals !== undefined ? `
+        <div style="${labelStyle}">Total Goals</div>
+        <div style="color:#fff;font-weight:700;">${totalGoalLabel}</div>
+        <div>${correctTotalGoals ? tick(actualTotalLabel) : cross(actualTotalLabel)}</div>
+        ` : ''}
+
+        ${p.firstGoalScorer ? `
+        <div style="${labelStyle}">1st Scorer</div>
+        <div style="color:#fff;font-weight:700;font-size:0.78rem;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${fgsLabel}">${fgsLabel}</div>
+        <div style="font-size:0.78rem;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${actualFgsLabel}">${correctFGS ? tick(actualFgsLabel) : cross(actualFgsLabel)}</div>
+        ` : ''}
+      </div>
     </div>
-    ${storedXp !== null && storedXp !== displayXp ? `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 0;font-size:0.72rem;">
-      <span style="color:rgba(255,180,0,0.7);">⚠️ Credited to account</span>
-      <span style="color:rgba(255,180,0,0.85);font-weight:800;">${storedXp >= 0 ? '+' : ''}${storedXp} XP (scored under previous rules)</span>
-    </div>` : ''}
-  </div>`;
+
+    <!-- XP Calculation Details -->
+    <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;">
+      <div style="font-size:0.7rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;">XP Calculation</div>
+
+      ${correctResult 
+        ? `<div style="${rowStyle}"><span style="${labelStyle}">✅ Correct outcome</span>${tick('+50 XP')}</div>` 
+        : `<div style="${rowStyle}"><span style="${labelStyle}">❌ Wrong outcome (penalty)</span>${cross('−'+Math.round(50*(conf/100))+' XP')}</div>`
+      }
+      ${exactScore ? `<div style="${rowStyle}"><span style="${labelStyle}">🎯 Exact scoreline bonus</span>${tick('+150 XP')}</div>` : ''}
+      
+      ${p.firstGoalScorer 
+        ? (correctFGS  
+          ? `<div style="${rowStyle}"><span style="${labelStyle}">⚽ First goalscorer bonus</span>${tick('+100 XP')}</div>` 
+          : `<div style="${rowStyle}"><span style="${labelStyle}">⚽ Wrong goalscorer (penalty)</span>${cross('−'+Math.round(100*(conf/100))+' XP')}</div>`)
+        : ''
+      }
+      ${p.btts !== null && p.btts !== undefined 
+        ? (bttsBonus > 0  
+          ? `<div style="${rowStyle}"><span style="${labelStyle}">🔵 Both teams scored bonus</span>${tick('+75 XP')}</div>` 
+          : `<div style="${rowStyle}"><span style="${labelStyle}">🔵 BTTS wrong</span><span style="color:rgba(255,255,255,0.3)">0 XP</span></div>`)
+        : ''
+      }
+      ${p.totalGoals !== null && p.totalGoals !== undefined 
+        ? (tgBonus > 0  
+          ? `<div style="${rowStyle}"><span style="${labelStyle}">🎱 Total goals correct bonus</span>${tick('+75 XP')}</div>` 
+          : `<div style="${rowStyle}"><span style="${labelStyle}">🎱 Total goals wrong</span><span style="color:rgba(255,255,255,0.3)">0 XP</span></div>`)
+        : ''
+      }
+      
+      <div style="${rowStyle}"><span style="${labelStyle}">Confidence multiplier (${conf}%)</span><span style="color:var(--cyan);font-weight:700;">×${multiplier.toFixed(1)}</span></div>
+      ${p.isDouble && beforeDouble > 0 ? `<div style="${rowStyle}"><span style="${labelStyle}">🃏 Double Joker active</span><span style="color:var(--gold);font-weight:800;">×2</span></div>` : ''}
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 0;margin-top:8px;border-top:1px solid rgba(255,255,255,0.12);">
+        <span style="font-size:0.9rem;font-weight:800;color:#fff;">Net Score (current rules)</span>
+        <span style="font-size:1.15rem;font-weight:900;color:${displayXp >= 0 ? '#4ade80' : '#f87171'}">${displayXp >= 0 ? '+' : ''}${displayXp} XP</span>
+      </div>
+      
+      ${storedXp !== null && storedXp !== displayXp ? `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 0;font-size:0.75rem;border-top:1px dashed rgba(255,255,255,0.08);margin-top:6px;">
+        <span style="color:rgba(255,180,0,0.75);">⚠️ Account Credited</span>
+        <span style="color:rgba(255,180,0,0.9);font-weight:800;">${storedXp >= 0 ? '+' : ''}${storedXp} XP (old rules)</span>
+      </div>` : ''}
+    </div>
+  `;
 }
 
-function togglePredBreakdown(matchId) {
-  const el = document.getElementById('breakdown-' + matchId);
-  const btn = document.getElementById('breakdown-btn-' + matchId);
-  if (!el) return;
-  const open = el.style.display === 'block';
-  el.style.display = open ? 'none' : 'block';
-  if (btn) btn.textContent = open ? '📊 How was this scored?' : '▲ Hide breakdown';
+function openScoringBreakdownModal(matchId) {
+  const pred = currentRawPreds.find(p => p.matchId === matchId);
+  if (!pred) return;
+
+  const overlay = document.getElementById('scoring-breakdown-modal');
+  const body = document.getElementById('scoring-breakdown-body');
+  if (!overlay || !body) return;
+
+  body.innerHTML = _getScoringBreakdownHtml(pred);
+
+  if (window.animateModalEnter) {
+    window.animateModalEnter(overlay, overlay.querySelector('.modal-sheet'));
+  }
+  overlay.classList.remove('hidden');
+}
+
+function closeScoringBreakdownModal() {
+  const overlay = document.getElementById('scoring-breakdown-modal');
+  if (overlay) {
+    overlay.classList.add('hidden');
+  }
 }
 
 function applyLocalPredFilter(statusFilterOverride) {
@@ -1434,13 +1481,15 @@ function applyLocalPredFilter(statusFilterOverride) {
         const xpColor = p.status === 'correct' ? '#ffd700' : p.status === 'wrong' ? 'rgba(255,255,255,0.3)' : 'var(--text-secondary)';
         
         const isCompleted = p.status === 'correct' || p.status === 'wrong';
-        const breakdownHtml = isCompleted ? _buildXpBreakdown(p, mid) : '';
+        const clickHandler = isCompleted 
+          ? `onclick="openScoringBreakdownModal('${mid}')"` 
+          : `onclick="openRealMatchDetail('${mid}')"`;
         const breakdownBtn = isCompleted
-          ? `<button id="breakdown-btn-${mid}" onclick="event.stopPropagation();togglePredBreakdown('${mid}')" style="margin-top:8px;width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:7px;font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.45);cursor:pointer;">📊 How was this scored?</button>`
+          ? `<button id="breakdown-btn-${mid}" onclick="event.stopPropagation();openScoringBreakdownModal('${mid}')" style="margin-top:8px;width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:7px;font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.45);cursor:pointer;">📊 How was this scored?</button>`
           : '';
 
-        return '<div class="pred-item ' + p.status + '" role="listitem">' +
-          '<div class="pred-item-header" onclick="openRealMatchDetail(\'' + mid + '\')" style="cursor:pointer">' +
+        return '<div class="pred-item ' + p.status + '" role="listitem" ' + clickHandler + ' style="cursor:pointer">' +
+          '<div class="pred-item-header">' +
             '<span class="pred-item-league">' + (p.date || '') + '</span>' +
             '<div style="display:flex;align-items:center;gap:8px">' +
               (canEdit ? '<button onclick="event.stopPropagation();openRealMatchDetail(\'' + mid + '\')" style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(60,184,46,0.1);border:1px solid rgba(60,184,46,0.3);color:var(--green);cursor:pointer">Edit</button>' : '') +
@@ -1452,7 +1501,6 @@ function applyLocalPredFilter(statusFilterOverride) {
           '<div class="pred-item-picks">' + p.picks.map(pick => '<span class="pred-pick-tag">' + pick + '</span>').join('') + '</div>' +
           '<div class="pred-item-xp" style="font-weight:800;color:' + xpColor + '">' + p.xpDisplay + '</div>' +
           breakdownBtn +
-          breakdownHtml +
         '</div>';
       }).join('') +
     '</div>';

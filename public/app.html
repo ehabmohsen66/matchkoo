@@ -1129,6 +1129,24 @@
     </div>
   </div>
 
+  <!-- ─── SCORING BREAKDOWN MODAL ────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="scoring-breakdown-modal" onclick="closeScoringBreakdownModal()">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-width:440px;">
+      <div class="modal-header">
+        <div class="modal-league-tag">📊 Scoring Breakdown</div>
+        <button class="modal-close-btn" onclick="closeScoringBreakdownModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" id="scoring-breakdown-body" style="padding: 20px 24px 24px;">
+        <!-- Hydrated dynamically by JS -->
+      </div>
+    </div>
+  </div>
+
   <!-- ─── CREATE LEAGUE MODAL ────────────────────────────────────── -->
   <div class="modal-overlay hidden" id="create-league-modal">
     <div class="modal-sheet create-league-sheet" onclick="event.stopPropagation()"
@@ -1302,7 +1320,7 @@
   <script src="/js/teams_db.js?v=2.6"></script>
   <script src="/js/data.js?v=5.7"></script>
   <script src="/js/i18n.js?v=2.6"></script>
-  <script src="/js/app.js?v=9.7"></script>
+  <script src="/js/app.js?v=9.8"></script>
 </body>
 
 </html>
