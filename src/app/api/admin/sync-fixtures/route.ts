@@ -187,6 +187,8 @@ export async function POST(req: NextRequest) {
 
             const newStreak = correctResult ? pred.user.streak + 1 : 0;
             const newBest   = Math.max(pred.user.bestStreak, newStreak);
+            const newPredCount = pred.user.predictionCount + 1;
+            const newCorrect   = pred.user.correctCount + (correctResult ? 1 : 0);
             let streakBonus = 0;
             if (correctResult) {
               if (newStreak === 10) streakBonus = 500;
@@ -203,12 +205,11 @@ export async function POST(req: NextRequest) {
             const updatedUser = await prisma.user.update({
               where: { id: pred.userId },
               data: {
-                xp:         { increment: xp },
-                streak:     newStreak,
-                bestStreak: newBest,
-                // Note: predictionCount/correctCount are NOT incremented here.
-                // The stale-close path settles predictions that were already counted
-                // when the user created them. Incrementing here would double-count.
+                xp:              { increment: xp },
+                streak:          newStreak,
+                bestStreak:      newBest,
+                predictionCount: newPredCount,
+                correctCount:    newCorrect,
               },
               select: { email: true, name: true, xp: true },
             });

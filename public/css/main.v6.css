@@ -663,6 +663,12 @@ a { text-decoration: none; color: inherit; }
   font-size: 1.1rem;
   flex-shrink: 0;
 }
+.fixture-team-logos {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
 .fixture-teams { flex: 1; }
 .fixture-league-name { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
 .fixture-team-names { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-top: 2px; }

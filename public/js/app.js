@@ -299,21 +299,89 @@ async function loadHomeWidgets() {
     }
   } catch(e) { if (predEl) predEl.innerHTML = ''; }
 
-  // Top Clubs widget
+  // Vote Your Club home widget
+  await _renderHomeVoteWidget();
+}
+
+async function _renderHomeVoteWidget() {
   const clubEl = document.getElementById('home-top-clubs');
+  if (!clubEl) return;
   try {
-    const clubs = await fetch('/api/clubs/leaderboard?period=weekly').then(r => r.ok ? r.json() : []);
-    if (clubEl && clubs.length > 0) {
-      clubEl.innerHTML = clubs.slice(0, 8).map((c, i) =>
-        '<div style="padding:8px 14px;border-radius:100px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-size:0.78rem;font-weight:700;color:rgba(255,255,255,0.75)">' +
-          (i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':('')) + c.clubName +
-          ' <span style="color:var(--green);font-size:0.65rem">' + c.votes + 'v</span>' +
-        '</div>'
-      ).join('');
-    } else if (clubEl) {
-      clubEl.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:12px">No votes this week yet. <button onclick="navigate(&apos;vote&apos;)" style="background:none;border:none;color:var(--green);cursor:pointer;font-weight:700">Cast a vote!</button></div>';
+    // Fetch leaderboard + vote state in parallel, and ensure logos are loaded
+    const [lbClubs, voteState] = await Promise.all([
+      fetch('/api/clubs/leaderboard?period=weekly').then(r => r.ok ? r.json() : []),
+      fetch('/api/clubs/vote-state').then(r => r.ok ? r.json() : {}).catch(() => {}),
+      ensureClubLogosLoaded()
+    ]);
+
+    const voted = voteState?.votedClub || '';
+    const topClubs = lbClubs.slice(0, 10);
+
+    if (!topClubs.length) {
+      clubEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:20px">No votes this week yet — be the first! <button onclick="navigate(\'vote\')" style="background:none;border:none;color:var(--green);cursor:pointer;font-weight:700;font-family:inherit">Vote Now →</button></div>';
+      return;
     }
+
+    const colours = ['#e63946','#457b9d','#2a9d8f','#e9c46a','#f4a261','#6a0572','#1982c4','#8ac926','#ff595e','#c77dff'];
+
+    clubEl.innerHTML = topClubs.map((c, i) => {
+      const isVoted = voted && voted === c.clubName;
+      const isBlocked = voted && !isVoted;
+      const initials = (c.clubName || 'CL').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+      const badgeBg = colours[(c.clubName||'').charCodeAt(0) % colours.length];
+      const logoUrl = (typeof clubLogosMap !== 'undefined' && clubLogosMap[c.clubName]) || '';
+      const rankIcon = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+
+      const logoHtml = logoUrl
+        ? `<img src="${logoUrl}" alt="${c.clubName}" width="48" height="48" style="border-radius:50%;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><span style="display:none;width:48px;height:48px;border-radius:50%;background:${badgeBg};align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0">${initials}</span>`
+        : `<span style="width:48px;height:48px;border-radius:50%;background:${badgeBg};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0">${initials}</span>`;
+
+      let cardBorder, cardBg, btnStyle, btnLabel;
+      if (isVoted) {
+        cardBorder = 'rgba(60,184,46,0.4)'; cardBg = 'rgba(60,184,46,0.07)';
+        btnStyle = 'background:rgba(60,184,46,0.15);border:1.5px solid rgba(60,184,46,0.5);color:var(--green);cursor:default;';
+        btnLabel = '✓ Voted';
+      } else if (isBlocked) {
+        cardBorder = 'rgba(255,255,255,0.06)'; cardBg = 'rgba(255,255,255,0.02)';
+        btnStyle = 'background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);color:rgba(255,255,255,0.25);cursor:not-allowed;opacity:0.5;';
+        btnLabel = 'Voted';
+      } else {
+        cardBorder = 'rgba(255,255,255,0.08)'; cardBg = 'rgba(255,255,255,0.03)';
+        btnStyle = 'background:rgba(255,153,20,0.12);border:1.5px solid rgba(255,153,20,0.35);color:#FF9914;cursor:pointer;';
+        btnLabel = '❤️ Vote +50 XP';
+      }
+
+      const clickAttr = (!isVoted && !isBlocked)
+        ? `onclick="_homeVote(this)" data-club="${c.clubName.replace(/"/g,'&quot;')}" data-country="" data-continent="" data-league=""`
+        : '';
+
+      return `<div style="flex-shrink:0;width:130px;background:${cardBg};border:1px solid ${cardBorder};border-radius:16px;padding:16px 10px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+        <div style="position:relative;">
+          <div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;">${logoHtml}</div>
+          ${rankIcon ? `<div style="position:absolute;top:-6px;right:-10px;font-size:0.85rem">${rankIcon}</div>` : ''}
+          ${isVoted ? '<div style="position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;background:#29bf12;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;border:2px solid var(--bg-card)">✓</div>' : ''}
+        </div>
+        <div style="font-size:0.75rem;font-weight:800;color:#fff;text-align:center;line-height:1.2;word-break:break-word;">${c.clubName}</div>
+        <div style="font-size:0.68rem;color:var(--text-muted);font-weight:600;">${c.votes} vote${c.votes !== 1 ? 's' : ''}</div>
+        <button ${clickAttr} style="width:100%;padding:6px 4px;border-radius:100px;font-size:0.65rem;font-weight:800;letter-spacing:0.3px;font-family:inherit;transition:all 0.2s;${btnStyle}">${btnLabel}</button>
+      </div>`;
+    }).join('');
+
   } catch(e) { if (clubEl) clubEl.innerHTML = ''; }
+}
+
+async function _homeVote(el) {
+  if (!el) return;
+  const club = el.dataset.club;
+  const country = el.dataset.country || '';
+  const continent = el.dataset.continent || '';
+  const league = el.dataset.league || '';
+  if (!club) return;
+  // Build a fake button element compatible with castVote()
+  const fakeEl = { dataset: { club, country, continent, league } };
+  await castVote(fakeEl);
+  // Re-render the home widget to reflect voted state
+  await _renderHomeVoteWidget();
 }
 
 // ── Weekly Challenges (real backend) ─────────────────────────────
@@ -481,17 +549,20 @@ async function _renderLivePageMatches() {
       items.forEach(m => {
         const matchId = m.id;
         const min = m.minute ? m.minute + "'" : 'LIVE';
-        const homeLogo = m.homeLogo ? '<img src="'+m.homeLogo+'" width="24" height="24" style="border-radius:50%">' : '';
         const scoreStr = (m.homeScore??0) + ' \u2013 ' + (m.awayScore??0);
+        const hLogo = m.homeLogo ? '<img src="'+m.homeLogo+'" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">' : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">'+m.homeTeam.substring(0,3).toUpperCase()+'</div>';
+        const aLogo = m.awayLogo ? '<img src="'+m.awayLogo+'" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">' : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">'+m.awayTeam.substring(0,3).toUpperCase()+'</div>';
         html +=
           '<div class="fixture-row" data-match-id="' + matchId + '" onclick="openRealMatchDetail(\'' + matchId + '\')" role="button" tabindex="0">' +
-            '<div class="fixture-league-badge">' + homeLogo + '</div>' +
-            '<div class="fixture-teams">' +
-              '<div class="fixture-league-name" style="color:var(--red)">' + min + '</div>' +
-              '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
+            '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:10px">' + hLogo + aLogo + '</div>' +
+            '<div class="fixture-teams" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">' +
+              '<div style="min-width:0">' +
+                '<div class="fixture-league-name" style="color:var(--red)">' + min + '</div>' +
+                '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
+              '</div>' +
             '</div>' +
             '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
-              '<div style="font-family:\'Russo One\',sans-serif;color:var(--text-primary);font-size:1.1rem;letter-spacing:1px">' + scoreStr + '</div>' +
+              '<div style="font-family:\'Russo One\',sans-serif;color:var(--text-primary);font-size:1.1rem;letter-spacing:1px;min-width:52px;text-align:right">' + scoreStr + '</div>' +
             '</div>' +
           '</div>';
       });
@@ -573,23 +644,29 @@ async function renderFixturesList() {
         const liveScore = m.status === 'LIVE' ? ((m.homeScore??0) + '\u2013' + (m.awayScore??0)) : '';
         const hidden    = idx >= VISIBLE_PER_DAY;
 
+        const hLogo = m.homeLogo
+          ? '<img src="' + m.homeLogo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
+          : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + m.homeTeam.substring(0,3).toUpperCase() + '</div>';
+        const aLogo = m.awayLogo
+          ? '<img src="' + m.awayLogo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
+          : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + m.awayTeam.substring(0,3).toUpperCase() + '</div>';
         parts.push(
           '<div class="fixture-row' + (hidden ? ' fx-hidden' : '') + '" ' +
             'data-match-id="' + matchId + '" ' +
             'data-day="' + dayLabel.replace(/"/g,'') + '" ' +
             (hidden ? 'style="display:none" ' : '') +
             'onclick="openRealMatchDetail(\'' + matchId + '\')" role="button" tabindex="0">' +
-            '<div class="fixture-league-badge">' +
-              (m.homeLogo ? '<img src="' + m.homeLogo + '" width="24" height="24" style="border-radius:50%">' : '') +
+            '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:10px">' + hLogo + aLogo + '</div>' +
+            '<div class="fixture-teams" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">' +
+              '<div style="min-width:0">' +
+                '<div class="fixture-league-name">' + baseName + '</div>' +
+                '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
+              '</div>' +
             '</div>' +
-            '<div class="fixture-teams">' +
-              '<div class="fixture-league-name">' + baseName + '</div>' +
-              '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
-            '</div>' +
-            '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-left:16px">' +
               (hasPred ? '<span style="color:var(--green);font-size:1.1rem;font-weight:900" title="Predicted">&#10003;</span>' : '') +
               (m.status === 'LIVE' ? '<span class="live-badge" style="color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE ' + liveScore + '</span>' : '') +
-              '<div class="fixture-time live-score-val">' + (m.status === 'LIVE' ? '' : timeStr) + '</div>' +
+              '<div class="fixture-time live-score-val" style="min-width:38px;text-align:right">' + (m.status === 'LIVE' ? '' : timeStr) + '</div>' +
             '</div>' +
           '</div>'
         );
@@ -1035,15 +1112,23 @@ function _renderRealFixtures(container, matches, leagueName) {
           ? (m.homeScore + '\u2013' + m.awayScore)
           : isLive ? '\uD83D\uDD34 LIVE' : t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         const cleanLeagueName = (leagueName || '').replace(/\s*\[\d+\]$/, '');
+        const hLogo = m.homeLogo
+          ? '<img src="' + m.homeLogo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
+          : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + m.homeTeam.substring(0,3).toUpperCase() + '</div>';
+        const aLogo = m.awayLogo
+          ? '<img src="' + m.awayLogo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
+          : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + m.awayTeam.substring(0,3).toUpperCase() + '</div>';
         return '<div class="fixture-row" onclick="openRealMatchDetail(\'' + m.id + '\')" role="button" tabindex="0">' +
-          '<div class="fixture-league-badge">' + (m.homeLogo ? '<img src="' + m.homeLogo + '" width="24" height="24" style="border-radius:50%">' : '\u26BD') + '</div>' +
-          '<div class="fixture-teams">' +
-            '<div class="fixture-league-name">' + cleanLeagueName + '</div>' +
-            '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
+          '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:10px">' + hLogo + aLogo + '</div>' +
+          '<div class="fixture-teams" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">' +
+            '<div style="min-width:0">' +
+              '<div class="fixture-league-name">' + cleanLeagueName + '</div>' +
+              '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
+            '</div>' +
           '</div>' +
-          '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-left:16px">' +
             (hasPred ? '<span title="You predicted this" style="color:var(--green);font-size:1rem">\u2713</span>' : '') +
-            '<div class="fixture-time" style="color:' + (isLive ? 'var(--red)' : isCompleted ? 'rgba(255,255,255,0.4)' : 'var(--text-secondary)') + '">' + scoreOrTime + '</div>' +
+            '<div class="fixture-time" style="min-width:52px;text-align:right;color:' + (isLive ? 'var(--red)' : isCompleted ? 'rgba(255,255,255,0.4)' : 'var(--text-secondary)') + '">' + scoreOrTime + '</div>' +
           '</div>' +
         '</div>';
       }).join('') +
@@ -1110,8 +1195,13 @@ function initPredictions() {
 
 function filterPreds(filter) {
   state.predFilter = filter;
-  document.querySelectorAll('#pred-filter-tabs .filter-tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
+  document.querySelectorAll('#pred-filter-tabs .filter-tab').forEach(t => {
+    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes(`'${filter}'`)) {
+      t.classList.add('active');
+    } else {
+      t.classList.remove('active');
+    }
+  });
   renderPredictions(filter);
 }
 
@@ -1539,8 +1629,13 @@ async function loadMyLeagueRanks() {
 
 function setTimePeriod(period) {
   state.lbPeriod = period;
-  document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
+  document.querySelectorAll('.time-tab').forEach(t => {
+    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes(`'${period}'`)) {
+      t.classList.add('active');
+    } else {
+      t.classList.remove('active');
+    }
+  });
   // Re-fetch leaderboard with the selected period
   initLeaderboard(period);
 }
@@ -1727,15 +1822,20 @@ async function openMiniLeagueDetail(leagueId) {
       let sep = '';
       if (dayLabel !== lastLabel) { lastLabel = dayLabel; sep = `<div class="fixture-day-header">${dayLabel}</div>`; }
       const hasPred = !!m.userPrediction;
-      const homeLogo = m.homeLogo ? `<img src="${m.homeLogo}" width="24" height="24" style="border-radius:50%">` : '';
+      const homeLogo = m.homeLogo ? `<img src="${m.homeLogo}" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">` : `<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">${m.homeTeam.substring(0,3).toUpperCase()}</div>`;
+      const awayLogo = m.awayLogo ? `<img src="${m.awayLogo}" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">` : `<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">${m.awayTeam.substring(0,3).toUpperCase()}</div>`;
       return sep + `
         <div class="fixture-row" onclick="openRealMatchDetail('${m.id}')" role="button" tabindex="0" style="${hasPred?'border-left:3px solid var(--green);':''}">
-          <div class="fixture-league-badge">${homeLogo}</div>
-          <div class="fixture-teams">
-            <div class="fixture-league-name">${hasPred?'✓ Predicted':'Predict'}</div>
-            <div class="fixture-team-names">${m.homeTeam} vs ${m.awayTeam}</div>
+          <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:10px">${homeLogo}${awayLogo}</div>
+          <div class="fixture-teams" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+            <div style="min-width:0">
+              <div class="fixture-league-name">${hasPred?'✓ Predicted':'Predict'}</div>
+              <div class="fixture-team-names">${m.homeTeam} vs ${m.awayTeam}</div>
+            </div>
           </div>
-          <div style="margin-left:auto;color:var(--text-muted);font-size:0.8rem">${timeStr}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
+            <div style="color:var(--text-muted);font-size:0.8rem;min-width:38px;text-align:right">${timeStr}</div>
+          </div>
         </div>`;
     }).join('') : '<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:0.85rem;">No upcoming fixtures for this competition in the next 7 days.</div>';
 
@@ -2226,7 +2326,14 @@ function _applyMatchData(m) {
       else selectResult('draw', document.getElementById('rb-draw'));
 
       const scorerInput = document.getElementById('scorer-select');
-      if (scorerInput) scorerInput.value = m.userPrediction?.firstGoalScorer ?? '';
+      const savedScorer = m.userPrediction?.firstGoalScorer ?? '';
+      if (scorerInput) scorerInput.value = savedScorer;
+      // Also sync the dropdown if it's already populated (re-open same match)
+      const fgsDd = document.getElementById('fgs-dropdown');
+      if (fgsDd && savedScorer) {
+        fgsDd.value = savedScorer;
+        fgsDd.style.borderColor = savedScorer ? 'rgba(41,191,18,0.5)' : 'rgba(255,255,255,0.12)';
+      }
 
       // Restore BTTS
       const pred = m.userPrediction;
@@ -2287,6 +2394,12 @@ async function openRealMatchDetail(matchId) {
     state._liveScoreInterval = null;
   }
   state._currentMatchId = matchId;
+
+  // ── Clear any pick/indicator from a previously-opened match ────
+  const _ind = document.getElementById('fgs-pick-indicator');
+  if (_ind) _ind.style.display = 'none';
+  const _sc  = document.getElementById('scorer-select');
+  if (_sc)  _sc.value = '';
   try {
     // Check cache first (populated by _renderRealFixtures for any league including WC)
     let m = state._matchCache?.[matchId];
@@ -2334,6 +2447,15 @@ async function openRealMatchDetail(matchId) {
 // ─── LINEUP / PLAYER PICKER ──────────────────────────────────────
 
 async function _loadLineup(matchId) {
+  // ── Reset stale state from previous match ──────────────────────
+  const dropdown = document.getElementById('fgs-dropdown');
+  if (dropdown) {
+    dropdown.innerHTML = '<option value="">\u2014 Select a player \u2014</option>';
+    dropdown.style.borderColor = 'rgba(255,255,255,0.12)';
+  }
+  const noMsgReset = document.getElementById('no-lineup-msg');
+  if (noMsgReset) noMsgReset.style.display = 'none';
+
   // Show loading spinner
   const loading = document.getElementById('lineup-loading');
   const picker  = document.getElementById('player-picker');
@@ -2370,72 +2492,89 @@ function _renderPlayerPicker(lineup, events) {
 
   // Build set of players subbed off
   const subbedOff = new Set();
-  const subbedOn  = new Set();
   if (events) {
     events.filter(e => e.type === 'subst').forEach(e => {
-      if (e.assistName) subbedOff.add(e.assistName);  // "assist" = player coming OFF
-      if (e.playerName) subbedOn.add(e.playerName);   // "player" = player coming ON
+      if (e.assistName) subbedOff.add(e.assistName);
     });
   }
 
   const currentScorer = (document.getElementById('scorer-select')?.value || '').trim();
+  const dropdown = document.getElementById('fgs-dropdown');
+  if (!dropdown) return;
 
-  const renderGrid = (containerId, players, isSub) => {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = '';
-    players.forEach(p => {
-      const isOff = subbedOff.has(p.name);
-      const isOn  = subbedOn.has(p.name) && isSub;
-      const isSelected = currentScorer === p.name;
+  // Build options helper
+  const makeOptions = (players, isSub) => players.map(p => {
+    const isOff = subbedOff.has(p.name);
+    const label = (p.number ? '#' + p.number + ' ' : '') + p.name + (isOff ? ' (off)' : '') + (isSub ? '' : '');
+    const opt = document.createElement('option');
+    opt.value = p.name;
+    opt.textContent = label;
+    if (isOff) opt.disabled = true;
+    if (p.name === currentScorer) opt.selected = true;
+    return opt;
+  });
 
-      const chip = document.createElement('button');
-      chip.className = 'player-chip' +
-        (isSelected ? ' selected-player' : '') +
-        (isOff ? ' subbed-off' : '') +
-        (isOn  ? ' subbed-on'  : '');
-      chip.innerHTML = '<span class="player-num">' + (p.number || '') + '</span>' + p.name;
-      chip.title = p.pos || '';
-      chip.onclick = () => {
-        const scorerInput = document.getElementById('scorer-select');
-        const indicator = document.getElementById('fgs-pick-indicator');
-        const pickName = document.getElementById('fgs-pick-name');
-        if (isSelected || isOff) {
-          // Deselect
-          if (scorerInput) scorerInput.value = '';
-          document.querySelectorAll('.player-chip.selected-player').forEach(c => c.classList.remove('selected-player'));
-          if (indicator) indicator.style.display = 'none';
-        } else {
-          // Clear all, select this one
-          document.querySelectorAll('.player-chip.selected-player').forEach(c => c.classList.remove('selected-player'));
-          chip.classList.add('selected-player');
-          if (scorerInput) scorerInput.value = p.name;
-          // Show pick indicator
-          if (indicator) { indicator.style.display = 'flex'; }
-          if (pickName) pickName.textContent = (p.number ? '#' + p.number + ' ' : '') + p.name;
-        }
-      };
-      container.appendChild(chip);
-    });
+  // Clear & rebuild
+  dropdown.innerHTML = '';
+  const blankOpt = document.createElement('option');
+  blankOpt.value = '';
+  blankOpt.textContent = '\u2014 Select a player \u2014';
+  dropdown.appendChild(blankOpt);
+
+  const homeTeam = lineup.home?.team || 'Home';
+  const awayTeam = lineup.away?.team || 'Away';
+  const homeXI   = lineup.home?.startXI   || [];
+  const homeSubs = lineup.home?.substitutes || [];
+  const awayXI   = lineup.away?.startXI   || [];
+  const awaySubs = lineup.away?.substitutes || [];
+
+  const addGroup = (label, players, isSub) => {
+    if (!players.length) return;
+    const grp = document.createElement('optgroup');
+    grp.label = label;
+    makeOptions(players, isSub).forEach(o => grp.appendChild(o));
+    dropdown.appendChild(grp);
   };
 
-  // Home team
-  const homeLbl = document.getElementById('lineup-home-label');
-  if (homeLbl) homeLbl.textContent = (lineup.home?.team || '').toUpperCase() + (lineup.home?.formation ? '  ' + lineup.home.formation : '');
-  renderGrid('lineup-home-players', lineup.home?.startXI || [], false);
-  renderGrid('lineup-home-subs',    lineup.home?.substitutes || [], true);
+  addGroup('\u26bd ' + homeTeam.toUpperCase() + ' \u2014 Starting XI', homeXI, false);
+  addGroup('\u{1F4CB} ' + homeTeam.toUpperCase() + ' \u2014 Bench', homeSubs, true);
+  addGroup('\u26bd ' + awayTeam.toUpperCase() + ' \u2014 Starting XI', awayXI, false);
+  addGroup('\u{1F4CB} ' + awayTeam.toUpperCase() + ' \u2014 Bench', awaySubs, true);
 
-  // Away team
-  const awayLbl = document.getElementById('lineup-away-label');
-  if (awayLbl) awayLbl.textContent = (lineup.away?.team || '').toUpperCase() + (lineup.away?.formation ? '  ' + lineup.away.formation : '');
-  renderGrid('lineup-away-players', lineup.away?.startXI || [], false);
-  renderGrid('lineup-away-subs',    lineup.away?.substitutes || [], true);
+  // Restore previous pick indicator if already selected
+  if (currentScorer) {
+    const indicator = document.getElementById('fgs-pick-indicator');
+    const pickName  = document.getElementById('fgs-pick-name');
+    // find the option to get the number label
+    const selOpt = [...dropdown.options].find(o => o.value === currentScorer);
+    if (indicator) indicator.style.display = 'flex';
+    if (pickName && selOpt) pickName.textContent = selOpt.textContent.replace(' (off)', '');
+  }
+}
+
+function _onFgsDropdownChange(sel) {
+  const scorerInput = document.getElementById('scorer-select');
+  const indicator   = document.getElementById('fgs-pick-indicator');
+  const pickName    = document.getElementById('fgs-pick-name');
+  if (!sel.value) {
+    if (scorerInput) scorerInput.value = '';
+    if (indicator)   indicator.style.display = 'none';
+    return;
+  }
+  if (scorerInput) scorerInput.value = sel.value;
+  // Show pick indicator with label from the selected option
+  const selOpt = sel.options[sel.selectedIndex];
+  if (indicator) indicator.style.display = 'flex';
+  if (pickName && selOpt) pickName.textContent = selOpt.textContent.replace(' (off)', '');
+  // Style the dropdown border green to signal selection
+  sel.style.borderColor = 'rgba(41,191,18,0.5)';
 }
 
 function clearFGSPick() {
-  document.querySelectorAll('.player-chip.selected-player').forEach(c => c.classList.remove('selected-player'));
   const inp = document.getElementById('scorer-select');
   if (inp) inp.value = '';
+  const dropdown = document.getElementById('fgs-dropdown');
+  if (dropdown) { dropdown.value = ''; dropdown.style.borderColor = 'rgba(255,255,255,0.12)'; }
   const ind = document.getElementById('fgs-pick-indicator');
   if (ind) ind.style.display = 'none';
 }
@@ -2505,16 +2644,14 @@ async function submitPrediction() {
 
     if (success) {
       closeMatchModal();
-      const xp = Math.round(30 * (confidence / 100)) + (scorer ? 15 : 0);
-      setTimeout(() => showCelebration(xp), 300);
+      setTimeout(() => showCelebration(1000), 300);
     } else {
       showNotification(message || 'Failed to save prediction', 'error');
     }
   } else {
     // No real match ID yet (mock fixture) — still show celebration
     closeMatchModal();
-    const xpEarned = Math.round(100 * (confidence / 100));
-    setTimeout(() => showCelebration(xpEarned), 300);
+      setTimeout(() => showCelebration(1000), 300);
   }
 }
 
@@ -3307,12 +3444,29 @@ const ACTIVE_VOTE_LEAGUES = new Set([
   'Premier League', 'La Liga', 'UEFA Champions League', 'Egyptian Premier League', 'FIFA World Cup'
 ]);
 
+async function ensureClubLogosLoaded() {
+  if (Object.keys(clubLogosMap).length > 0) return;
+  try {
+    const res = await fetch('/api/clubs/logos');
+    if (res.ok) {
+      clubLogosMap = await res.json();
+    }
+    // Merge static fallback logos — DB logos take priority, static fills the gaps
+    Object.entries(STATIC_LOGO_MAP).forEach(([club, url]) => {
+      if (!clubLogosMap[club]) clubLogosMap[club] = url;
+    });
+  } catch(e) {
+    // Even on fetch error, use static logos so the page isn't blank
+    clubLogosMap = { ...STATIC_LOGO_MAP };
+  }
+}
+
 async function initVote() {
   // Load today's votes + club logos in parallel
   try {
-    const [voteRes, logoRes] = await Promise.all([
+    const [voteRes, _] = await Promise.all([
       fetch('/api/clubs/vote'),
-      fetch('/api/clubs/logos'),
+      ensureClubLogosLoaded()
     ]);
     if (voteRes.ok) {
       const data = await voteRes.json();
@@ -3323,16 +3477,11 @@ async function initVote() {
         if (v.league) leagueVotedMap[v.league] = v.clubName;
       });
     }
-    if (logoRes.ok) {
-      clubLogosMap = await logoRes.json();
-    }
-    // Merge static fallback logos — DB logos take priority, static fills the gaps
-    Object.entries(STATIC_LOGO_MAP).forEach(([club, url]) => {
-      if (!clubLogosMap[club]) clubLogosMap[club] = url;
-    });
   } catch(e) {
     // Even on fetch error, use static logos so the page isn't blank
-    clubLogosMap = { ...STATIC_LOGO_MAP };
+    if (Object.keys(clubLogosMap).length === 0) {
+      clubLogosMap = { ...STATIC_LOGO_MAP };
+    }
   }
   
   selectVoteContinent('europe');
