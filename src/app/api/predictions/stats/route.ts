@@ -23,6 +23,8 @@ export async function GET() {
       select: { 
         homeScore: true, 
         awayScore: true, 
+        status: true,
+        xpEarned: true,
         match: { select: { homeScore: true, awayScore: true } } 
       },
     }),
@@ -32,14 +34,15 @@ export async function GET() {
   let wrong = 0;
 
   for (const p of completed) {
-    const hs = p.match.homeScore!;
-    const as = p.match.awayScore!;
-    const correctResult =
-      (p.homeScore > p.awayScore && hs > as) ||
-      (p.homeScore < p.awayScore && hs < as) ||
-      (p.homeScore === p.awayScore && hs === as);
+    let status = p.status;
     
-    if (correctResult) correct++;
+    // Fallback for older predictions before the `status` field was added.
+    // Matches the exact fallback logic used in app.js for the UI list.
+    if (!status) {
+      status = (p.xpEarned && p.xpEarned > 0) ? "correct" : "wrong";
+    }
+
+    if (status === "correct") correct++;
     else wrong++;
   }
 
