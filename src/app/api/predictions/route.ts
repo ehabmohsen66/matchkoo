@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
           select: {
             homeTeam: true, awayTeam: true, matchDate: true, status: true,
             homeScore: true, awayScore: true, firstGoalScorer: true,
+            homeLogo: true, awayLogo: true,
             tournament: { select: { id: true, name: true, type: true, prizes: true } },
           },
         },

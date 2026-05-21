@@ -1272,6 +1272,10 @@ async function renderPredictions(filter) {
         matchId: p.matchId,
         league: p.match?.tournament?.name?.replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '') || 'Match',
         match: p.match?.homeTeam + ' vs ' + p.match?.awayTeam,
+        homeTeam: p.match?.homeTeam,
+        awayTeam: p.match?.awayTeam,
+        homeLogo: p.match?.homeLogo || '',
+        awayLogo: p.match?.awayLogo || '',
         date: p.match?.matchDate ? new Date(p.match.matchDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '',
         status,
         picks,
@@ -1340,7 +1344,12 @@ function _getScoringBreakdownHtml(pred) {
 
   return `
     <div style="text-align:center;margin-bottom:20px;">
-      <div style="font-size:1.15rem;font-weight:900;color:#fff;margin-bottom:4px;">${p.match.homeTeam} vs ${p.match.awayTeam}</div>
+      <div style="font-size:1.25rem;font-weight:900;color:#fff;margin-bottom:16px;">📊 How was this scored?</div>
+      <div style="font-size:1.05rem;font-weight:800;color:rgba(255,255,255,0.9);margin-bottom:4px;display:flex;justify-content:center;align-items:center;gap:10px;">
+        ${p.match.homeLogo ? '<img src="'+p.match.homeLogo+'" style="width:24px;height:24px;object-fit:contain">' : ''}
+        <span>${p.match.homeTeam} vs ${p.match.awayTeam}</span>
+        ${p.match.awayLogo ? '<img src="'+p.match.awayLogo+'" style="width:24px;height:24px;object-fit:contain">' : ''}
+      </div>
       <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:2px;text-transform:uppercase;letter-spacing:1px;">${pred.league} • ${pred.date}</div>
       
       <div style="display:inline-flex;align-items:center;gap:12px;margin-top:12px;padding:6px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:100px;">
@@ -1512,9 +1521,6 @@ function applyLocalPredFilter(statusFilterOverride) {
         const clickHandler = isCompleted 
           ? `onclick="openScoringBreakdownModal('${mid}')"` 
           : `onclick="openRealMatchDetail('${mid}')"`;
-        const breakdownBtn = isCompleted
-          ? `<button id="breakdown-btn-${mid}" onclick="event.stopPropagation();openScoringBreakdownModal('${mid}')" style="margin-top:8px;width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:7px;font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.45);cursor:pointer;">📊 How was this scored?</button>`
-          : '';
 
         return '<div class="pred-item ' + p.status + '" role="listitem" ' + clickHandler + ' style="cursor:pointer">' +
           '<div class="pred-item-header">' +
@@ -1524,11 +1530,14 @@ function applyLocalPredFilter(statusFilterOverride) {
               '<span class="pred-item-status-badge status-' + p.status + '">' + statusIcon + ' ' + statusLabel + '</span>' +
             '</div>' +
           '</div>' +
-          '<div class="pred-item-match">' + p.match + '</div>' +
+          '<div class="pred-item-match" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
+            (p.homeLogo ? '<img src="' + p.homeLogo + '" style="width:20px;height:20px;object-fit:contain">' : '') +
+            '<span>' + p.homeTeam + ' vs ' + p.awayTeam + '</span>' +
+            (p.awayLogo ? '<img src="' + p.awayLogo + '" style="width:20px;height:20px;object-fit:contain">' : '') +
+          '</div>' +
           (p.resultLine ? '<div style="font-size:0.72rem;color:rgba(255,255,255,0.4);margin-bottom:4px">' + p.resultLine + '</div>' : '') +
           '<div class="pred-item-picks">' + p.picks.map(pick => '<span class="pred-pick-tag">' + pick + '</span>').join('') + '</div>' +
           '<div class="pred-item-xp" style="font-weight:800;color:' + xpColor + '">' + p.xpDisplay + '</div>' +
-          breakdownBtn +
         '</div>';
       }).join('') +
     '</div>';
