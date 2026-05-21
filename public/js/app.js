@@ -1095,16 +1095,32 @@ function backToLeagues() {
 // ─── PREDICTIONS PAGE ────────────────────────────────────────────
 function initPredictions() {
   renderPredictions('upcoming');
-  // Load real stats
+  // Load real stats and populate insight cards
   fetch('/api/predictions/stats').then(r => r.ok ? r.json() : null).then(s => {
     if (!s) return;
-    const els = document.querySelectorAll('.psp-value');
-    // [0] = accuracy pill, [1] = correct pill, [2] = total pill
-    els.forEach((el, i) => {
-      if (i === 0) el.textContent = s.accuracy + '%';
-      if (i === 1) el.textContent = s.correct.toLocaleString();
-      if (i === 2) el.textContent = s.total.toLocaleString();
-    });
+    const accEl    = document.getElementById('psp-accuracy');
+    const corrEl   = document.getElementById('psp-correct');
+    const wrongEl  = document.getElementById('psp-wrong');
+    const totalEl  = document.getElementById('psp-total');
+    const ringFill = document.getElementById('psp-ring-fill');
+
+    const accuracy = parseFloat(s.accuracy) || 0;
+    const correct  = s.correct  || 0;
+    const total    = s.total    || 0;
+    const wrong    = total - correct;
+
+    if (accEl)   accEl.textContent   = accuracy + '%';
+    if (corrEl)  corrEl.textContent  = correct.toLocaleString();
+    if (wrongEl) wrongEl.textContent = wrong.toLocaleString();
+    if (totalEl) totalEl.textContent = total.toLocaleString();
+
+    // Animate accuracy ring (stroke-dasharray = "percent, 100")
+    if (ringFill) {
+      setTimeout(() => {
+        ringFill.style.transition = 'stroke-dasharray 1s cubic-bezier(0.4, 0, 0.2, 1)';
+        ringFill.setAttribute('stroke-dasharray', accuracy + ', 100');
+      }, 300);
+    }
   }).catch(() => {});
 }
 
