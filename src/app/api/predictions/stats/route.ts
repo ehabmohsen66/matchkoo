@@ -10,17 +10,19 @@ export async function GET() {
 
   const userId = (session.user as any).id;
 
+  // Fetch ALL predictions for completed matches — do NOT filter by xpEarned
+  // Wrong predictions have xpEarned = null; filtering it out caused 100% accuracy bug
   const [allPredictions, completed] = await Promise.all([
     prisma.prediction.count({ where: { userId } }),
     prisma.prediction.findMany({
-      where: { userId, match: { status: "COMPLETED" }, xpEarned: { not: null } },
+      where: { userId, match: { status: "COMPLETED" } },
       select: { xpEarned: true },
     }),
   ]);
 
   const correct = completed.filter((p) => (p.xpEarned ?? 0) >= 10).length;
   const wrong = completed.length - correct;
-  const total = completed.length; // total = resolved picks (same denominator as accuracy)
+  const total = completed.length; // total = resolved picks (consistent denominator)
   const accuracy = completed.length > 0 ? Math.round((correct / completed.length) * 100) : 0;
 
   return NextResponse.json({ total, correct, wrong, completed: completed.length, allPredictions, accuracy });
