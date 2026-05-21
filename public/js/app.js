@@ -1344,7 +1344,7 @@ function _getScoringBreakdownHtml(pred) {
 
   return `
     <div style="text-align:center;margin-bottom:20px;">
-      <div style="font-size:1.25rem;font-weight:900;color:#fff;margin-bottom:16px;">📊 How was this scored?</div>
+      <div style="font-size:1.25rem;font-weight:900;color:#fff;margin-bottom:16px;">📊 How the score of this match has calculated</div>
       <div style="font-size:1.05rem;font-weight:800;color:rgba(255,255,255,0.9);margin-bottom:4px;display:flex;justify-content:center;align-items:center;gap:10px;">
         ${p.match.homeLogo ? '<img src="'+p.match.homeLogo+'" style="width:24px;height:24px;object-fit:contain">' : ''}
         <span>${p.match.homeTeam} vs ${p.match.awayTeam}</span>
