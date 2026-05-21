@@ -1537,7 +1537,10 @@ function applyLocalPredFilter(statusFilterOverride) {
           '</div>' +
           (p.resultLine ? '<div style="font-size:0.72rem;color:rgba(255,255,255,0.4);margin-bottom:4px">' + p.resultLine + '</div>' : '') +
           '<div class="pred-item-picks">' + p.picks.map(pick => '<span class="pred-pick-tag">' + pick + '</span>').join('') + '</div>' +
-          '<div class="pred-item-xp" style="font-weight:800;color:' + xpColor + '">' + p.xpDisplay + '</div>' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">' +
+            '<div class="pred-item-xp" style="font-weight:800;color:' + xpColor + '">' + p.xpDisplay + '</div>' +
+            (isCompleted ? '<button onclick="event.stopPropagation();openScoringBreakdownModal(\'' + mid + '\')" style="font-size:0.72rem;font-weight:700;padding:5px 12px;border-radius:100px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;gap:5px;">📊 Points Breakdown</button>' : '') +
+          '</div>' +
         '</div>';
       }).join('') +
     '</div>';
