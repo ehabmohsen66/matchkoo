@@ -1199,6 +1199,18 @@ function initPredictions() {
     if (wrongEl) wrongEl.textContent = wrong.toLocaleString();
     if (totalEl) totalEl.textContent = total.toLocaleString();
 
+    // Update filter tabs with counts
+    const upcomingCount = s.allPredictions - total;
+    const tabUpcoming = document.getElementById('tab-upcoming');
+    const tabCorrect = document.getElementById('tab-correct');
+    const tabWrong = document.getElementById('tab-wrong');
+    const tabAll = document.getElementById('tab-all');
+    
+    if (tabUpcoming) tabUpcoming.textContent = 'Upcoming' + (upcomingCount > 0 ? ' (' + upcomingCount + ')' : '');
+    if (tabCorrect) tabCorrect.textContent = 'Correct' + (correct > 0 ? ' (' + correct + ')' : '');
+    if (tabWrong) tabWrong.textContent = 'Wrong' + (wrong > 0 ? ' (' + wrong + ')' : '');
+    if (tabAll) tabAll.textContent = 'All Time' + (s.allPredictions > 0 ? ' (' + s.allPredictions + ')' : '');
+
     // Animate accuracy ring (stroke-dasharray = "percent, 100")
     if (ringFill) {
       setTimeout(() => {
