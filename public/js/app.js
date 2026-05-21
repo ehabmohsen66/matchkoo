@@ -1106,8 +1106,8 @@ function initPredictions() {
 
     const accuracy = parseFloat(s.accuracy) || 0;
     const correct  = s.correct  || 0;
-    const total    = s.total    || 0;
-    const wrong    = total - correct;
+    const wrong    = s.wrong    || 0;  // use server-calculated wrong (based on completed)
+    const total    = s.total    || 0;  // total = completed picks (consistent denominator)
 
     if (accEl)   accEl.textContent   = accuracy + '%';
     if (corrEl)  corrEl.textContent  = correct.toLocaleString();

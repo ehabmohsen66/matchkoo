@@ -10,7 +10,7 @@ export async function GET() {
 
   const userId = (session.user as any).id;
 
-  const [total, completed] = await Promise.all([
+  const [allPredictions, completed] = await Promise.all([
     prisma.prediction.count({ where: { userId } }),
     prisma.prediction.findMany({
       where: { userId, match: { status: "COMPLETED" }, xpEarned: { not: null } },
@@ -19,7 +19,9 @@ export async function GET() {
   ]);
 
   const correct = completed.filter((p) => (p.xpEarned ?? 0) >= 10).length;
+  const wrong = completed.length - correct;
+  const total = completed.length; // total = resolved picks (same denominator as accuracy)
   const accuracy = completed.length > 0 ? Math.round((correct / completed.length) * 100) : 0;
 
-  return NextResponse.json({ total, correct, completed: completed.length, accuracy });
+  return NextResponse.json({ total, correct, wrong, completed: completed.length, allPredictions, accuracy });
 }
