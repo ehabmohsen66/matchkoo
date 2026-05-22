@@ -27,6 +27,8 @@ const Backend = {
           gender: session.user.gender ?? 'male',
         };
         this._updateAuthState();
+        // Fetch global rank immediately (doesn't depend on full leaderboard)
+        this._fetchAndShowGlobalRank();
         await this._hydrateData();
         return true;
       } else {
@@ -270,8 +272,32 @@ const Backend = {
     const xpFill = document.querySelector('.xp-fill');
     if (xpFill) xpFill.style.width = `${Math.min((this.user.xp / 20000) * 100, 100)}%`;
 
-    // ── Rank badge — shows "—" until leaderboard hydration fills it in ─
-    // (populated in _hydrateData leaderboard section below)
+    // ── Rank badge — shows "—" until _fetchAndShowGlobalRank fills it in ─
+    // (populated immediately via /api/leaderboard/my-rank)
+  },
+
+  // ─── GLOBAL RANK — fetch once after login ────────────────────────
+  async _fetchAndShowGlobalRank() {
+    try {
+      const res = await fetch('/api/leaderboard/my-rank');
+      if (!res.ok) return;
+      const data = await res.json();
+      const rank = data.rank;
+      if (!rank) return;
+
+      // Update sidebar rank badge
+      const rankVal = document.getElementById('sidebar-rank-val');
+      if (rankVal) rankVal.textContent = '#' + rank.toLocaleString();
+
+      // Also update the leaderboard page "Your Rank" banner if visible
+      const yrRank = document.querySelector('.yrb-rank');
+      if (yrRank && yrRank.textContent === '#1,247') yrRank.textContent = '#' + rank.toLocaleString();
+
+      // Cache for later use
+      window._cachedUserRank = rank;
+    } catch (e) {
+      // Graceful degradation — badge stays "—"
+    }
   },
 
   async logout() {
