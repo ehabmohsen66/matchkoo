@@ -3452,31 +3452,31 @@ const STATIC_LOGO_MAP = {
 
 const CLUBS_DB = {
   // ── EUROPE ──────────────────────────────────────────────────────
-  'Premier League': { country: 'England', continent: 'europe', clubs: [
+  'Premier League': { country: 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', continent: 'europe', clubs: [
     'Arsenal','Aston Villa','Bournemouth','Brentford','Brighton',
     'Chelsea','Crystal Palace','Everton','Fulham','Ipswich Town',
     'Leicester City','Liverpool','Manchester City','Manchester United','Newcastle',
     'Nottingham Forest','Southampton','Tottenham','West Ham','Wolverhampton'
   ]},
-  'La Liga': { country: 'Spain', continent: 'europe', clubs: [
+  'La Liga': { country: 'Spain', flag: '🇪🇸', continent: 'europe', clubs: [
     'Alaves','Almeria','Athletic Bilbao','Atletico Madrid','Barcelona',
     'Betis','Celta Vigo','Getafe','Girona','Granada',
     'Las Palmas','Mallorca','Osasuna','Rayo Vallecano','Real Madrid',
     'Real Sociedad','Sevilla','Valencia','Valladolid','Villarreal'
   ]},
-  'Serie A': { country: 'Italy', continent: 'europe', clubs: [
+  'Serie A': { country: 'Italy', flag: '🇮🇹', continent: 'europe', clubs: [
     'AC Milan','Atalanta','Bologna','Cagliari','Como',
     'Empoli','Fiorentina','Genoa','Inter Milan','Juventus',
     'Lazio','Lecce','Monza','Napoli','Parma',
     'Roma','Torino','Udinese','Venezia','Verona'
   ]},
-  'Bundesliga': { country: 'Germany', continent: 'europe', clubs: [
+  'Bundesliga': { country: 'Germany', flag: '🇩🇪', continent: 'europe', clubs: [
     'Augsburg','Bayer Leverkusen','Bayern Munich','Borussia Dortmund','Borussia Mönchengladbach',
     'Eintracht Frankfurt','Freiburg','Hamburg','Heidenheim','Hoffenheim',
     'Mainz','RB Leipzig','St. Pauli','Stuttgart','Union Berlin',
     'Werder Bremen','Wolfsburg','Bochum','Holstein Kiel','Kickers Offenbach'
   ]},
-  'Ligue 1': { country: 'France', continent: 'europe', clubs: [
+  'Ligue 1': { country: 'France', flag: '🇫🇷', continent: 'europe', clubs: [
     'Angers','Auxerre','Brest','Le Havre','Lens',
     'Lille','Lyon','Marseille','Monaco','Montpellier',
     'Nantes','Nice','PSG','Reims','Rennes',
@@ -3484,20 +3484,20 @@ const CLUBS_DB = {
   ]},
 
   // ── AFRICA ──────────────────────────────────────────────────────
-  'Egyptian Premier League': { country: 'Egypt', continent: 'africa', clubs: [
+  'Egyptian Premier League': { country: 'Egypt', flag: '🇪🇬', continent: 'africa', clubs: [
     'Al Ahly','Al Mokawloon','Asyut Cement','Ceramica Cleopatra','El Entag El Harby',
     'El Geish','El Gouna','ENPPI','Farco','Future FC',
     'Haras El Hodood','Ismaily','Ittihad Alexandria','National Bank','Pyramids',
     'Smouha','Tala\'a El Gaish','Wadi Degla','Zamalek','Ghazl El Mahalla'
   ]},
-  'Saudi Pro League': { country: 'Saudi Arabia', continent: 'asia', clubs: [
+  'Saudi Pro League': { country: 'Saudi Arabia', flag: '🇸🇦', continent: 'asia', clubs: [
     'Al Ahli','Al Ettifaq','Al Fateh','Al Fayha','Al Hazem',
     'Al Hilal','Al Ittihad','Al Nassr','Al Okhdood','Al Qadsiah',
     'Al Raed','Al Riyadh','Al Shabab','Al Tai','Al Wehda',
     'Al Khaleej','Damac','Nassaji','Al Qadisiyah','Al Taawoun'
   ]},
   // ── AMERICAS ───────────────────────────────────────────────────
-  'MLS': { country: 'USA', continent: 'americas', clubs: [
+  'MLS': { country: 'USA', flag: '🇺🇸', continent: 'americas', clubs: [
     'Atlanta United','Austin FC','Charlotte FC','Chicago Fire','Colorado Rapids',
     'Columbus Crew','D.C. United','FC Cincinnati','FC Dallas','Houston Dynamo',
     'Inter Miami','LA Galaxy','LAFC','Minnesota United','Nashville SC',
@@ -3506,7 +3506,7 @@ const CLUBS_DB = {
     'St. Louis City','Toronto FC','Vancouver Whitecaps','CF Montreal','New York Red Bulls II'
   ]},
   // ── WORLD ───────────────────────────────────────────────────────
-  'FIFA World Cup': { country: 'International', continent: 'world', clubs: [
+  'FIFA World Cup': { country: 'International', flag: '🌍', continent: 'world', clubs: [
     'Argentina','Australia','Belgium','Brazil','Cameroon',
     'Canada','Croatia','Denmark','Ecuador','England',
     'France','Germany','Ghana','Iran','Japan',
@@ -3672,10 +3672,10 @@ function renderVoteLeagues() {
     return '<div style="' + cardStyle + '">' +
       comingSoonBadge +
       '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.06)">' +
-        '<div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:18px">🏆</div>' +
+        '<div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:22px">' + (data.flag || '🌍') + '</div>' +
         '<div>' +
-          '<div style="font-weight:800;color:#fff;font-size:1rem;letter-spacing:0.5px">' + league + '</div>' +
-          '<div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:1px">' + data.country + '</div>' +
+          '<div style="font-weight:800;color:#fff;font-size:1rem;letter-spacing:0.5px">' + data.country + '</div>' +
+          '<div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:1px">' + league + '</div>' +
         '</div>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">' +
