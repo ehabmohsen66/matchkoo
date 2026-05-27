@@ -3464,7 +3464,75 @@ const STATIC_LOGO_MAP = {
   'Sporting CP':        'https://media.api-sports.io/football/teams/228.png',
   'Sturm Graz':         'https://media.api-sports.io/football/teams/1084.png',
   'Young Boys':         'https://media.api-sports.io/football/teams/1099.png',
-  // ── Egyptian Premier League ──────────────────────────────────────
+  // ── Egyptian Premier League ───────────────────────────────────
+  // ── South Africa PSL ───────────────────────────────────────────
+  'Mamelodi Sundowns':   'https://media.api-sports.io/football/teams/10499.png',
+  'Kaizer Chiefs':       'https://media.api-sports.io/football/teams/10500.png',
+  'Orlando Pirates':     'https://media.api-sports.io/football/teams/10501.png',
+  'SuperSport United':   'https://media.api-sports.io/football/teams/10502.png',
+  'Cape Town City':      'https://media.api-sports.io/football/teams/10503.png',
+  'AmaZulu':             'https://media.api-sports.io/football/teams/10504.png',
+  'Stellenbosch FC':     'https://media.api-sports.io/football/teams/10505.png',
+  'Golden Arrows':       'https://media.api-sports.io/football/teams/10506.png',
+  'TS Galaxy':           'https://media.api-sports.io/football/teams/10507.png',
+  'Sekhukhune United':   'https://media.api-sports.io/football/teams/10508.png',
+  'Chippa United':       'https://media.api-sports.io/football/teams/10509.png',
+  'Richards Bay':        'https://media.api-sports.io/football/teams/10510.png',
+  'Swallows FC':         'https://media.api-sports.io/football/teams/10511.png',
+  'Polokwane City':      'https://media.api-sports.io/football/teams/10512.png',
+  'Maritzburg United':   'https://media.api-sports.io/football/teams/10513.png',
+  'Marumo Gallants':     'https://media.api-sports.io/football/teams/10514.png',
+  // ── Morocco Botola Pro ────────────────────────────────────────────
+  'Wydad AC':            'https://media.api-sports.io/football/teams/8148.png',
+  'Raja CA':             'https://media.api-sports.io/football/teams/8147.png',
+  'RS Berkane':          'https://media.api-sports.io/football/teams/8150.png',
+  'AS FAR':              'https://media.api-sports.io/football/teams/8149.png',
+  'Moghreb Tétouan':     'https://media.api-sports.io/football/teams/8151.png',
+  'Olympique Khouribga': 'https://media.api-sports.io/football/teams/8152.png',
+  'Hassania Agadir':     'https://media.api-sports.io/football/teams/8153.png',
+  'Difaa El Jadidi':     'https://media.api-sports.io/football/teams/8154.png',
+  'Ittihad Tanger':      'https://media.api-sports.io/football/teams/8155.png',
+  'FUS Rabat':           'https://media.api-sports.io/football/teams/8156.png',
+  'MAS Fès':             'https://media.api-sports.io/football/teams/8157.png',
+  'Renaissance Berkane': 'https://media.api-sports.io/football/teams/8158.png',
+  'Rapide Oued Zem':     'https://media.api-sports.io/football/teams/8159.png',
+  'Chabab Rif':          'https://media.api-sports.io/football/teams/8160.png',
+  'Youssoufia Berrechid':'https://media.api-sports.io/football/teams/8161.png',
+  'Maghreb Fès':         'https://media.api-sports.io/football/teams/8162.png',
+  // ── Algeria Ligue 1 ───────────────────────────────────────────────────
+  'USM Alger':           'https://media.api-sports.io/football/teams/8350.png',
+  'MC Alger':            'https://media.api-sports.io/football/teams/8351.png',
+  'CR Belouizdad':       'https://media.api-sports.io/football/teams/8352.png',
+  'JS Kabylie':          'https://media.api-sports.io/football/teams/8353.png',
+  'ES Sétif':            'https://media.api-sports.io/football/teams/8354.png',
+  'MC Oran':             'https://media.api-sports.io/football/teams/8355.png',
+  'NA Hussein Dey':      'https://media.api-sports.io/football/teams/8356.png',
+  'USM Bel Abbès':      'https://media.api-sports.io/football/teams/8357.png',
+  'ASO Chlef':           'https://media.api-sports.io/football/teams/8358.png',
+  'CS Constantine':      'https://media.api-sports.io/football/teams/8359.png',
+  'RC Arbaâ':           'https://media.api-sports.io/football/teams/8360.png',
+  'AS Aïn M\'lila':     'https://media.api-sports.io/football/teams/8361.png',
+  'Paradou AC':          'https://media.api-sports.io/football/teams/8362.png',
+  'DRB Tadjenanet':      'https://media.api-sports.io/football/teams/8363.png',
+  'RC Relizane':         'https://media.api-sports.io/football/teams/8364.png',
+  'NC Magra':            'https://media.api-sports.io/football/teams/8365.png',
+  // ── Tunisia Ligue 1 ───────────────────────────────────────────────────
+  'Espérance ST':        'https://media.api-sports.io/football/teams/8750.png',
+  'Club Africain':       'https://media.api-sports.io/football/teams/8751.png',
+  'Étoile Sahel':        'https://media.api-sports.io/football/teams/8752.png',
+  'CS Sfaxien':          'https://media.api-sports.io/football/teams/8753.png',
+  'CA Bizertin':         'https://media.api-sports.io/football/teams/8754.png',
+  'US Monastir':         'https://media.api-sports.io/football/teams/8755.png',
+  'AS Soliman':          'https://media.api-sports.io/football/teams/8756.png',
+  'US Tataouine':        'https://media.api-sports.io/football/teams/8757.png',
+  'AS Kassérine':        'https://media.api-sports.io/football/teams/8758.png',
+  'AS Gabès':            'https://media.api-sports.io/football/teams/8759.png',
+  'US Ben Guerdane':     'https://media.api-sports.io/football/teams/8760.png',
+  'Stade Tunisien':      'https://media.api-sports.io/football/teams/8761.png',
+  'AS Marsa':            'https://media.api-sports.io/football/teams/8762.png',
+  'Olympique Béja':      'https://media.api-sports.io/football/teams/8763.png',
+  'SC Ben Arous':        'https://media.api-sports.io/football/teams/8764.png',
+  'CO Médenine':         'https://media.api-sports.io/football/teams/8765.png',
   'Al Ahly':            'https://media.api-sports.io/football/teams/462.png',
   'Zamalek':            'https://media.api-sports.io/football/teams/463.png',
   'Pyramids':           'https://media.api-sports.io/football/teams/2282.png',
@@ -3570,6 +3638,30 @@ const CLUBS_DB = {
     'Haras El Hodood','Ismaily','Ittihad Alexandria','National Bank','Pyramids',
     'Smouha','Tala\'a El Gaish','Wadi Degla','Zamalek','Ghazl El Mahalla'
   ]},
+  'South African PSL': { country: 'South Africa', flag: '🇿🇦', continent: 'africa', clubs: [
+    'Mamelodi Sundowns','Kaizer Chiefs','Orlando Pirates','SuperSport United',
+    'Cape Town City','AmaZulu','Stellenbosch FC','Golden Arrows',
+    'TS Galaxy','Sekhukhune United','Chippa United','Richards Bay',
+    'Swallows FC','Polokwane City','Maritzburg United','Marumo Gallants'
+  ]},
+  'Botola Pro (Morocco)': { country: 'Morocco', flag: '🇲🇦', continent: 'africa', clubs: [
+    'Wydad AC','Raja CA','RS Berkane','AS FAR',
+    'Moghreb Tétouan','Olympique Khouribga','Hassania Agadir','Difaa El Jadidi',
+    'Ittihad Tanger','FUS Rabat','MAS Fès','Renaissance Berkane',
+    'Rapide Oued Zem','Chabab Rif','Youssoufia Berrechid','Maghreb Fès'
+  ]},
+  'Ligue 1 (Algeria)': { country: 'Algeria', flag: '🇩🇿', continent: 'africa', clubs: [
+    'USM Alger','MC Alger','CR Belouizdad','JS Kabylie',
+    'ES Sétif','MC Oran','NA Hussein Dey','USM Bel Abbès',
+    'ASO Chlef','CS Constantine','RC Arbaâ','AS Aïn M\'lila',
+    'Paradou AC','DRB Tadjenanet','RC Relizane','NC Magra'
+  ]},
+  'Ligue 1 (Tunisia)': { country: 'Tunisia', flag: '🇹🇳', continent: 'africa', clubs: [
+    'Espérance ST','Club Africain','Étoile Sahel','CS Sfaxien',
+    'CA Bizertin','US Monastir','AS Soliman','US Tataouine',
+    'AS Kassérine','AS Gabès','US Ben Guerdane','Stade Tunisien',
+    'AS Marsa','Olympique Béja','SC Ben Arous','CO Médenine'
+  ]},
   'Saudi Pro League': { country: 'Saudi Arabia', flag: '🇸🇦', continent: 'asia', clubs: [
     'Al Ahli','Al Ettifaq','Al Fateh','Al Fayha','Al Hazem',
     'Al Hilal','Al Ittihad','Al Nassr','Al Okhdood','Al Qadsiah',
@@ -3602,7 +3694,9 @@ let leagueVotedMap = {}; // leagueName -> clubName (the club they already voted 
 let clubLogosMap   = {}; // clubName -> logoUrl (from DB match data)
 // These are the 5 live leagues — all others get a "Coming Soon" treatment
 const ACTIVE_VOTE_LEAGUES = new Set([
-  'Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 'Egyptian Premier League', 'FIFA World Cup'
+  'Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1',
+  'Egyptian Premier League', 'South African PSL', 'Botola Pro (Morocco)', 'Ligue 1 (Algeria)', 'Ligue 1 (Tunisia)',
+  'FIFA World Cup'
 ]);
 
 async function ensureClubLogosLoaded() {
