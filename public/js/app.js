@@ -3514,7 +3514,7 @@ const STATIC_LOGO_MAP = {
   'Olympique Béja':      'https://media.api-sports.io/football/teams/8763.png',
   'CO Médenine':         'https://media.api-sports.io/football/teams/8765.png',
   'Al Ahly':            'https://media.api-sports.io/football/teams/440.png',
-  'Zamalek':            'https://media.api-sports.io/football/teams/441.png',
+  'Zamalek':            'https://upload.wikimedia.org/wikipedia/ar/thumb/e/ec/Zamalek_Logo.svg/240px-Zamalek_Logo.svg.png',
   'Pyramids':           'https://media.api-sports.io/football/teams/646.png',
   'Ismaily':            'https://media.api-sports.io/football/teams/635.png',
   'ENPPI':              'https://media.api-sports.io/football/teams/632.png',
