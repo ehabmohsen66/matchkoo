@@ -3346,6 +3346,18 @@ const STATIC_LOGO_MAP = {
   'Udinese':            'https://media.api-sports.io/football/teams/494.png',
   'Venezia':            'https://media.api-sports.io/football/teams/517.png',
   'Verona':             'https://media.api-sports.io/football/teams/504.png',
+  'Sassuolo':           'https://media.api-sports.io/football/teams/498.png',
+  'Sampdoria':          'https://media.api-sports.io/football/teams/491.png',
+  'Spezia':             'https://media.api-sports.io/football/teams/515.png',
+  'Salernitana':        'https://media.api-sports.io/football/teams/514.png',
+  'Frosinone':          'https://media.api-sports.io/football/teams/512.png',
+  'Cremonese':          'https://media.api-sports.io/football/teams/493.png',
+  'Palermo':            'https://media.api-sports.io/football/teams/486.png',
+  'Benevento':          'https://media.api-sports.io/football/teams/844.png',
+  'Brescia':            'https://media.api-sports.io/football/teams/672.png',
+  'Pisa':               'https://media.api-sports.io/football/teams/507.png',
+  'Ascoli':             'https://media.api-sports.io/football/teams/509.png',
+  'Cosenza':            'https://media.api-sports.io/football/teams/845.png',
   // ── Bundesliga ──────────────────────────────────────────────────
   'Augsburg':           'https://media.api-sports.io/football/teams/170.png',
   'Bayer Leverkusen':   'https://media.api-sports.io/football/teams/168.png',
@@ -3363,6 +3375,22 @@ const STATIC_LOGO_MAP = {
   'Wolfsburg':          'https://media.api-sports.io/football/teams/161.png',
   'Bochum':             'https://media.api-sports.io/football/teams/176.png',
   'Heidenheim':         'https://media.api-sports.io/football/teams/674.png',
+  'St. Pauli':          'https://media.api-sports.io/football/teams/186.png',
+  'Holstein Kiel':      'https://media.api-sports.io/football/teams/185.png',
+  'Hamburger SV':       'https://media.api-sports.io/football/teams/180.png',
+  'Hamburg':            'https://media.api-sports.io/football/teams/180.png',
+  'Schalke 04':         'https://media.api-sports.io/football/teams/178.png',
+  'Hertha Berlin':      'https://media.api-sports.io/football/teams/159.png',
+  'FC Köln':            'https://media.api-sports.io/football/teams/192.png',
+  'Hannover 96':        'https://media.api-sports.io/football/teams/183.png',
+  'Fortuna Düsseldorf': 'https://media.api-sports.io/football/teams/181.png',
+  'Nürnberg':           'https://media.api-sports.io/football/teams/188.png',
+  'Darmstadt 98':       'https://media.api-sports.io/football/teams/177.png',
+  'Kaiserslautern':     'https://media.api-sports.io/football/teams/184.png',
+  'Greuther Fürth':     'https://media.api-sports.io/football/teams/1049.png',
+  'Paderborn':          'https://media.api-sports.io/football/teams/1050.png',
+  'Karlsruhe':          'https://media.api-sports.io/football/teams/175.png',
+  'Arminia Bielefeld':  'https://media.api-sports.io/football/teams/1051.png',
   // ── Ligue 1 ─────────────────────────────────────────────────────
   'PSG':                'https://media.api-sports.io/football/teams/85.png',
   'Marseille':          'https://media.api-sports.io/football/teams/81.png',
@@ -3379,9 +3407,23 @@ const STATIC_LOGO_MAP = {
   'Toulouse':           'https://media.api-sports.io/football/teams/96.png',
   'Le Havre':           'https://media.api-sports.io/football/teams/1103.png',
   'Montpellier':        'https://media.api-sports.io/football/teams/82.png',
-  'Angers':             'https://media.api-sports.io/football/teams/778.png',
+  'Angers':             'https://media.api-sports.io/football/teams/77.png',
   'Auxerre':            'https://media.api-sports.io/football/teams/778.png',
   'Saint-Etienne':      'https://media.api-sports.io/football/teams/97.png',
+  'Lorient':            'https://media.api-sports.io/football/teams/112.png',
+  'Metz':               'https://media.api-sports.io/football/teams/113.png',
+  'Bordeaux':           'https://media.api-sports.io/football/teams/78.png',
+  'Guingamp':           'https://media.api-sports.io/football/teams/106.png',
+  'Caen':               'https://media.api-sports.io/football/teams/71.png',
+  'Dijon':              'https://media.api-sports.io/football/teams/90.png',
+  'Clermont':           'https://media.api-sports.io/football/teams/523.png',
+  'Ajaccio':            'https://media.api-sports.io/football/teams/76.png',
+  'Nancy':              'https://media.api-sports.io/football/teams/109.png',
+  'Valenciennes':       'https://media.api-sports.io/football/teams/108.png',
+  'Nîmes':              'https://media.api-sports.io/football/teams/118.png',
+  'Bastia':             'https://media.api-sports.io/football/teams/120.png',
+  'Grenoble':           'https://media.api-sports.io/football/teams/119.png',
+  'Troyes':             'https://media.api-sports.io/football/teams/514.png',
   // ── Champions League ────────────────────────────────────────────
   'Benfica':            'https://media.api-sports.io/football/teams/211.png',
   'Bologna':            'https://media.api-sports.io/football/teams/500.png',
@@ -3467,19 +3509,28 @@ const CLUBS_DB = {
     'AC Milan','Atalanta','Bologna','Cagliari','Como',
     'Empoli','Fiorentina','Genoa','Inter Milan','Juventus',
     'Lazio','Lecce','Monza','Napoli','Parma',
-    'Roma','Torino','Udinese','Venezia','Verona'
+    'Roma','Torino','Udinese','Venezia','Verona',
+    'Sassuolo','Sampdoria','Spezia','Salernitana','Frosinone',
+    'Cremonese','Palermo','Benevento','Brescia','Pisa',
+    'Ascoli','Cosenza'
   ]},
   'Bundesliga': { country: 'Germany', flag: '🇩🇪', continent: 'europe', clubs: [
     'Augsburg','Bayer Leverkusen','Bayern Munich','Borussia Dortmund','Borussia Mönchengladbach',
-    'Eintracht Frankfurt','Freiburg','Hamburg','Heidenheim','Hoffenheim',
+    'Eintracht Frankfurt','Freiburg','Hamburger SV','Heidenheim','Hoffenheim',
     'Mainz','RB Leipzig','St. Pauli','Stuttgart','Union Berlin',
-    'Werder Bremen','Wolfsburg','Bochum','Holstein Kiel','Kickers Offenbach'
+    'Werder Bremen','Wolfsburg','Bochum','Holstein Kiel','FC Köln',
+    'Schalke 04','Hertha Berlin','Hannover 96','Fortuna Düsseldorf','Nürnberg',
+    'Darmstadt 98','Kaiserslautern','Greuther Fürth','Paderborn','Karlsruhe',
+    'Arminia Bielefeld','VfB Stuttgart II'
   ]},
   'Ligue 1': { country: 'France', flag: '🇫🇷', continent: 'europe', clubs: [
-    'Angers','Auxerre','Brest','Le Havre','Lens',
-    'Lille','Lyon','Marseille','Monaco','Montpellier',
-    'Nantes','Nice','PSG','Reims','Rennes',
-    'Saint-Etienne','Strasbourg','Toulouse','Niza','Valenciennes'
+    'PSG','Monaco','Marseille','Lyon','Lille',
+    'Nice','Lens','Rennes','Strasbourg','Toulouse',
+    'Montpellier','Nantes','Reims','Le Havre','Auxerre',
+    'Angers','Saint-Etienne','Brest','Lorient','Metz',
+    'Bordeaux','Guingamp','Caen','Dijon','Clermont',
+    'Ajaccio','Nancy','Valenciennes','Nîmes','Bastia',
+    'Grenoble','Troyes'
   ]},
 
   // ── AFRICA ──────────────────────────────────────────────────────
@@ -3521,7 +3572,7 @@ let leagueVotedMap = {}; // leagueName -> clubName (the club they already voted 
 let clubLogosMap   = {}; // clubName -> logoUrl (from DB match data)
 // These are the 5 live leagues — all others get a "Coming Soon" treatment
 const ACTIVE_VOTE_LEAGUES = new Set([
-  'Premier League', 'La Liga', 'Egyptian Premier League', 'FIFA World Cup'
+  'Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 'Egyptian Premier League', 'FIFA World Cup'
 ]);
 
 async function ensureClubLogosLoaded() {
