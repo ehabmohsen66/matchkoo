@@ -2163,7 +2163,6 @@ function _renderInviteCard(userId, userName) {
   card.id = 'invite-friends-card';
   card.className = 'content-section';
   card.innerHTML = `
-    <div class="section-header">
       <h2 class="section-title">🎁 Invite Friends</h2>
     </div>
     <div style="background:linear-gradient(135deg,rgba(111,232,64,0.06),rgba(60,184,46,0.03));border:1px solid rgba(111,232,64,0.18);border-radius:18px;padding:22px 20px;">
@@ -3581,15 +3580,15 @@ function selectVoteContinent(id) {
   if (btn) btn.classList.add('active-continent');
 
   const titles = {
-    'europe': 'European Leagues',
-    'africa': 'African Leagues',
-    'americas': 'Americas Leagues',
-    'asia': 'Asian Leagues',
-    'oceania': 'Oceania Leagues',
-    'world': 'International Competitions'
+    'europe': 'European Clubs',
+    'africa': 'African Clubs',
+    'americas': 'Americas Clubs',
+    'asia': 'Asian Clubs',
+    'oceania': 'Oceania Clubs',
+    'world': 'International Clubs'
   };
   const titleEl = document.getElementById('vote-leagues-title');
-  if (titleEl) titleEl.textContent = titles[id] || 'Leagues';
+  if (titleEl) titleEl.textContent = titles[id] || 'Clubs';
 
   renderVoteLeagues();
 }
