@@ -14,7 +14,7 @@ const DATA = {
         { id: 'bundesliga', name: 'Bundesliga', country: '🇩🇪', emoji: '🇩🇪', matches: 38, color: '#D3010C', comingSoon: true },
         { id: 'seriea', name: 'Serie A', country: '🇮🇹', emoji: '🇮🇹', matches: 44, color: '#024494', comingSoon: true },
         { id: 'ligue1', name: 'Ligue 1', country: '🇫🇷', emoji: '🇫🇷', matches: 36, color: '#182A4E', comingSoon: true },
-        { id: 'ucl', name: 'Champions League', country: '🇪🇺', emoji: '⭐', logo: 'https://media.api-sports.io/football/leagues/2.png', matches: 22, color: '#1B0E60' },
+        { id: 'ucl', name: 'UEFA Champions League', country: '🇪🇺', emoji: '⭐', logo: 'https://media.api-sports.io/football/leagues/2.png', matches: 22, color: '#1B0E60' },
         { id: 'uel', name: 'Europa League', country: '🇪🇺', emoji: '🟠', matches: 18, color: '#FF6900', comingSoon: true },
         { id: 'eredivisie', name: 'Eredivisie', country: '🇳🇱', emoji: '🇳🇱', matches: 30, color: '#EF7D00', comingSoon: true },
         { id: 'primeirliga', name: 'Primeira Liga', country: '🇵🇹', emoji: '🇵🇹', matches: 34, color: '#009B3A', comingSoon: true },
