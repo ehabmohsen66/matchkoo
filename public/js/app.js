@@ -3482,15 +3482,7 @@ const CLUBS_DB = {
     'Nantes','Nice','PSG','Reims','Rennes',
     'Saint-Etienne','Strasbourg','Toulouse','Niza','Valenciennes'
   ]},
-  'UEFA Champions League': { country: 'Europe', continent: 'europe', clubs: [
-    'Arsenal','Aston Villa','Atletico Madrid','Barcelona','Bayern Munich',
-    'Benfica','Bologna','Borussia Dortmund','Brest','Celtic',
-    'Club Brugge','Dinamo Zagreb','Feyenoord','Girona','Inter Milan',
-    'Juventus','Leverkusen','Lille','Liverpool','Manchester City',
-    'Monaco','PSG','PSV Eindhoven','RB Leipzig','Real Madrid',
-    'Red Star Belgrade','Salzburg','Shakhtar Donetsk','Slovan Bratislava','Sporting CP',
-    'Sturm Graz','Young Boys'
-  ]},
+
   // ── AFRICA ──────────────────────────────────────────────────────
   'Egyptian Premier League': { country: 'Egypt', continent: 'africa', clubs: [
     'Al Ahly','Al Mokawloon','Asyut Cement','Ceramica Cleopatra','El Entag El Harby',
@@ -3530,7 +3522,7 @@ let leagueVotedMap = {}; // leagueName -> clubName (the club they already voted 
 let clubLogosMap   = {}; // clubName -> logoUrl (from DB match data)
 // These are the 5 live leagues — all others get a "Coming Soon" treatment
 const ACTIVE_VOTE_LEAGUES = new Set([
-  'Premier League', 'La Liga', 'UEFA Champions League', 'Egyptian Premier League', 'FIFA World Cup'
+  'Premier League', 'La Liga', 'Egyptian Premier League', 'FIFA World Cup'
 ]);
 
 async function ensureClubLogosLoaded() {
