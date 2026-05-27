@@ -66,7 +66,6 @@ const DATA = {
       label: 'World Cup / Intl',
       leagues: [
         { id: 'wc2026', name: 'FIFA World Cup 2026', country: '🌍', emoji: '🏆', logo: '/images/wc2026-logo.png', matches: 64, color: '#17458F' },
-        { id: 'ucl-world', name: 'UEFA Champions League', country: '🌍', emoji: '⭐', matches: 22, color: '#1B0E60' },
         { id: 'nations', name: 'UEFA Nations League', country: '🇪🇺', emoji: '🇪🇺', matches: 48, color: '#003087', comingSoon: true },
         { id: 'friendly', name: 'Internationals/Friendlies', country: '🌍', emoji: '⚽', matches: '∞', color: '#444', comingSoon: true },
       ]

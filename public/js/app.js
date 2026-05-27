@@ -638,7 +638,8 @@ async function renderFixturesList() {
       dayMatches.forEach((m, idx) => {
         const matchId  = m.id;
         const t        = new Date(m.matchDate);
-        const timeStr  = t.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+        const dateStr  = t.toLocaleDateString('en-GB', {day:'2-digit', month:'2-digit', year:'numeric'});
+        const timeStr  = dateStr + ' ' + t.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
         const hasPred  = !!m.userPrediction;
         const baseName = (m.tournament?.name || 'Match').replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '');
         const liveScore = m.status === 'LIVE' ? ((m.homeScore??0) + '\u2013' + (m.awayScore??0)) : '';
@@ -666,7 +667,7 @@ async function renderFixturesList() {
             '<div style="display:flex;align-items:center;gap:8px;margin-left:16px">' +
               (hasPred ? '<span style="color:var(--green);font-size:1.1rem;font-weight:900" title="Predicted">&#10003;</span>' : '') +
               (m.status === 'LIVE' ? '<span class="live-badge" style="color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE ' + liveScore + '</span>' : '') +
-              '<div class="fixture-time live-score-val" style="min-width:38px;text-align:right">' + (m.status === 'LIVE' ? '' : timeStr) + '</div>' +
+              '<div class="fixture-time live-score-val" style="min-width:110px;text-align:right">' + (m.status === 'LIVE' ? '' : timeStr) + '</div>' +
             '</div>' +
           '</div>'
         );
@@ -1110,7 +1111,7 @@ function _renderRealFixtures(container, matches, leagueName) {
         const isLive = m.status === 'LIVE';
         const scoreOrTime = isCompleted
           ? (m.homeScore + '\u2013' + m.awayScore)
-          : isLive ? '\uD83D\uDD34 LIVE' : t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+          : isLive ? '\uD83D\uDD34 LIVE' : t.toLocaleDateString('en-GB', {day:'2-digit', month:'2-digit', year:'numeric'}) + ' ' + t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         const cleanLeagueName = (leagueName || '').replace(/\s*\[\d+\]$/, '');
         const hLogo = m.homeLogo
           ? '<img src="' + m.homeLogo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
@@ -1128,7 +1129,7 @@ function _renderRealFixtures(container, matches, leagueName) {
           '</div>' +
           '<div style="display:flex;align-items:center;gap:8px;margin-left:16px">' +
             (hasPred ? '<span title="You predicted this" style="color:var(--green);font-size:1rem">\u2713</span>' : '') +
-            '<div class="fixture-time" style="min-width:52px;text-align:right;color:' + (isLive ? 'var(--red)' : isCompleted ? 'rgba(255,255,255,0.4)' : 'var(--text-secondary)') + '">' + scoreOrTime + '</div>' +
+            '<div class="fixture-time" style="min-width:110px;text-align:right;color:' + (isLive ? 'var(--red)' : isCompleted ? 'rgba(255,255,255,0.4)' : 'var(--text-secondary)') + '">' + scoreOrTime + '</div>' +
           '</div>' +
         '</div>';
       }).join('') +
@@ -1906,7 +1907,7 @@ async function openMiniLeagueDetail(leagueId) {
       const mDay = new Date(t); mDay.setHours(0,0,0,0);
       const diffDays = Math.round((mDay - today) / 86400000);
       const dayLabel = diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : DAY_NAMES[t.getDay()];
-      const timeStr = t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      const timeStr = t.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
       let sep = '';
       if (dayLabel !== lastLabel) { lastLabel = dayLabel; sep = `<div class="fixture-day-header">${dayLabel}</div>`; }
       const hasPred = !!m.userPrediction;
@@ -1922,7 +1923,7 @@ async function openMiniLeagueDetail(leagueId) {
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
-            <div style="color:var(--text-muted);font-size:0.8rem;min-width:38px;text-align:right">${timeStr}</div>
+            <div style="color:var(--text-muted);font-size:0.8rem;min-width:110px;text-align:right">${timeStr}</div>
           </div>
         </div>`;
     }).join('') : '<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:0.85rem;">No upcoming fixtures for this competition in the next 7 days.</div>';
