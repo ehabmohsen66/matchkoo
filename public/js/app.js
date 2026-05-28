@@ -3523,10 +3523,13 @@ const STATIC_LOGO_MAP = {
   'Ittihad Alexandria': '/images/clubs/ittihad_alexandria.png',
   'El Geish':           'https://media.api-sports.io/football/teams/2285.png',
   'Ceramica Cleopatra': 'https://media.api-sports.io/football/teams/2284.png',
-  'Future FC':          'https://media.api-sports.io/football/teams/2286.png',
+  'Modern Sport FC':    '/images/clubs/modern_sport_fc.png',
   'Wadi Degla':         'https://media.api-sports.io/football/teams/2287.png',
   'Ghazl El Mahalla':   '/images/clubs/ghazl_el_mahalla.png',
   'National Bank':      '/images/clubs/national_bank.png',
+  'Al Masry':           '/images/clubs/al_masry.png',
+  'ZED FC':             '/images/clubs/zed_fc.png',
+  'Petrojet FC':        '/images/clubs/petrojet_fc.png',
   // ── FIFA World Cup — National Teams (flags via flagcdn.com) ──────
   'Argentina':    'https://flagcdn.com/w80/ar.png',
   'Australia':    'https://flagcdn.com/w80/au.png',
@@ -3619,10 +3622,11 @@ const CLUBS_DB = {
 
   // ── AFRICA ──────────────────────────────────────────────────────
   'Egyptian Premier League': { country: 'Egypt', flag: '🇪🇬', continent: 'africa', clubs: [
-    'Al Ahly','Al Mokawloon','Asyut Cement','Ceramica Cleopatra','El Entag El Harby',
-    'El Geish','El Gouna','ENPPI','Farco','Future FC',
+    'Al Ahly','Al Masry','Al Mokawloon','Ceramica Cleopatra','El Entag El Harby',
+    'El Geish','El Gouna','ENPPI','Farco','Modern Sport FC',
     'Haras El Hodood','Ismaily','Ittihad Alexandria','National Bank','Pyramids FC',
-    'Smouha','Tala\'a El Gaish','Wadi Degla','Zamalek','Ghazl El Mahalla'
+    'Smouha','Tala\'a El Gaish','Wadi Degla','Zamalek','Ghazl El Mahalla',
+    'ZED FC','Petrojet FC'
   ]},
   'South African PSL': { country: 'South Africa', flag: '🇿🇦', continent: 'africa', clubs: [
     'Mamelodi Sundowns','Kaizer Chiefs','Orlando Pirates','SuperSport United',
