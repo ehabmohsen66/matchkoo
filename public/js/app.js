@@ -3515,7 +3515,7 @@ const STATIC_LOGO_MAP = {
   'CO Médenine':         'https://media.api-sports.io/football/teams/8765.png',
   'Al Ahly':            'https://media.api-sports.io/football/teams/440.png',
   'Zamalek':            '/images/clubs/zamalek.png',
-  'Pyramids':           'https://media.api-sports.io/football/teams/646.png',
+  'Pyramids FC':        '/images/clubs/pyramids_fc.png',
   'Ismaily':            'https://media.api-sports.io/football/teams/635.png',
   'ENPPI':              'https://media.api-sports.io/football/teams/632.png',
   'Haras El Hodood':    'https://media.api-sports.io/football/teams/633.png',
@@ -3618,7 +3618,7 @@ const CLUBS_DB = {
   'Egyptian Premier League': { country: 'Egypt', flag: '🇪🇬', continent: 'africa', clubs: [
     'Al Ahly','Al Mokawloon','Asyut Cement','Ceramica Cleopatra','El Entag El Harby',
     'El Geish','El Gouna','ENPPI','Farco','Future FC',
-    'Haras El Hodood','Ismaily','Ittihad Alexandria','National Bank','Pyramids',
+    'Haras El Hodood','Ismaily','Ittihad Alexandria','National Bank','Pyramids FC',
     'Smouha','Tala\'a El Gaish','Wadi Degla','Zamalek','Ghazl El Mahalla'
   ]},
   'South African PSL': { country: 'South Africa', flag: '🇿🇦', continent: 'africa', clubs: [
