@@ -3516,7 +3516,7 @@ const STATIC_LOGO_MAP = {
   'Al Ahly':            'https://media.api-sports.io/football/teams/440.png',
   'Zamalek':            '/images/clubs/zamalek.png',
   'Pyramids FC':        '/images/clubs/pyramids_fc.png',
-  'Ismaily':            'https://media.api-sports.io/football/teams/635.png',
+  'Ismaily':            '/images/clubs/ismaily.png',
   'ENPPI':              'https://media.api-sports.io/football/teams/632.png',
   'Haras El Hodood':    'https://media.api-sports.io/football/teams/633.png',
   'Smouha':             'https://media.api-sports.io/football/teams/644.png',
