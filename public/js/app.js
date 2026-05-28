@@ -1089,11 +1089,10 @@ const TEAM_DISPLAY_MAP = {
   'Future FC':        { name: 'Modern Sport FC',    logo: '/images/clubs/modern_sport_fc.png' },
   'Kahraba Ismailia': { logo: '/images/clubs/kahraba_ismailia.png' },
   'Masr':             { name: 'ZED FC',             logo: '/images/clubs/zed_fc.png' },
-  'El Mokawloon':     { name: 'El Mokawloon',       logo: 'https://media.api-sports.io/football/teams/637.png' },
-  'El Gouna FC':      { name: 'El Gouna FC',        logo: 'https://media.api-sports.io/football/teams/2288.png' },
+  'El Gouna FC':      { name: 'El Gouna FC'         /* keep API logo */ },
   'Ismaily SC':       { name: 'Ismaily',            logo: '/images/clubs/ismaily.png' },
   'Al Ittihad':       { name: 'Ittihad Alexandria', logo: '/images/clubs/ittihad_alexandria.png' },
-  'Pharco FC':        { name: 'Pharco',             logo: 'https://media.api-sports.io/football/teams/2292.png' },
+  'Pharco FC':        { name: 'Pharco'              /* keep API logo */ },
 };
 
 function _resolveTeam(name, logo) {
@@ -2393,8 +2392,11 @@ function _applyMatchData(m) {
 
   if (scoreEl)    scoreEl.textContent  = (isLive || isCompleted) ? (m.homeScore + '\u2013' + m.awayScore) : 'vs';
   if (leagueEl)   leagueEl.textContent = m.league || m.tournament?.name || 'Match';
-  if (homeNameEl) homeNameEl.textContent = m.homeTeam;
-  if (awayNameEl) awayNameEl.textContent = m.awayTeam;
+  const home = _resolveTeam(m.homeTeam, m.homeLogo);
+  const away = _resolveTeam(m.awayTeam, m.awayLogo);
+
+  if (homeNameEl) homeNameEl.textContent = home.name;
+  if (awayNameEl) awayNameEl.textContent = away.name;
   if (venueEl)    venueEl.textContent    = m.league || m.tournament?.name || '';
 
   if (statusEl) {
@@ -2412,12 +2414,12 @@ function _applyMatchData(m) {
   }
 
   const homeColor = '#1a3a5c', awayColor = '#3a1a2a';
-  if (homeSvgEl) homeSvgEl.innerHTML = m.homeLogo
-    ? '<image href="' + m.homeLogo + '" x="2" y="2" width="56" height="56" clip-path="circle(28px at 30px 30px)"/>'
-    : '<circle cx="30" cy="30" r="28" fill="' + homeColor + '"/><text x="30" y="37" text-anchor="middle" fill="white" font-size="12" font-weight="bold" font-family="sans-serif">' + _mkAbbr(m.homeTeam) + '</text>';
-  if (awaySvgEl) awaySvgEl.innerHTML = m.awayLogo
-    ? '<image href="' + m.awayLogo + '" x="2" y="2" width="56" height="56" clip-path="circle(28px at 30px 30px)"/>'
-    : '<circle cx="30" cy="30" r="28" fill="' + awayColor + '"/><text x="30" y="37" text-anchor="middle" fill="white" font-size="12" font-weight="bold" font-family="sans-serif">' + _mkAbbr(m.awayTeam) + '</text>';
+  if (homeSvgEl) homeSvgEl.innerHTML = home.logo
+    ? '<image href="' + home.logo + '" x="2" y="2" width="56" height="56" clip-path="circle(28px at 30px 30px)"/>'
+    : '<circle cx="30" cy="30" r="28" fill="' + homeColor + '"/><text x="30" y="37" text-anchor="middle" fill="white" font-size="12" font-weight="bold" font-family="sans-serif">' + _mkAbbr(home.name) + '</text>';
+  if (awaySvgEl) awaySvgEl.innerHTML = away.logo
+    ? '<image href="' + away.logo + '" x="2" y="2" width="56" height="56" clip-path="circle(28px at 30px 30px)"/>'
+    : '<circle cx="30" cy="30" r="28" fill="' + awayColor + '"/><text x="30" y="37" text-anchor="middle" fill="white" font-size="12" font-weight="bold" font-family="sans-serif">' + _mkAbbr(away.name) + '</text>';
 
   if (isLive) {
     if (liveSection) liveSection.classList.remove('hidden');
