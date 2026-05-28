@@ -1081,9 +1081,15 @@ function _renderNoFixtures(container, leagueName) {
 // ── Team name & logo overrides for live API data ────────────────────────────
 // Use this map when the API returns a different name/logo than what we display.
 const TEAM_DISPLAY_MAP = {
-  'Future FC':        { name: 'Modern Sport FC', logo: '/images/clubs/modern_sport_fc.png' },
+  // Egyptian Premier League — API name → display name + logo
+  'Future FC':        { name: 'Modern Sport FC',    logo: '/images/clubs/modern_sport_fc.png' },
   'Kahraba Ismailia': { logo: '/images/clubs/kahraba_ismailia.png' },
-  'Masr':             { name: 'ZED FC', logo: '/images/clubs/zed_fc.png' },
+  'Masr':             { name: 'ZED FC',             logo: '/images/clubs/zed_fc.png' },
+  'El Mokawloon':     { name: 'El Mokawloon',       logo: 'https://media.api-sports.io/football/teams/637.png' },
+  'El Gouna FC':      { name: 'El Gouna',           logo: 'https://media.api-sports.io/football/teams/2288.png' },
+  'Ismaily SC':       { name: 'Ismaily',            logo: '/images/clubs/ismaily.png' },
+  'Al Ittihad':       { name: 'Ittihad Alexandria', logo: '/images/clubs/ittihad_alexandria.png' },
+  'Pharco FC':        { name: 'Pharco',             logo: 'https://media.api-sports.io/football/teams/2292.png' },
 };
 
 function _resolveTeam(name, logo) {
@@ -3482,8 +3488,31 @@ const STATIC_LOGO_MAP = {
   'Sporting CP':        'https://media.api-sports.io/football/teams/228.png',
   'Sturm Graz':         'https://media.api-sports.io/football/teams/1084.png',
   'Young Boys':         'https://media.api-sports.io/football/teams/1099.png',
-  // ── Egyptian Premier League ───────────────────────────────────
-  // ── South Africa PSL ───────────────────────────────────────────
+  // ── Egyptian Premier League ──────────────────────────────────────────
+  'Al Ahly':            'https://media.api-sports.io/football/teams/440.png',
+  'Zamalek':            '/images/clubs/zamalek.png',
+  'Pyramids FC':        '/images/clubs/pyramids_fc.png',
+  'Ismaily':            '/images/clubs/ismaily.png',
+  'ENPPI':              '/images/clubs/enppi.png',
+  'Haras El Hodood':    'https://media.api-sports.io/football/teams/633.png',
+  'Smouha':             '/images/clubs/smouha.png',
+  'Ittihad Alexandria': '/images/clubs/ittihad_alexandria.png',
+  'El Geish':           'https://media.api-sports.io/football/teams/2285.png',
+  'Ceramica Cleopatra': 'https://media.api-sports.io/football/teams/2284.png',
+  'Modern Sport FC':    '/images/clubs/modern_sport_fc.png',
+  'Wadi Degla':         'https://media.api-sports.io/football/teams/2287.png',
+  'Ghazl El Mahalla':   '/images/clubs/ghazl_el_mahalla.png',
+  'National Bank':      '/images/clubs/national_bank.png',
+  'Al Masry':           '/images/clubs/al_masry.png',
+  'ZED FC':             '/images/clubs/zed_fc.png',
+  'Petrojet FC':        '/images/clubs/petrojet_fc.png',
+  'El Mokawloon':       'https://media.api-sports.io/football/teams/637.png',
+  'El Entag El Harby':  'https://media.api-sports.io/football/teams/638.png',
+  'El Gouna':           'https://media.api-sports.io/football/teams/2288.png',
+  'Farco':              'https://media.api-sports.io/football/teams/2290.png',
+  "Tala'a El Gaish":    'https://media.api-sports.io/football/teams/643.png',
+  'Pharco':             'https://media.api-sports.io/football/teams/2292.png',
+  'Kahraba Ismailia':   '/images/clubs/kahraba_ismailia.png',
   'Mamelodi Sundowns':   'https://media.api-sports.io/football/teams/2699.png',
   'Kaizer Chiefs':       'https://media.api-sports.io/football/teams/2712.png',
   'Orlando Pirates':     'https://media.api-sports.io/football/teams/2713.png',
@@ -3640,11 +3669,11 @@ const CLUBS_DB = {
 
   // ── AFRICA ──────────────────────────────────────────────────────
   'Egyptian Premier League': { country: 'Egypt', flag: '🇪🇬', continent: 'africa', clubs: [
-    'Al Ahly','Al Masry','Al Mokawloon','Ceramica Cleopatra','El Entag El Harby',
+    'Al Ahly','Al Masry','El Mokawloon','Ceramica Cleopatra','El Entag El Harby',
     'El Geish','El Gouna','ENPPI','Farco','Modern Sport FC',
     'Haras El Hodood','Ismaily','Ittihad Alexandria','National Bank','Pyramids FC',
-    'Smouha','Tala\'a El Gaish','Wadi Degla','Zamalek','Ghazl El Mahalla',
-    'ZED FC','Petrojet FC'
+    'Smouha',"Tala'a El Gaish",'Wadi Degla','Zamalek','Ghazl El Mahalla',
+    'ZED FC','Petrojet FC','Pharco','Kahraba Ismailia'
   ]},
   'South African PSL': { country: 'South Africa', flag: '🇿🇦', continent: 'africa', clubs: [
     'Mamelodi Sundowns','Kaizer Chiefs','Orlando Pirates','SuperSport United',
