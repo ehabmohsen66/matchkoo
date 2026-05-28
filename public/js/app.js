@@ -1078,6 +1078,22 @@ function _renderNoFixtures(container, leagueName) {
 }
 
 /** Render real DB-backed fixtures, sorted by upcoming first then date, grouped by round */
+// ── Team name & logo overrides for live API data ────────────────────────────
+// Use this map when the API returns a different name/logo than what we display.
+const TEAM_DISPLAY_MAP = {
+  'Future FC':        { name: 'Modern Sport FC', logo: '/images/clubs/modern_sport_fc.png' },
+  'Kahraba Ismailia': { logo: '/images/clubs/kahraba_ismailia.png' },
+};
+
+function _resolveTeam(name, logo) {
+  const override = TEAM_DISPLAY_MAP[name];
+  if (!override) return { name, logo };
+  return {
+    name: override.name || name,
+    logo: override.logo || logo,
+  };
+}
+
 function _renderRealFixtures(container, matches, leagueName) {
   // Cache every match so openRealMatchDetail can find it without re-fetching
   if (!state._matchCache) state._matchCache = {};
@@ -1105,7 +1121,6 @@ function _renderRealFixtures(container, matches, leagueName) {
       '<div style="font-size:0.7rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:8px">' + round + '</div>' +
       roundMatches.map(m => {
         const t = new Date(m.matchDate);
-        const timeStr = t.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         const hasPred = !!m.userPrediction;
         const isCompleted = m.status === 'COMPLETED';
         const isLive = m.status === 'LIVE';
@@ -1113,18 +1128,20 @@ function _renderRealFixtures(container, matches, leagueName) {
           ? (m.homeScore + '\u2013' + m.awayScore)
           : isLive ? '\uD83D\uDD34 LIVE' : t.toLocaleDateString('en-GB', {day:'2-digit', month:'2-digit', year:'numeric'}) + ' ' + t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         const cleanLeagueName = (leagueName || '').replace(/\s*\[\d+\]$/, '');
-        const hLogo = m.homeLogo
-          ? '<img src="' + m.homeLogo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
-          : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + m.homeTeam.substring(0,3).toUpperCase() + '</div>';
-        const aLogo = m.awayLogo
-          ? '<img src="' + m.awayLogo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
-          : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + m.awayTeam.substring(0,3).toUpperCase() + '</div>';
+        const home = _resolveTeam(m.homeTeam, m.homeLogo);
+        const away = _resolveTeam(m.awayTeam, m.awayLogo);
+        const hLogo = home.logo
+          ? '<img src="' + home.logo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
+          : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + home.name.substring(0,3).toUpperCase() + '</div>';
+        const aLogo = away.logo
+          ? '<img src="' + away.logo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
+          : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + away.name.substring(0,3).toUpperCase() + '</div>';
         return '<div class="fixture-row" onclick="openRealMatchDetail(\'' + m.id + '\')" role="button" tabindex="0">' +
           '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:10px">' + hLogo + aLogo + '</div>' +
           '<div class="fixture-teams" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">' +
             '<div style="min-width:0">' +
               '<div class="fixture-league-name">' + cleanLeagueName + '</div>' +
-              '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
+              '<div class="fixture-team-names">' + home.name + ' vs ' + away.name + '</div>' +
             '</div>' +
           '</div>' +
           '<div style="display:flex;align-items:center;gap:8px;margin-left:16px">' +
