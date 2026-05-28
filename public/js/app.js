@@ -1558,10 +1558,7 @@ function applyLocalPredFilter(statusFilterOverride) {
               '<span class="pred-item-status-badge status-' + p.status + '">' + statusIcon + ' ' + statusLabel + '</span>' +
             '</div>' +
           '</div>' +
-          '<div class="pred-item-match" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
-            (p.homeLogo ? '<img src="' + p.homeLogo + '" style="width:20px;height:20px;object-fit:contain">' : '') +
-            '<span>' + p.homeTeam + ' vs ' + p.awayTeam + '</span>' +
-            (p.awayLogo ? '<img src="' + p.awayLogo + '" style="width:20px;height:20px;object-fit:contain">' : '') +
+          '<div class="pred-item-match" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' + (() => { const ph = _resolveTeam(p.homeTeam, p.homeLogo); const pa = _resolveTeam(p.awayTeam, p.awayLogo); return (ph.logo ? '<img src="' + ph.logo + '" style="width:20px;height:20px;object-fit:contain">' : '') + '<span>' + ph.name + ' vs ' + pa.name + '</span>' + (pa.logo ? '<img src="' + pa.logo + '" style="width:20px;height:20px;object-fit:contain">' : ''); })() +
           '</div>' +
           (p.resultLine ? '<div style="font-size:0.72rem;color:rgba(255,255,255,0.4);margin-bottom:4px">' + p.resultLine + '</div>' : '') +
           '<div class="pred-item-picks">' + p.picks.map(pick => '<span class="pred-pick-tag">' + pick + '</span>').join('') + '</div>' +
