@@ -531,7 +531,7 @@ async function _renderLivePageMatches() {
 
     if (!filtered.length) {
       const label = activeLeague === 'all' ? 'any league' : activeLeague.replace(/\b\w/g, c => c.toUpperCase());
-      container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding:32px;">No live matches for ' + label + ' right now.</div>';
+      container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;text-align:center;">No live matches for ' + label + ' right now.</div>';
       return;
     }
 
@@ -550,15 +550,17 @@ async function _renderLivePageMatches() {
         const matchId = m.id;
         const min = m.minute ? m.minute + "'" : 'LIVE';
         const scoreStr = (m.homeScore??0) + ' \u2013 ' + (m.awayScore??0);
-        const hLogo = m.homeLogo ? '<img src="'+m.homeLogo+'" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">' : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">'+m.homeTeam.substring(0,3).toUpperCase()+'</div>';
-        const aLogo = m.awayLogo ? '<img src="'+m.awayLogo+'" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">' : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">'+m.awayTeam.substring(0,3).toUpperCase()+'</div>';
+        const home = _resolveTeam(m.homeTeam, m.homeLogo);
+        const away = _resolveTeam(m.awayTeam, m.awayLogo);
+        const hLogo = home.logo ? '<img src="'+home.logo+'" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">' : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">'+home.name.substring(0,3).toUpperCase()+'</div>';
+        const aLogo = away.logo ? '<img src="'+away.logo+'" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">' : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">'+away.name.substring(0,3).toUpperCase()+'</div>';
         html +=
           '<div class="fixture-row" data-match-id="' + matchId + '" onclick="openRealMatchDetail(\'' + matchId + '\')" role="button" tabindex="0">' +
             '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:10px">' + hLogo + aLogo + '</div>' +
             '<div class="fixture-teams" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">' +
               '<div style="min-width:0">' +
                 '<div class="fixture-league-name" style="color:var(--red)">' + min + '</div>' +
-                '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
+                '<div class="fixture-team-names">' + home.name + ' vs ' + away.name + '</div>' +
               '</div>' +
             '</div>' +
             '<div style="display:flex;align-items:center;gap:8px;margin-left:auto">' +
@@ -644,13 +646,15 @@ async function renderFixturesList() {
         const baseName = (m.tournament?.name || 'Match').replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '');
         const liveScore = m.status === 'LIVE' ? ((m.homeScore??0) + '\u2013' + (m.awayScore??0)) : '';
         const hidden    = idx >= VISIBLE_PER_DAY;
+        const home = _resolveTeam(m.homeTeam, m.homeLogo);
+        const away = _resolveTeam(m.awayTeam, m.awayLogo);
 
-        const hLogo = m.homeLogo
-          ? '<img src="' + m.homeLogo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
-          : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + m.homeTeam.substring(0,3).toUpperCase() + '</div>';
-        const aLogo = m.awayLogo
-          ? '<img src="' + m.awayLogo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
-          : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + m.awayTeam.substring(0,3).toUpperCase() + '</div>';
+        const hLogo = home.logo
+          ? '<img src="' + home.logo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
+          : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + home.name.substring(0,3).toUpperCase() + '</div>';
+        const aLogo = away.logo
+          ? '<img src="' + away.logo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
+          : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + away.name.substring(0,3).toUpperCase() + '</div>';
         parts.push(
           '<div class="fixture-row' + (hidden ? ' fx-hidden' : '') + '" ' +
             'data-match-id="' + matchId + '" ' +
@@ -661,7 +665,7 @@ async function renderFixturesList() {
             '<div class="fixture-teams" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">' +
               '<div style="min-width:0">' +
                 '<div class="fixture-league-name">' + baseName + '</div>' +
-                '<div class="fixture-team-names">' + m.homeTeam + ' vs ' + m.awayTeam + '</div>' +
+                '<div class="fixture-team-names">' + home.name + ' vs ' + away.name + '</div>' +
               '</div>' +
             '</div>' +
             '<div style="display:flex;align-items:center;gap:8px;margin-left:16px">' +
