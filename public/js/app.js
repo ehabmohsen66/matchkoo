@@ -1083,6 +1083,7 @@ function _renderNoFixtures(container, leagueName) {
 const TEAM_DISPLAY_MAP = {
   'Future FC':        { name: 'Modern Sport FC', logo: '/images/clubs/modern_sport_fc.png' },
   'Kahraba Ismailia': { logo: '/images/clubs/kahraba_ismailia.png' },
+  'Masr':             { name: 'ZED FC', logo: '/images/clubs/zed_fc.png' },
 };
 
 function _resolveTeam(name, logo) {
