@@ -3520,6 +3520,7 @@ const STATIC_LOGO_MAP = {
   'ENPPI':              'https://media.api-sports.io/football/teams/632.png',
   'Haras El Hodood':    'https://media.api-sports.io/football/teams/633.png',
   'Smouha':             'https://media.api-sports.io/football/teams/644.png',
+  'Ittihad Alexandria': '/images/clubs/ittihad_alexandria.png',
   'El Geish':           'https://media.api-sports.io/football/teams/2285.png',
   'Ceramica Cleopatra': 'https://media.api-sports.io/football/teams/2284.png',
   'Future FC':          'https://media.api-sports.io/football/teams/2286.png',
