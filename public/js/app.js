@@ -3804,6 +3804,7 @@ function selectVoteContinent(id) {
   if (titleEl) titleEl.textContent = titles[id] || 'Clubs';
 
   renderVoteLeagues();
+  renderContinentLeaderboards();
 }
 
 // Colour-coded initials badge — used when no logo URL is available
@@ -4164,15 +4165,20 @@ async function loadContinentLeaderboards(period) {
   try {
     const res = await fetch('/api/clubs/leaderboard?group=continents&period=' + period);
     const data = res.ok ? await res.json() : {};
-    renderContinentLeaderboards(data);
+    state.continentRankingsData = data;
+    renderContinentLeaderboards();
   } catch(e) {
-    renderContinentLeaderboards({});
+    state.continentRankingsData = {};
+    renderContinentLeaderboards();
   }
 }
 
-function renderContinentLeaderboards(data) {
+function renderContinentLeaderboards() {
   const container = document.getElementById('continent-leaderboards-container');
   if (!container) return;
+
+  const data = state.continentRankingsData || {};
+  const cont = currentVoteContinent || 'europe';
 
   const continentMeta = {
     'europe': { title: 'Europe', emoji: '🇪🇺', bg: 'linear-gradient(135deg, rgba(29, 78, 216, 0.05), rgba(30, 64, 175, 0.12))', border: 'rgba(59, 130, 246, 0.15)' },
@@ -4183,63 +4189,55 @@ function renderContinentLeaderboards(data) {
     'world': { title: 'International', emoji: '🌎', bg: 'linear-gradient(135deg, rgba(217, 119, 6, 0.05), rgba(180, 83, 9, 0.12))', border: 'rgba(245, 158, 11, 0.15)' }
   };
 
+  const meta = continentMeta[cont] || continentMeta['world'];
+  const titleEl = document.getElementById('continent-top10-title');
+  if (titleEl) {
+    titleEl.innerHTML = '<span style="font-size:1.4rem">' + meta.emoji + '</span> ' + meta.title + ' Top 10 Clubs';
+  }
+
+  const clubs = data[cont] || [];
   let html = '';
-  const order = ['europe', 'africa', 'americas', 'asia', 'oceania', 'world'];
 
-  order.forEach(cont => {
-    const meta = continentMeta[cont];
-    const clubs = data[cont] || [];
+  if (clubs.length === 0) {
+    html = '<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:32px 0;font-style:italic">No votes registered yet in this continent</div>';
+  } else {
+    html = clubs.map((club, idx) => {
+      const logoUrl = clubLogosMap[club.clubName] || '';
+      const colours = ['#e63946','#457b9d','#2a9d8f','#e9c46a','#f4a261','#6a0572','#1982c4','#8ac926','#ff595e','#6a0572'];
+      const badgeBg = colours[club.clubName.charCodeAt(0) % colours.length];
+      const initials = club.clubName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
 
-    let clubsListHtml = '';
-    if (clubs.length === 0) {
-      clubsListHtml = '<div style="text-align:center;color:var(--text-muted);font-size:0.75rem;padding:24px 0;font-style:italic">No votes registered yet</div>';
-    } else {
-      clubsListHtml = clubs.map((club, idx) => {
-        const logoUrl = clubLogosMap[club.clubName] || '';
-        const colours = ['#e63946','#457b9d','#2a9d8f','#e9c46a','#f4a261','#6a0572','#1982c4','#8ac926','#ff595e','#6a0572'];
-        const badgeBg = colours[club.clubName.charCodeAt(0) % colours.length];
-        const initials = club.clubName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+      const logoHtml = logoUrl
+        ? '<img src="' + logoUrl + '" alt="' + club.clubName + '" style="width:28px;height:28px;object-fit:contain;border-radius:50%;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><span style="display:none;width:28px;height:28px;border-radius:50%;background:' + badgeBg + ';align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff">' + initials + '</span>'
+        : '<span style="width:28px;height:28px;border-radius:50%;background:' + badgeBg + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff">' + initials + '</span>';
 
-        const logoHtml = logoUrl
-          ? '<img src="' + logoUrl + '" alt="' + club.clubName + '" style="width:24px;height:24px;object-fit:contain;border-radius:50%;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><span style="display:none;width:24px;height:24px;border-radius:50%;background:' + badgeBg + ';align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff">' + initials + '</span>'
-          : '<span style="width:24px;height:24px;border-radius:50%;background:' + badgeBg + ';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff">' + initials + '</span>';
+      const rankIcon = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '#' + (idx + 1);
+      const rankColor = idx === 0 ? '#ffd700' : idx === 1 ? '#c0c0c0' : idx === 2 ? '#cd7f32' : 'rgba(255,255,255,0.4)';
+      const rankStyle = 'font-weight:800;color:' + rankColor + ';font-size:' + (idx < 3 ? '1.1rem' : '0.8rem') + ';min-width:32px;text-align:center;';
 
-        const rankIcon = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '#' + (idx + 1);
-        const rankColor = idx === 0 ? '#ffd700' : idx === 1 ? '#c0c0c0' : idx === 2 ? '#cd7f32' : 'rgba(255,255,255,0.4)';
-        const rankStyle = 'font-weight:800;color:' + rankColor + ';font-size:' + (idx < 3 ? '1rem' : '0.75rem') + ';min-width:24px;text-align:center;';
-
-        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03);">' +
-          '<div style="' + rankStyle + '">' + rankIcon + '</div>' +
-          '<div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
-            logoHtml +
+      return '<div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);">' +
+        '<div style="' + rankStyle + '">' + rankIcon + '</div>' +
+        '<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+          logoHtml +
+        '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-weight:700;color:#fff;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + club.clubName + '">' +
+            club.clubName +
           '</div>' +
-          '<div style="flex:1;min-width:0;">' +
-            '<div style="font-weight:700;color:#fff;font-size:0.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + club.clubName + '">' +
-              club.clubName +
-            '</div>' +
-            '<div style="font-size:0.65rem;color:rgba(255,255,255,0.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
-              club.country +
-            '</div>' +
+          '<div style="font-size:0.72rem;color:rgba(255,255,255,0.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+            club.country +
           '</div>' +
-          '<div style="font-weight:800;color:var(--green);font-size:0.75rem;flex-shrink:0;">' +
-            club.votes.toLocaleString() + ' <span style="font-size:0.6rem;opacity:0.6;font-weight:600">votes</span>' +
-          '</div>' +
-        '</div>';
-      }).join('');
-    }
+        '</div>' +
+        '<div style="font-weight:800;color:var(--green);font-size:0.85rem;flex-shrink:0;">' +
+          club.votes.toLocaleString() + ' <span style="font-size:0.65rem;opacity:0.6;font-weight:600">votes</span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
 
-    html += '<div style="background:var(--bg-card);border:1px solid ' + meta.border + ';border-radius:16px;padding:16px;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:flex;flex-direction:column;gap:12px;background-image:' + meta.bg + '">' +
-      '<div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.08)">' +
-        '<span style="font-size:1.4rem">' + meta.emoji + '</span>' +
-        '<span style="font-weight:900;color:#fff;font-size:0.95rem;letter-spacing:0.5px">' + meta.title + '</span>' +
-      '</div>' +
-      '<div style="display:flex;flex-direction:column;">' +
-        clubsListHtml +
-      '</div>' +
-    '</div>';
-  });
-
-  container.innerHTML = html;
+  container.innerHTML = '<div style="background:var(--bg-card);border:1px solid ' + meta.border + ';border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:flex;flex-direction:column;background-image:' + meta.bg + '">' +
+    html +
+  '</div>';
 }
 
 // ─── AUTH MODAL ──────────────────────────────────────────────────
