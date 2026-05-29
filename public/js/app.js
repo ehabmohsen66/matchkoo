@@ -3778,6 +3778,7 @@ async function initVote() {
   
   selectVoteContinent('europe');
   loadClubLeaderboard('alltime');
+  loadContinentLeaderboards('alltime');
 }
 
 let currentVoteContinent = 'europe';
@@ -4087,6 +4088,7 @@ async function castVote(el) {
       showNotification('+50 XP! Voted for ' + clubName, 'success');
       renderVoteLeagues();
       loadClubLeaderboard(state.voteLeaderboardPeriod || 'alltime');
+      loadContinentLeaderboards(state.continentLeaderboardPeriod || 'alltime');
     } else if (data.error === 'already_voted_league') {
       showNotification('You already voted for ' + data.votedFor + ' in the ' + league + ' today!', 'warning');
     } else {
@@ -4099,9 +4101,20 @@ async function castVote(el) {
 
 async function loadClubLeaderboard(period) {
   state.voteLeaderboardPeriod = period;
-  document.querySelectorAll('.vote-period-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.vote-period-tab').forEach(t => {
+    t.classList.remove('active');
+    t.style.border = '1px solid rgba(255,255,255,0.12)';
+    t.style.background = 'transparent';
+    t.style.color = 'rgba(255,255,255,0.5)';
+  });
+  
   const activeTab = document.getElementById('vote-tab-' + period);
-  if (activeTab) activeTab.classList.add('active');
+  if (activeTab) {
+    activeTab.classList.add('active');
+    activeTab.style.border = '1px solid var(--green)';
+    activeTab.style.background = 'rgba(60,184,46,0.1)';
+    activeTab.style.color = 'var(--green)';
+  }
 
   try {
     const res = await fetch('/api/clubs/leaderboard?period=' + period);
@@ -4129,6 +4142,104 @@ function renderClubLeaderboard(data) {
       '<div style="font-weight:800;color:var(--green);font-size:0.85rem">' + club.votes.toLocaleString() + ' votes</div>' +
     '</div>'
   ).join('');
+}
+
+async function loadContinentLeaderboards(period) {
+  state.continentLeaderboardPeriod = period;
+  document.querySelectorAll('.cont-period-tab').forEach(t => {
+    t.classList.remove('active');
+    t.style.border = 'none';
+    t.style.background = 'transparent';
+    t.style.color = 'rgba(255,255,255,0.5)';
+  });
+  
+  const activeTab = document.getElementById('cont-tab-' + period);
+  if (activeTab) {
+    activeTab.classList.add('active');
+    activeTab.style.border = '1px solid var(--green)';
+    activeTab.style.background = 'rgba(60,184,46,0.1)';
+    activeTab.style.color = 'var(--green)';
+  }
+
+  try {
+    const res = await fetch('/api/clubs/leaderboard?group=continents&period=' + period);
+    const data = res.ok ? await res.json() : {};
+    renderContinentLeaderboards(data);
+  } catch(e) {
+    renderContinentLeaderboards({});
+  }
+}
+
+function renderContinentLeaderboards(data) {
+  const container = document.getElementById('continent-leaderboards-container');
+  if (!container) return;
+
+  const continentMeta = {
+    'europe': { title: 'Europe', emoji: '🇪🇺', bg: 'linear-gradient(135deg, rgba(29, 78, 216, 0.05), rgba(30, 64, 175, 0.12))', border: 'rgba(59, 130, 246, 0.15)' },
+    'africa': { title: 'Africa', emoji: '🌍', bg: 'linear-gradient(135deg, rgba(4, 120, 87, 0.05), rgba(6, 95, 70, 0.12))', border: 'rgba(16, 185, 129, 0.15)' },
+    'americas': { title: 'Americas', emoji: '🌎', bg: 'linear-gradient(135deg, rgba(109, 40, 217, 0.05), rgba(91, 33, 182, 0.12))', border: 'rgba(139, 92, 246, 0.15)' },
+    'asia': { title: 'Asia', emoji: '🌏', bg: 'linear-gradient(135deg, rgba(185, 28, 28, 0.05), rgba(153, 27, 27, 0.12))', border: 'rgba(239, 68, 68, 0.15)' },
+    'oceania': { title: 'Oceania', emoji: '🇳🇿', bg: 'linear-gradient(135deg, rgba(13, 148, 136, 0.05), rgba(17, 94, 89, 0.12))', border: 'rgba(20, 184, 166, 0.15)' },
+    'world': { title: 'International', emoji: '🌎', bg: 'linear-gradient(135deg, rgba(217, 119, 6, 0.05), rgba(180, 83, 9, 0.12))', border: 'rgba(245, 158, 11, 0.15)' }
+  };
+
+  let html = '';
+  const order = ['europe', 'africa', 'americas', 'asia', 'oceania', 'world'];
+
+  order.forEach(cont => {
+    const meta = continentMeta[cont];
+    const clubs = data[cont] || [];
+
+    let clubsListHtml = '';
+    if (clubs.length === 0) {
+      clubsListHtml = '<div style="text-align:center;color:var(--text-muted);font-size:0.75rem;padding:24px 0;font-style:italic">No votes registered yet</div>';
+    } else {
+      clubsListHtml = clubs.map((club, idx) => {
+        const logoUrl = clubLogosMap[club.clubName] || '';
+        const colours = ['#e63946','#457b9d','#2a9d8f','#e9c46a','#f4a261','#6a0572','#1982c4','#8ac926','#ff595e','#6a0572'];
+        const badgeBg = colours[club.clubName.charCodeAt(0) % colours.length];
+        const initials = club.clubName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+
+        const logoHtml = logoUrl
+          ? '<img src="' + logoUrl + '" alt="' + club.clubName + '" style="width:24px;height:24px;object-fit:contain;border-radius:50%;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><span style="display:none;width:24px;height:24px;border-radius:50%;background:' + badgeBg + ';align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff">' + initials + '</span>'
+          : '<span style="width:24px;height:24px;border-radius:50%;background:' + badgeBg + ';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff">' + initials + '</span>';
+
+        const rankIcon = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '#' + (idx + 1);
+        const rankColor = idx === 0 ? '#ffd700' : idx === 1 ? '#c0c0c0' : idx === 2 ? '#cd7f32' : 'rgba(255,255,255,0.4)';
+        const rankStyle = 'font-weight:800;color:' + rankColor + ';font-size:' + (idx < 3 ? '1rem' : '0.75rem') + ';min-width:24px;text-align:center;';
+
+        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03);">' +
+          '<div style="' + rankStyle + '">' + rankIcon + '</div>' +
+          '<div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+            logoHtml +
+          '</div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-weight:700;color:#fff;font-size:0.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + club.clubName + '">' +
+              club.clubName +
+            '</div>' +
+            '<div style="font-size:0.65rem;color:rgba(255,255,255,0.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+              club.country +
+            '</div>' +
+          '</div>' +
+          '<div style="font-weight:800;color:var(--green);font-size:0.75rem;flex-shrink:0;">' +
+            club.votes.toLocaleString() + ' <span style="font-size:0.6rem;opacity:0.6;font-weight:600">votes</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    html += '<div style="background:var(--bg-card);border:1px solid ' + meta.border + ';border-radius:16px;padding:16px;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:flex;flex-direction:column;gap:12px;background-image:' + meta.bg + '">' +
+      '<div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.08)">' +
+        '<span style="font-size:1.4rem">' + meta.emoji + '</span>' +
+        '<span style="font-weight:900;color:#fff;font-size:0.95rem;letter-spacing:0.5px">' + meta.title + '</span>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;">' +
+        clubsListHtml +
+      '</div>' +
+    '</div>';
+  });
+
+  container.innerHTML = html;
 }
 
 // ─── AUTH MODAL ──────────────────────────────────────────────────
