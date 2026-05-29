@@ -4235,7 +4235,11 @@ function renderContinentLeaderboards() {
     }).join('');
   }
 
-  container.innerHTML = '<div style="background:var(--bg-card);border:1px solid ' + meta.border + ';border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:flex;flex-direction:column;background-image:' + meta.bg + '">' +
+  const gridStyle = clubs.length === 0
+    ? 'display:block;background:var(--bg-card);border:1px solid ' + meta.border + ';border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,0.15);background-image:' + meta.bg
+    : 'display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:0 32px;background:var(--bg-card);border:1px solid ' + meta.border + ';border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,0.15);background-image:' + meta.bg;
+
+  container.innerHTML = '<div style="' + gridStyle + '">' +
     html +
   '</div>';
 }

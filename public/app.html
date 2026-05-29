@@ -848,32 +848,6 @@
           each vote</p>
       </div>
 
-      <!-- Top 10 Clubs per Continent Section -->
-      <div style="background:var(--bg-card);border-radius:20px;padding:24px;border:1px solid rgba(255,255,255,0.06);margin-bottom:32px;box-shadow:0 8px 32px rgba(0,0,0,0.25)">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.05)">
-          <div>
-            <h2 id="continent-top10-title" style="font-size:1.25rem;font-weight:900;color:#fff;display:flex;align-items:center;gap:8px;margin:0">
-              🌍 Europe Top 10 Clubs
-            </h2>
-            <p style="color:var(--text-muted);font-size:0.75rem;margin:4px 0 0 0">Real-time top clubs voted by matchkoo users in this region</p>
-          </div>
-          <div style="display:flex;gap:6px;background:rgba(255,255,255,0.02);padding:4px;border-radius:100px;border:1px solid rgba(255,255,255,0.06)">
-            <button id="cont-tab-weekly" class="cont-period-tab" onclick="loadContinentLeaderboards('weekly')"
-              style="font-size:0.7rem;font-weight:700;padding:6px 12px;border-radius:100px;border:none;background:transparent;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.2s">This Week</button>
-            <button id="cont-tab-monthly" class="cont-period-tab" onclick="loadContinentLeaderboards('monthly')"
-              style="font-size:0.7rem;font-weight:700;padding:6px 12px;border-radius:100px;border:none;background:transparent;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.2s">This Month</button>
-            <button id="cont-tab-thisyear" class="cont-period-tab" onclick="loadContinentLeaderboards('thisyear')"
-              style="font-size:0.7rem;font-weight:700;padding:6px 12px;border-radius:100px;border:none;background:transparent;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.2s">This Year</button>
-            <button id="cont-tab-alltime" class="cont-period-tab active" onclick="loadContinentLeaderboards('alltime')"
-              style="font-size:0.7rem;font-weight:700;padding:6px 12px;border-radius:100px;border:1px solid var(--green);background:rgba(60,184,46,0.1);color:var(--green);cursor:pointer;transition:all 0.2s">All Time</button>
-          </div>
-        </div>
-
-        <div id="continent-leaderboards-container" style="display:flex;flex-direction:column;max-width:600px;margin:0 auto;">
-          <div style="text-align:center;color:var(--text-muted);padding:32px">Loading continent rankings...</div>
-        </div>
-      </div>
-
       <!-- Continent Selector -->
       <div class="continent-grid" id="vote-continent-grid">
         <button class="continent-card active-continent" onclick="selectVoteContinent('europe')" id="vote-cont-europe">
@@ -897,6 +871,32 @@
           <span>Oceania</span>
         </button>
 
+      </div>
+
+      <!-- Top 10 Clubs per Continent Section -->
+      <div style="background:var(--bg-card);border-radius:20px;padding:24px;border:1px solid rgba(255,255,255,0.06);margin-bottom:32px;box-shadow:0 8px 32px rgba(0,0,0,0.25)">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.05)">
+          <div>
+            <h2 id="continent-top10-title" style="font-size:1.25rem;font-weight:900;color:#fff;display:flex;align-items:center;gap:8px;margin:0">
+              🌍 Europe Top 10 Clubs
+            </h2>
+            <p style="color:var(--text-muted);font-size:0.75rem;margin:4px 0 0 0">Real-time top clubs voted by matchkoo users in this region</p>
+          </div>
+          <div style="display:flex;gap:6px;background:rgba(255,255,255,0.02);padding:4px;border-radius:100px;border:1px solid rgba(255,255,255,0.06)">
+            <button id="cont-tab-weekly" class="cont-period-tab" onclick="loadContinentLeaderboards('weekly')"
+              style="font-size:0.7rem;font-weight:700;padding:6px 12px;border-radius:100px;border:none;background:transparent;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.2s">This Week</button>
+            <button id="cont-tab-monthly" class="cont-period-tab" onclick="loadContinentLeaderboards('monthly')"
+              style="font-size:0.7rem;font-weight:700;padding:6px 12px;border-radius:100px;border:none;background:transparent;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.2s">This Month</button>
+            <button id="cont-tab-thisyear" class="cont-period-tab" onclick="loadContinentLeaderboards('thisyear')"
+              style="font-size:0.7rem;font-weight:700;padding:6px 12px;border-radius:100px;border:none;background:transparent;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.2s">This Year</button>
+            <button id="cont-tab-alltime" class="cont-period-tab active" onclick="loadContinentLeaderboards('alltime')"
+              style="font-size:0.7rem;font-weight:700;padding:6px 12px;border-radius:100px;border:1px solid var(--green);background:rgba(60,184,46,0.1);color:var(--green);cursor:pointer;transition:all 0.2s">All Time</button>
+          </div>
+        </div>
+
+        <div id="continent-leaderboards-container">
+          <div style="text-align:center;color:var(--text-muted);padding:32px">Loading continent rankings...</div>
+        </div>
       </div>
 
       <!-- Leagues List (for voting) -->
