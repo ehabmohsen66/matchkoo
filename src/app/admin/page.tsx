@@ -406,6 +406,98 @@ function UsersTab() {
   );
 }
 
+// ─── Club Requests Tab ───────────────────────────────────
+type ClubRequestRow = { id: string; clubName: string; leagueHint: string; continent: string; userId: string | null; status: string; createdAt: string };
+
+function ClubRequestsTab() {
+  const [rows, setRows] = useState<ClubRequestRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("PENDING");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const r = await fetch("/api/clubs/request");
+    if (r.ok) setRows(await r.json());
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const updateStatus = async (id: string, status: string) => {
+    await fetch("/api/clubs/request", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    setRows(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+  };
+
+  const statusColor = (s: string) => s === "ADDED" ? "#6FE840" : s === "REJECTED" ? "#F87171" : "#FBBF24";
+  const filtered = rows.filter(r => filter === "ALL" || r.status === filter);
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <h3 style={{ ...sectionTitle, marginBottom: 0 }}>Club Requests ({rows.length})</h3>
+        <div style={{ display: "flex", gap: 6 }}>
+          {["ALL", "PENDING", "ADDED", "REJECTED"].map(f => (
+            <button key={f} onClick={() => setFilter(f)}
+              style={{ ...btnGhost, fontSize: "0.72rem", padding: "5px 12px",
+                borderColor: filter === f ? "rgba(60,184,46,0.4)" : undefined,
+                color: filter === f ? "#6FE840" : undefined }}>
+              {f}
+            </button>
+          ))}
+          <button onClick={load} style={{ ...btnGhost, fontSize: "0.72rem", padding: "5px 12px" }}>↻ Refresh</button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div style={{ color: "rgba(255,255,255,0.35)", padding: 32, textAlign: "center" }}>Loading…</div>
+      ) : filtered.length === 0 ? (
+        <div style={{ color: "rgba(255,255,255,0.3)", padding: 32, textAlign: "center" }}>No requests with status "{filter}".</div>
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem" }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                {["Club Name", "League / Country", "Continent", "Status", "Submitted", "Action"].map(h => (
+                  <th key={h} style={{ textAlign: "left", padding: "8px 12px", fontSize: "0.65rem", fontWeight: 700, color: "rgba(255,255,255,0.35)", letterSpacing: "0.08em" }}>{h.toUpperCase()}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(r => (
+                <tr key={r.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <td style={{ padding: "10px 12px", fontWeight: 700, color: "#fff" }}>{r.clubName}</td>
+                  <td style={{ padding: "10px 12px", color: "rgba(255,255,255,0.5)" }}>{r.leagueHint || "—"}</td>
+                  <td style={{ padding: "10px 12px", color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", textTransform: "capitalize" }}>{r.continent || "—"}</td>
+                  <td style={{ padding: "10px 12px" }}>
+                    <span style={{ display: "inline-block", padding: "2px 10px", borderRadius: 100, fontSize: "0.65rem", fontWeight: 700, background: "rgba(255,255,255,0.06)", color: statusColor(r.status) }}>
+                      {r.status}
+                    </span>
+                  </td>
+                  <td style={{ padding: "10px 12px", color: "rgba(255,255,255,0.35)", fontSize: "0.75rem" }}>
+                    {new Date(r.createdAt).toLocaleDateString("en-GB")}
+                  </td>
+                  <td style={{ padding: "10px 12px" }}>
+                    <select value={r.status} onChange={e => updateStatus(r.id, e.target.value)}
+                      style={{ ...btnGhost, fontSize: "0.72rem", paddingRight: 6 }}>
+                      <option value="PENDING">Pending</option>
+                      <option value="ADDED">Added ✓</option>
+                      <option value="REJECTED">Rejected ✗</option>
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Stats Overview ───────────────────────────────────────
 function StatsTab() {
   const [stats, setStats] = useState<any>(null);
@@ -441,7 +533,7 @@ function StatsTab() {
 export default function AdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [tab, setTab] = useState<"overview" | "competitions" | "matches" | "sync" | "users">("overview");
+  const [tab, setTab] = useState<"overview" | "competitions" | "matches" | "sync" | "users" | "club-requests">("overview");
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -470,6 +562,7 @@ export default function AdminPage() {
             <Tab active={tab === "matches"} onClick={() => setTab("matches")}>Matches &amp; Results</Tab>
             <Tab active={tab === "sync"} onClick={() => setTab("sync")}>📡 Sync Fixtures</Tab>
             <Tab active={tab === "users"} onClick={() => setTab("users")}>Users</Tab>
+            <Tab active={tab === "club-requests"} onClick={() => setTab("club-requests")}>🔍 Club Requests</Tab>
           </div>
         </div>
       </div>
@@ -481,6 +574,7 @@ export default function AdminPage() {
         {tab === "matches"       && <MatchesTab />}
         {tab === "sync"          && <SyncTab />}
         {tab === "users"         && <UsersTab />}
+        {tab === "club-requests" && <ClubRequestsTab />}
       </div>
     </div>
   );

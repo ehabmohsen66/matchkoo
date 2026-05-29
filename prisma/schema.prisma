@@ -291,3 +291,14 @@ model Friendship {
 
   @@unique([followerId, followingId])
 }
+
+model ClubRequest {
+  id         String   @id @default(cuid())
+  clubName   String
+  leagueHint String   @default("")   // league/country hint the user provided
+  continent  String   @default("")
+  userId     String?                 // null if submitted anonymously
+  status     String   @default("PENDING") // PENDING | ADDED | REJECTED
+
+  createdAt DateTime @default(now())
+}

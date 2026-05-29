@@ -3892,8 +3892,114 @@ function renderVoteLeagues() {
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">' +
         clubs +
       '</div>' +
+      '<div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">' +
+        '<button onclick="openMissingClubModal(\'' + league.replace(/'/g,"\\'") + '\',\'' + data.continent + '\')" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:0.75rem;cursor:pointer;font-family:inherit;padding:4px 8px;border-radius:8px;transition:color 0.2s;" onmouseover="this.style.color=\'rgba(255,255,255,0.6)\'" onmouseout="this.style.color=\'rgba(255,255,255,0.3)\'">🔍 Can\'t find your favourite club?</button>' +
+      '</div>' +
     '</div>';
   }).join('');
+}
+
+function openMissingClubModal(league, continent) {
+  const existing = document.getElementById('missing-club-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'missing-club-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = `
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);" onclick="document.getElementById('missing-club-modal').remove()"></div>
+    <div style="position:relative;background:linear-gradient(135deg,#0f1923,#131e2b);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:32px 28px;max-width:380px;width:100%;box-shadow:0 32px 80px rgba(0,0,0,0.6);animation:voteModalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);">
+      <div style="margin-bottom:24px;">
+        <div style="font-size:1.5rem;margin-bottom:8px;">🔍</div>
+        <div style="font-size:1.2rem;font-weight:900;color:#fff;margin-bottom:6px;">Missing Club?</div>
+        <div style="font-size:0.82rem;color:rgba(255,255,255,0.45);line-height:1.5;">Tell us which club you'd like to vote for and we'll add it in the next update!</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px;">
+        <div>
+          <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:0.08em;display:block;margin-bottom:6px;">CLUB NAME *</label>
+          <input id="missing-club-name" type="text" placeholder="e.g. Zamalek SC" maxlength="100"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 14px;color:#fff;font-size:0.9rem;font-family:inherit;box-sizing:border-box;outline:none;transition:border-color 0.2s;"
+            onfocus="this.style.borderColor='rgba(41,191,18,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+        </div>
+        <div>
+          <label style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:0.08em;display:block;margin-bottom:6px;">LEAGUE / COUNTRY <span style="opacity:0.5">(optional)</span></label>
+          <input id="missing-club-league" type="text" placeholder="e.g. Egyptian Premier League" maxlength="100"
+            value="${league === 'FIFA World Cup' ? '' : league}"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 14px;color:#fff;font-size:0.9rem;font-family:inherit;box-sizing:border-box;outline:none;transition:border-color 0.2s;"
+            onfocus="this.style.borderColor='rgba(41,191,18,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+        </div>
+      </div>
+
+      <div id="missing-club-feedback" style="display:none;margin-bottom:16px;padding:10px 14px;border-radius:12px;font-size:0.82rem;font-weight:600;"></div>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('missing-club-modal').remove()"
+          style="flex:1;padding:13px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;"
+          onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+          Cancel
+        </button>
+        <button onclick="_submitMissingClub('${continent}')"
+          id="missing-club-submit-btn"
+          style="flex:2;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,#1a3a4a,#1e4a5a);color:#7dd3fc;font-size:0.9rem;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 20px rgba(0,100,200,0.25);transition:all 0.2s;"
+          onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+          🔍 Submit Request
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  setTimeout(() => { const inp = document.getElementById('missing-club-name'); if (inp) inp.focus(); }, 100);
+}
+
+async function _submitMissingClub(continent) {
+  const nameEl   = document.getElementById('missing-club-name');
+  const leagueEl = document.getElementById('missing-club-league');
+  const feedback = document.getElementById('missing-club-feedback');
+  const submitBtn= document.getElementById('missing-club-submit-btn');
+
+  const clubName   = (nameEl?.value || '').trim();
+  const leagueHint = (leagueEl?.value || '').trim();
+
+  if (!clubName || clubName.length < 2) {
+    feedback.style.display = 'block';
+    feedback.style.background = 'rgba(255,68,68,0.1)';
+    feedback.style.border = '1px solid rgba(255,68,68,0.25)';
+    feedback.style.color = '#f87171';
+    feedback.textContent = '⚠️ Please enter a club name (at least 2 characters).';
+    return;
+  }
+
+  submitBtn.textContent = 'Submitting…';
+  submitBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/clubs/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clubName, leagueHint, continent }),
+    });
+    if (res.ok) {
+      feedback.style.display = 'block';
+      feedback.style.background = 'rgba(41,191,18,0.1)';
+      feedback.style.border = '1px solid rgba(41,191,18,0.25)';
+      feedback.style.color = '#6FE840';
+      feedback.textContent = '✅ Thanks! We\'ll review your request and add ' + clubName + ' soon.';
+      submitBtn.style.display = 'none';
+      setTimeout(() => { const m = document.getElementById('missing-club-modal'); if (m) m.remove(); }, 2200);
+    } else {
+      throw new Error('Server error');
+    }
+  } catch(e) {
+    feedback.style.display = 'block';
+    feedback.style.background = 'rgba(255,68,68,0.1)';
+    feedback.style.border = '1px solid rgba(255,68,68,0.25)';
+    feedback.style.color = '#f87171';
+    feedback.textContent = '❌ Something went wrong. Please try again.';
+    submitBtn.textContent = '🔍 Submit Request';
+    submitBtn.disabled = false;
+  }
 }
 
 function confirmVote(el) {
