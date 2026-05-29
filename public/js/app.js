@@ -3852,7 +3852,7 @@ function renderVoteLeagues() {
 
       // Voted: green highlight. Blocked: dimmed + lock icon. Normal: default.
       let btnStyle = 'display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 10px;border-radius:14px;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;text-align:center;';
-      let clickHandler = 'castVote(this)';
+      let clickHandler = 'confirmVote(this)';
       if (voted) {
         btnStyle += 'background:rgba(60,184,46,0.12);border:1.5px solid rgba(60,184,46,0.5);color:var(--green);';
       } else if (blocked) {
@@ -3896,7 +3896,74 @@ function renderVoteLeagues() {
   }).join('');
 }
 
+function confirmVote(el) {
+  const clubName  = el.getAttribute('data-club');
+  const country   = el.getAttribute('data-country');
+  const continent = el.getAttribute('data-continent');
+  const league    = el.getAttribute('data-league');
+  const logoUrl   = clubLogosMap[clubName] || '';
+  const colours   = ['#e63946','#457b9d','#2a9d8f','#e9c46a','#f4a261','#6a0572','#1982c4','#8ac926','#ff595e','#6a0572'];
+  const badgeBg   = colours[clubName.charCodeAt(0) % colours.length];
+  const initials  = clubName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+
+  const logoHtml = logoUrl
+    ? `<img src="${logoUrl}" alt="${clubName}" style="width:72px;height:72px;object-fit:contain;border-radius:50%;" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><span style="display:none;width:72px;height:72px;border-radius:50%;background:${badgeBg};align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff">${initials}</span>`
+    : `<span style="width:72px;height:72px;border-radius:50%;background:${badgeBg};display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff">${initials}</span>`;
+
+  // Remove any existing modal
+  const existing = document.getElementById('vote-confirm-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'vote-confirm-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = `
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);" onclick="document.getElementById('vote-confirm-modal').remove()"></div>
+    <div style="position:relative;background:linear-gradient(135deg,#0f1923,#131e2b);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:32px 28px;max-width:360px;width:100%;box-shadow:0 32px 80px rgba(0,0,0,0.6);animation:voteModalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="display:flex;justify-content:center;margin-bottom:16px;">
+          <div style="position:relative;width:80px;height:80px;border-radius:50%;background:rgba(41,191,18,0.1);border:2px solid rgba(41,191,18,0.3);display:flex;align-items:center;justify-content:center;overflow:hidden;">
+            ${logoHtml}
+          </div>
+        </div>
+        <div style="font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:6px;">${clubName}</div>
+        <div style="font-size:0.8rem;color:rgba(255,255,255,0.45);font-weight:600;text-transform:uppercase;letter-spacing:1px;">${league}</div>
+      </div>
+
+      <div style="background:rgba(41,191,18,0.08);border:1px solid rgba(41,191,18,0.2);border-radius:14px;padding:14px 16px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:1.5rem;">❤️</span>
+        <div>
+          <div style="font-size:0.9rem;font-weight:800;color:#fff;">Confirm Your Vote</div>
+          <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-top:2px;">You'll earn <span style="color:#29bf12;font-weight:700;">+50 XP</span> for this vote. One vote per league per day.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('vote-confirm-modal').remove()"
+          style="flex:1;padding:13px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s;"
+          onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+          Cancel
+        </button>
+        <button onclick="document.getElementById('vote-confirm-modal').remove();castVote({getAttribute:k=>({'data-club':'${clubName.replace(/'/g,"\\'")}','data-country':'${country.replace(/'/g,"\\'")}','data-continent':'${continent}','data-league':'${league.replace(/'/g,"\\'")}'}[k])})"
+          style="flex:2;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,#29bf12,#3cde1a);color:#0a1a06;font-size:0.9rem;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 20px rgba(41,191,18,0.4);transition:all 0.2s;"
+          onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 24px rgba(41,191,18,0.55)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 20px rgba(41,191,18,0.4)'">
+          ❤️ Vote for ${clubName}
+        </button>
+      </div>
+    </div>
+    <style>
+      @keyframes voteModalIn {
+        from { opacity:0; transform:scale(0.85) translateY(20px); }
+        to   { opacity:1; transform:scale(1) translateY(0); }
+      }
+    </style>
+  `;
+
+  document.body.appendChild(modal);
+}
+
 async function castVote(el) {
+
   const clubName  = el.getAttribute ? el.getAttribute('data-club')      : el;
   const country   = el.getAttribute ? el.getAttribute('data-country')   : arguments[1];
   const continent = el.getAttribute ? el.getAttribute('data-continent') : (arguments[2] || 'world');
