@@ -7,7 +7,8 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const { clubName, leagueHint, continent } = await req.json();
+    const body = await req.json();
+    const { clubName, leagueHint, continent } = body;
 
     if (!clubName || typeof clubName !== "string" || clubName.trim().length < 2) {
       return NextResponse.json({ error: "Club name is required" }, { status: 400 });
@@ -15,25 +16,28 @@ export async function POST(req: NextRequest) {
 
     const trimmed = clubName.trim().slice(0, 100);
 
-    await prisma.clubRequest.create({
+    const record = await prisma.clubRequest.create({
       data: {
         clubName: trimmed,
         leagueHint: (leagueHint || "").trim().slice(0, 100),
-        continent: (continent || "").trim().slice(0, 50),
-        userId: session?.user?.id ?? null,
-        status: "PENDING",
+        continent:  (continent  || "").trim().slice(0, 50),
+        userId:     (session?.user as any)?.id ?? null,
+        status:     "PENDING",
       },
     });
 
-    return NextResponse.json({ ok: true });
-  } catch (e) {
-    console.error("club-request POST:", e);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json({ ok: true, id: record.id });
+  } catch (e: any) {
+    console.error("club-request POST error:", e?.code, e?.message);
+    return NextResponse.json(
+      { error: "Server error", code: e?.code ?? "UNKNOWN", detail: e?.message ?? "" },
+      { status: 500 }
+    );
   }
 }
 
 // GET /api/clubs/request — admin only, returns all requests
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "ADMIN") {
