@@ -6,6 +6,20 @@ import { prisma } from "@/lib/prisma";
 // POST /api/clubs/request — user submits a missing club
 export async function POST(req: NextRequest) {
   try {
+    // Self-heal: create table if it doesn't exist yet (handles first-deploy timing)
+    await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "ClubRequest" (
+        "id"         TEXT         NOT NULL,
+        "clubName"   TEXT         NOT NULL,
+        "leagueHint" TEXT         NOT NULL DEFAULT '',
+        "continent"  TEXT         NOT NULL DEFAULT '',
+        "userId"     TEXT,
+        "status"     TEXT         NOT NULL DEFAULT 'PENDING',
+        "createdAt"  TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "ClubRequest_pkey" PRIMARY KEY ("id")
+      )
+    `;
+
     const session = await getServerSession(authOptions);
     const body = await req.json();
     const { clubName, leagueHint, continent } = body;
@@ -15,18 +29,22 @@ export async function POST(req: NextRequest) {
     }
 
     const trimmed = clubName.trim().slice(0, 100);
+    const id = Math.random().toString(36).slice(2) + Date.now().toString(36);
 
-    const record = await prisma.clubRequest.create({
-      data: {
-        clubName: trimmed,
-        leagueHint: (leagueHint || "").trim().slice(0, 100),
-        continent:  (continent  || "").trim().slice(0, 50),
-        userId:     (session?.user as any)?.id ?? null,
-        status:     "PENDING",
-      },
-    });
+    await prisma.$executeRaw`
+      INSERT INTO "ClubRequest" ("id", "clubName", "leagueHint", "continent", "userId", "status", "createdAt")
+      VALUES (
+        ${id},
+        ${trimmed},
+        ${(leagueHint || "").trim().slice(0, 100)},
+        ${(continent  || "").trim().slice(0, 50)},
+        ${(session?.user as any)?.id ?? null},
+        'PENDING',
+        NOW()
+      )
+    `;
 
-    return NextResponse.json({ ok: true, id: record.id });
+    return NextResponse.json({ ok: true, id });
   } catch (e: any) {
     console.error("club-request POST error:", e?.code, e?.message);
     return NextResponse.json(
