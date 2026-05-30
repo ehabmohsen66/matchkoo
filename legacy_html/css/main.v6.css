@@ -1096,7 +1096,7 @@ a { text-decoration: none; color: inherit; }
 .momentum-labels .home-pct { color: var(--green); }
 .momentum-labels .away-pct { color: var(--cyan); }
 
-.pred-form-title { font-size: 1rem; padding-top: 5px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+.pred-form-title { font-size: 1rem; padding-top: 15px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
 .result-buttons { display: flex; gap: 10px; margin-bottom: 20px; }
 .result-btn {
   flex: 1; padding: 12px 8px; border: 1.5px solid var(--border); border-radius: var(--radius-md);
