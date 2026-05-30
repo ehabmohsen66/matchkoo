@@ -2425,9 +2425,14 @@ function _applyMatchData(m) {
 
   if (statusEl) {
     if (isLive) {
-      const min = m.minute ? m.minute + "'" : '';
-      statusEl.textContent = '\uD83D\uDD34 LIVE ' + min;
-      statusEl.style.color = 'var(--red)';
+      if (m.statusShort === 'HT') {
+        statusEl.textContent = '⏸ Half Time';
+        statusEl.style.color = 'var(--accent, #f59e0b)';
+      } else {
+        const min = m.minute ? m.minute + "'" : '';
+        statusEl.textContent = '\uD83D\uDD34 LIVE ' + min;
+        statusEl.style.color = 'var(--red)';
+      }
     } else if (isCompleted) {
       statusEl.textContent = 'Full Time';
       statusEl.style.color = 'var(--text-secondary)';
@@ -2515,7 +2520,18 @@ async function _fetchAndApplyLive(matchId) {
     const live = await fetch('/api/matches/live?id=' + matchId).then(r => r.ok ? r.json() : null);
     if (!live) return;
     _applyMatchData(live);
-    if (live.status === 'COMPLETED') {
+    if (live.status === 'LIVE' && !state._liveScoreInterval) {
+      // Match is live (e.g. was stale COMPLETED from old HT bug) — start polling
+      state._liveScoreInterval = setInterval(() => {
+        if (document.getElementById('match-modal-overlay').classList.contains('hidden')) {
+          clearInterval(state._liveScoreInterval);
+          state._liveScoreInterval = null;
+          return;
+        }
+        _fetchAndApplyLive(matchId);
+        _loadLineup(matchId);
+      }, 30000);
+    } else if (live.status === 'COMPLETED') {
       if (state._liveScoreInterval) {
         clearInterval(state._liveScoreInterval);
         state._liveScoreInterval = null;
@@ -2563,7 +2579,7 @@ async function openRealMatchDetail(matchId) {
     }
 
     if (m.status === 'LIVE') {
-      // Immediate live fetch then poll every 10s
+      // Immediate live fetch then poll every 30s
       _fetchAndApplyLive(matchId);
       state._liveScoreInterval = setInterval(() => {
         if (document.getElementById('match-modal-overlay').classList.contains('hidden')) {
@@ -2575,6 +2591,15 @@ async function openRealMatchDetail(matchId) {
         // Also refresh lineup/events during live
         _loadLineup(matchId);
       }, 30000); // refresh lineup every 30s during live
+    } else if (m.status === 'COMPLETED') {
+      // May be stale cache from an old HT→COMPLETED bug; do a quick live
+      // check to correct the display if the match is still actually in progress.
+      const matchTime = new Date(m.matchDate).getTime();
+      const msSinceKickoff = Date.now() - matchTime;
+      // If the match kicked off within the last 3 hours, verify status live
+      if (msSinceKickoff > 0 && msSinceKickoff < 3 * 60 * 60 * 1000) {
+        _fetchAndApplyLive(matchId);
+      }
     }
   } catch(e) {
     showNotification('Could not load match details', 'error');

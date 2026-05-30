@@ -129,7 +129,7 @@ function toNormalized(matchId: string, f: any, dbMatch: any) {
 
   const statusMap: Record<string, "UPCOMING" | "LIVE" | "COMPLETED"> = {
     NS: "UPCOMING", TBD: "UPCOMING", PST: "UPCOMING",
-    "1H": "LIVE", "2H": "LIVE", ET: "LIVE", BT: "LIVE",
+    "1H": "LIVE", "2H": "LIVE", HT: "LIVE", ET: "LIVE", BT: "LIVE",
     P: "LIVE", SUSP: "LIVE", INT: "LIVE", LIVE: "LIVE",
   };
   const status = statusMap[short] ?? "COMPLETED";
