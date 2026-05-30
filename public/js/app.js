@@ -352,7 +352,7 @@ async function _renderHomeVoteWidget() {
       }
 
       const clickAttr = (!isVoted && !isBlocked)
-        ? `onclick="_homeVote(this)" data-club="${c.clubName.replace(/"/g,'&quot;')}" data-country="" data-continent="" data-league=""`
+        ? `onclick="_homeVote(this)" data-club="${c.clubName.replace(/"/g,'&quot;')}" data-country="" data-continent="${(c.continent || '').replace(/"/g,'&quot;')}" data-league=""`
         : '';
 
       return `<div style="flex-shrink:0;width:130px;background:${cardBg};border:1px solid ${cardBorder};border-radius:16px;padding:16px 10px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
@@ -370,18 +370,11 @@ async function _renderHomeVoteWidget() {
   } catch(e) { if (clubEl) clubEl.innerHTML = ''; }
 }
 
-async function _homeVote(el) {
+function _homeVote(el) {
   if (!el) return;
-  const club = el.dataset.club;
-  const country = el.dataset.country || '';
-  const continent = el.dataset.continent || '';
-  const league = el.dataset.league || '';
-  if (!club) return;
-  // Build a fake button element compatible with castVote()
-  const fakeEl = { dataset: { club, country, continent, league } };
-  await castVote(fakeEl);
-  // Re-render the home widget to reflect voted state
-  await _renderHomeVoteWidget();
+  const continent = el.dataset.continent || 'europe';
+  state.targetVoteContinent = continent.toLowerCase();
+  navigate('vote');
 }
 
 // ── Weekly Challenges (real backend) ─────────────────────────────
@@ -3816,7 +3809,9 @@ async function initVote() {
     }
   }
   
-  selectVoteContinent('europe');
+  const targetCont = state.targetVoteContinent || 'europe';
+  state.targetVoteContinent = null;
+  selectVoteContinent(targetCont);
   loadClubLeaderboard('alltime');
   loadContinentLeaderboards('alltime');
 }
