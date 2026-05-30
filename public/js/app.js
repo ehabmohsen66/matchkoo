@@ -1100,14 +1100,9 @@ const TEAM_DISPLAY_MAP = {
   'Cape Town City':    { logo: '/images/clubs/cape_town_city.png' },
   'Amazulu':           { name: 'AmaZulu', logo: '/images/clubs/amazulu.png' },
   'Golden Arrows':     { logo: '/images/clubs/golden_arrows.png' },
-  'Supersport United': { name: 'SuperSport United' },
   'Stellenbosch':      { name: 'Stellenbosch FC', logo: '/images/clubs/stellenbosch.png' },
   'Stellenbosch FC':   { logo: '/images/clubs/stellenbosch.png' },
   'Durban City FC':    { logo: '/images/clubs/durban_city.png' },
-  'Richards Bay FC':   { name: 'Richards Bay' },
-  'Moroka Swallows':   { name: 'Swallows FC' },
-  'Swallows':          { name: 'Swallows FC' },
-  'Polokwane':         { name: 'Polokwane City' },
 
   // Morocco Botola Pro
   'Wydad Casablanca':    { name: 'Wydad AC' },
@@ -3553,8 +3548,6 @@ const STATIC_LOGO_MAP = {
   'Golden Arrows':       '/images/clubs/golden_arrows.png',
   'Stellenbosch FC':     '/images/clubs/stellenbosch.png',
   'Durban City FC':      '/images/clubs/durban_city.png',
-  'Swallows FC':         'https://media.api-sports.io/football/teams/10511.png',
-  'Maritzburg United':   'https://media.api-sports.io/football/teams/10513.png',
   // ── Morocco Botola Pro ────────────────────────────────────────────
   'Wydad AC':            'https://media.api-sports.io/football/teams/968.png',
   'Raja CA':             'https://media.api-sports.io/football/teams/967.png',
@@ -3711,11 +3704,8 @@ const CLUBS_DB = {
     'ZED FC','Petrojet FC','Pharco'
   ]},
   'South African PSL': { country: 'South Africa', flag: '🇿🇦', continent: 'africa', clubs: [
-    'Mamelodi Sundowns','Kaizer Chiefs','Orlando Pirates','SuperSport United',
-    'Cape Town City','AmaZulu','Stellenbosch FC','Golden Arrows',
-    'TS Galaxy','Sekhukhune United','Chippa United','Richards Bay',
-    'Swallows FC','Polokwane City','Maritzburg United','Marumo Gallants',
-    'Durban City FC'
+    'Mamelodi Sundowns','Kaizer Chiefs','Orlando Pirates','Cape Town City',
+    'AmaZulu','Stellenbosch FC','Golden Arrows','Durban City FC'
   ]},
   'Botola Pro (Morocco)': { country: 'Morocco', flag: '🇲🇦', continent: 'africa', clubs: [
     'Wydad AC','Raja CA','RS Berkane','AS FAR',
