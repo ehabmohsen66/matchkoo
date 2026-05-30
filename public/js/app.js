@@ -3710,7 +3710,8 @@ const CLUBS_DB = {
     'Mamelodi Sundowns','Kaizer Chiefs','Orlando Pirates','SuperSport United',
     'Cape Town City','AmaZulu','Stellenbosch FC','Golden Arrows',
     'TS Galaxy','Sekhukhune United','Chippa United','Richards Bay',
-    'Swallows FC','Polokwane City','Maritzburg United','Marumo Gallants'
+    'Swallows FC','Polokwane City','Maritzburg United','Marumo Gallants',
+    'Durban City FC'
   ]},
   'Botola Pro (Morocco)': { country: 'Morocco', flag: '🇲🇦', continent: 'africa', clubs: [
     'Wydad AC','Raja CA','RS Berkane','AS FAR',
