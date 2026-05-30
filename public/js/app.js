@@ -2455,6 +2455,42 @@ async function _loadMatchCommentary(matchId) {
 }
 
 
+// ─── WHO WILL WIN? (fixed prediction distribution) ───────────────
+// Fetched ONCE when the modal opens — based on user predictions locked
+// before kick-off. Never refreshed during the match (stats are frozen).
+async function _loadLivePulse(matchId, homeTeam, awayTeam) {
+  try {
+    const pulse = await fetch('/api/matches/pulse?matchId=' + matchId)
+      .then(r => r.ok ? r.json() : null);
+    if (!pulse) return;
+
+    // Team name labels on the momentum bar
+    const labels = document.querySelectorAll('.mm-label');
+    if (labels[0]) labels[0].textContent = homeTeam || 'Home';
+    if (labels[1]) labels[1].textContent = awayTeam || 'Away';
+
+    // Bar widths (home win % on the left, away win % on the right)
+    const homeBar = document.querySelector('.mm-home');
+    const awayBar = document.querySelector('.mm-away');
+    if (homeBar) homeBar.style.width = pulse.homeWin + '%';
+    if (awayBar) awayBar.style.width = pulse.awayWin + '%';
+
+    // Percentage text under each bar segment
+    const homeEl = document.querySelector('.home-pct');
+    const drawEl = document.querySelector('.draw-pct');
+    const awayEl = document.querySelector('.away-pct');
+    if (homeEl) homeEl.textContent = pulse.homeWin + '%';
+    if (drawEl) drawEl.textContent = pulse.draw    + '%';
+    if (awayEl) awayEl.textContent = pulse.awayWin + '%';
+
+    // Predictor count sub-label
+    const countEl = document.getElementById('pulse-predictor-count');
+    if (countEl) countEl.textContent = pulse.total
+      ? pulse.total + (pulse.total === 1 ? ' predictor' : ' predictors')
+      : 'No predictions yet';
+  } catch { /* silent */ }
+}
+
 // ─── PREDICTION FORM ─────────────────────────────────────────────
 function selectResult(choice, btn) {
   state.selectedResult = choice;
