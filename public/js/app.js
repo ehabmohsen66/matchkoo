@@ -1095,8 +1095,12 @@ const TEAM_DISPLAY_MAP = {
   'Pharco FC':        { name: 'Pharco'              /* keep API logo */ },
 
   // South African PSL
+  'Kaizer Chiefs':     { logo: '/images/clubs/kaizer_chiefs.png' },
+  'Orlando Pirates':   { logo: '/images/clubs/orlando_pirates.png' },
+  'Cape Town City':    { logo: '/images/clubs/cape_town_city.png' },
+  'Amazulu':           { name: 'AmaZulu', logo: '/images/clubs/amazulu.png' },
+  'Golden Arrows':     { logo: '/images/clubs/golden_arrows.png' },
   'Supersport United': { name: 'SuperSport United' },
-  'Amazulu':           { name: 'AmaZulu' },
   'Stellenbosch':      { name: 'Stellenbosch FC' },
   'Richards Bay FC':   { name: 'Richards Bay' },
   'Moroka Swallows':   { name: 'Swallows FC' },
@@ -3540,10 +3544,11 @@ const STATIC_LOGO_MAP = {
 
   // ── South African PSL ─────────────────────────────────────────────────
   'Mamelodi Sundowns':   'https://media.api-sports.io/football/teams/2699.png',
-  'Kaizer Chiefs':       'https://media.api-sports.io/football/teams/2712.png',
-  'Orlando Pirates':     'https://media.api-sports.io/football/teams/2713.png',
-  'AmaZulu':             'https://media.api-sports.io/football/teams/10504.png',
-  'Golden Arrows':       'https://media.api-sports.io/football/teams/10506.png',
+  'Kaizer Chiefs':       '/images/clubs/kaizer_chiefs.png',
+  'Orlando Pirates':     '/images/clubs/orlando_pirates.png',
+  'Cape Town City':      '/images/clubs/cape_town_city.png',
+  'AmaZulu':             '/images/clubs/amazulu.png',
+  'Golden Arrows':       '/images/clubs/golden_arrows.png',
   'Swallows FC':         'https://media.api-sports.io/football/teams/10511.png',
   'Maritzburg United':   'https://media.api-sports.io/football/teams/10513.png',
   // ── Morocco Botola Pro ────────────────────────────────────────────
