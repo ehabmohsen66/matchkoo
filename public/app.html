@@ -995,19 +995,13 @@
         </div>
         <div id="pulse-predictor-count" style="text-align:center;font-size:0.7rem;color:var(--text-secondary);margin-top:4px;font-weight:600;"></div>
 
-        <div class="live-chat-section">
-          <div class="live-chat-header">Match Chat</div>
-          <div class="live-chat-feed" id="live-chat-feed">
-            <!-- Messages loaded dynamically from /api/matches/chat -->
+        <div class="commentary-section" id="commentary-section">
+          <div class="commentary-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Match Commentary
           </div>
-          <div class="chat-input-row">
-            <input type="text" class="chat-input" placeholder="React to the match..." id="chat-input">
-            <button class="chat-send" onclick="sendChatMsg()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                <line x1="22" y1="2" x2="11" y2="13" />
-                <polygon points="22 2 15 22 11 13 2 9 22 2" />
-              </svg>
-            </button>
+          <div class="commentary-feed" id="commentary-feed">
+            <div class="commentary-empty">No events yet</div>
           </div>
         </div>
       </div>

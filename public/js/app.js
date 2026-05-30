@@ -10,7 +10,7 @@ const state = {
   currentContinent: 'europe',
   currentLeague: null,
   predFilter: 'upcoming',
-  fixtureLeagueFilter: 'all',  // active league pill on home upcoming fixtures
+  fixtureLeagueFilter: 'all',
   lbScope: 'global',
   lbPeriod: 'week',
   spinDone: false,
@@ -19,9 +19,6 @@ const state = {
   goalsChoice: 'over',
   totalXP: 0,
   _livePoller: null,        // setInterval ID for live score polling
-  // Current user identity (loaded once for chat "You" detection)
-  meId:   null,
-  meName: null,
 };
 
 // ─── LANGUAGE-AWARE URL HELPERS ──────────────────────────────────
@@ -2352,199 +2349,113 @@ function openMatchDetail(matchId) {
 function closeMatchModal() {
   document.getElementById('match-modal-overlay').classList.add('hidden');
   document.body.style.overflow = '';
-  // Stop chat polling when modal closes
-  if (state._chatPoller) {
-    clearInterval(state._chatPoller);
-    state._chatPoller = null;
+}
+
+
+// ─── MATCH COMMENTARY ───────────────────────────────────────────────
+const _EVT_ICON = {
+  'Goal':    '⚽',
+  'Own Goal': '⚽',
+  'Penalty': '⚽',
+  'Yellow Card': '🟨',
+  'Red Card':    '🟥',
+  'Yellow Red Card': '🟥',
+  'subst':   '🔄',
+  'Var':     '📺',
+};
+
+function _evtIcon(type, detail) {
+  if (type === 'Goal' || type === 'Goal Disallowed') {
+    if (detail && detail.toLowerCase().includes('own')) return '⚽️\uD83D\uDE45'; // own goal marker
+    return '⚽';
   }
-  state._chatMatchId  = null;
-  state._chatLastSeen = null;
+  if (type === 'Card')  return _EVT_ICON[detail] || '🟨';
+  if (type === 'subst') return '🔄';
+  if (type === 'Var')   return '📺';
+  return '•';
 }
 
-// ─── PREDICTION FORM ─────────────────────────────────────────────
-
-// ─── LIVE PULSE (REAL PREDICTION DATA) ───────────────────────────
-async function _fetchMeId() {
-  if (state.meId) return;
-  try {
-    const s = await fetch('/api/auth/session').then(r => r.ok ? r.json() : null);
-    if (s?.user) {
-      state.meId   = s.user.id   ?? null;
-      state.meName = s.user.name ?? null;
-    }
-  } catch { /* silent */ }
-}
-
-async function _loadLivePulse(matchId, homeTeam, awayTeam) {
-  try {
-    const pulse = await fetch('/api/matches/pulse?matchId=' + matchId).then(r => r.ok ? r.json() : null);
-    if (!pulse) return;
-
-    // Update team name labels
-    const labels = document.querySelectorAll('.mm-label');
-    if (labels[0]) labels[0].textContent = homeTeam || 'Home';
-    if (labels[1]) labels[1].textContent = awayTeam || 'Away';
-
-    // Update bar widths
-    const homeBar = document.querySelector('.mm-home');
-    const awayBar = document.querySelector('.mm-away');
-    if (homeBar) homeBar.style.width = pulse.homeWin + '%';
-    if (awayBar) awayBar.style.width = pulse.awayWin + '%';
-
-    // Update % text
-    const homeEl = document.querySelector('.home-pct');
-    const drawEl = document.querySelector('.draw-pct');
-    const awayEl = document.querySelector('.away-pct');
-    if (homeEl) homeEl.textContent = pulse.homeWin + '%';
-    if (drawEl) drawEl.textContent = pulse.draw    + '%';
-    if (awayEl) awayEl.textContent = pulse.awayWin + '%';
-
-    // Update predictor count sub-label
-    const countEl = document.getElementById('pulse-predictor-count');
-    if (countEl) countEl.textContent = pulse.total
-      ? pulse.total + (pulse.total === 1 ? ' predictor' : ' predictors')
-      : 'No predictions yet';
-  } catch { /* silent */ }
-}
-
-// ─── MATCH CHAT ───────────────────────────────────────────────────
-function _relativeTime(isoStr) {
-  const diff = Math.floor((Date.now() - new Date(isoStr).getTime()) / 1000);
-  if (diff < 10)  return 'just now';
-  if (diff < 60)  return diff + 's ago';
-  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-  return Math.floor(diff / 3600) + 'h ago';
-}
-
-function _avatarInitial(name) {
-  return (name || '?')[0].toUpperCase();
-}
-
-function _buildChatMsg(msg, isMe) {
-  const div  = document.createElement('div');
-  div.className = 'chat-msg' + (isMe ? ' you-msg' : '');
-  div.dataset.msgId = msg.id;
-
-  const avatar = document.createElement('span');
-  avatar.className = 'chat-avatar';
-  if (msg.userImage) {
-    avatar.innerHTML = '<img src="' + msg.userImage + '" alt="" class="chat-avatar-img">';
-  } else {
-    avatar.textContent = _avatarInitial(msg.userName);
+function _evtClass(type, detail) {
+  if (type === 'Goal') return 'goal-event';
+  if (type === 'Card') {
+    if (detail && detail.toLowerCase().includes('red')) return 'red-event';
+    return 'yellow-event';
   }
-
-  const nameEl = document.createElement('span');
-  nameEl.className = 'chat-user';
-  nameEl.textContent = isMe ? 'You' : msg.userName;
-
-  const textEl = document.createElement('span');
-  textEl.className = 'chat-text';
-  textEl.textContent = msg.message;
-
-  const timeEl = document.createElement('span');
-  timeEl.className = 'chat-time';
-  timeEl.textContent = _relativeTime(msg.createdAt);
-
-  div.appendChild(avatar);
-  div.appendChild(nameEl);
-  div.appendChild(textEl);
-  div.appendChild(timeEl);
-  return div;
+  if (type === 'subst') return 'sub-event';
+  if (type === 'Var')   return 'var-event';
+  return '';
 }
 
-function _renderChatMessages(messages) {
-  const feed = document.getElementById('live-chat-feed');
+function _evtActionHtml(evt) {
+  const team   = evt.team   ? '<span class="team-name">' + _esc(evt.team) + '</span>' : '';
+  const player = evt.player ? _esc(evt.player) : '';
+  const assist = evt.assist ? ' <span style="color:rgba(255,255,255,0.4)">(assist: ' + _esc(evt.assist) + ')</span>' : '';
+
+  if (evt.type === 'Goal') {
+    const sub = evt.detail && evt.detail !== 'Normal Goal' ? ' <span style="opacity:.5">(' + _esc(evt.detail) + ')</span>' : '';
+    return (player ? '<strong>' + player + '</strong>' + sub : 'Goal') + (team ? ' — ' + team : '') + assist;
+  }
+  if (evt.type === 'Card') {
+    const cls = evt.detail && evt.detail.toLowerCase().includes('red') ? 'red-txt' : 'yellow-txt';
+    return '<span class="' + cls + '">' + _esc(evt.detail || 'Card') + '</span>' +
+           (player ? ' — <strong>' + player + '</strong>' : '') +
+           (team ? ' (' + team + ')' : '');
+  }
+  if (evt.type === 'subst') {
+    return '❌ <strong>' + _esc(evt.player || '?') + '</strong>' +
+           (evt.assist ? ' → ✅ <strong>' + _esc(evt.assist) + '</strong>' : '') +
+           (team ? ' — ' + team : '');
+  }
+  if (evt.type === 'Var') {
+    return 'VAR: ' + _esc(evt.detail || '') + (team ? ' — ' + team : '');
+  }
+  return _esc(evt.detail || evt.type || '');
+}
+
+function _esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+async function _loadMatchCommentary(matchId) {
+  const feed = document.getElementById('commentary-feed');
   if (!feed) return;
 
-  const renderedIds = new Set(
-    [...feed.querySelectorAll('[data-msg-id]')].map(el => el.dataset.msgId)
-  );
-
-  let addedAny = false;
-  messages.forEach(msg => {
-    if (renderedIds.has(msg.id)) return; // already shown
-    const isMe = !!state.meId && msg.userId === state.meId;
-    feed.appendChild(_buildChatMsg(msg, isMe));
-    addedAny = true;
-  });
-
-  // Auto-scroll to bottom only if we added new messages
-  if (addedAny) feed.scrollTop = feed.scrollHeight;
-  // NOTE: _chatLastSeen is updated by _fetchChatMessages only (not here)
-}
-
-async function _fetchChatMessages(matchId) {
   try {
-    const since = state._chatLastSeen ? '&since=' + encodeURIComponent(state._chatLastSeen) : '';
-    const msgs  = await fetch('/api/matches/chat?matchId=' + matchId + since).then(r => r.ok ? r.json() : null);
-    if (Array.isArray(msgs) && msgs.length > 0) {
-      // Update watermark BEFORE rendering so concurrent sends don't clobber it
-      state._chatLastSeen = msgs[msgs.length - 1].createdAt;
-      _renderChatMessages(msgs);
+    const data = await fetch('/api/matches/commentary?matchId=' + matchId)
+      .then(r => r.ok ? r.json() : null);
+
+    if (!data || !data.events || data.events.length === 0) {
+      feed.innerHTML = '<div class="commentary-empty">No events yet</div>';
+      return;
     }
+
+    // Show newest first (reverse chronological for live matches)
+    const sorted = [...data.events].sort((a, b) => (b.minute + (b.extraMinute || 0)) - (a.minute + (a.extraMinute || 0)));
+
+    feed.innerHTML = sorted.map(evt => {
+      const min   = evt.minute + (evt.extraMinute ? '+' + evt.extraMinute : '') + "'";
+      const icon  = _evtIcon(evt.type, evt.detail);
+      const cls   = _evtClass(evt.type, evt.detail);
+      const action = _evtActionHtml(evt);
+      const comment = evt.commentary
+        ? '<div class="commentary-text">' + _esc(evt.commentary) + '</div>'
+        : '';
+      return '<div class="commentary-event ' + cls + '">' +
+        '<span class="commentary-minute">' + min + '</span>' +
+        '<span class="commentary-icon">' + icon + '</span>' +
+        '<div class="commentary-body"><div class="commentary-action">' + action + '</div>' + comment + '</div>' +
+        '</div>';
+    }).join('');
+
+    // Auto-scroll to top (most recent event)
+    feed.scrollTop = 0;
   } catch { /* silent */ }
 }
 
-async function sendChatMsg() {
-  const input = document.getElementById('chat-input');
-  const matchId = state._chatMatchId;
-  if (!input || !matchId) return;
 
-  const message = input.value.trim();
-  if (!message) return;
-
-  // Optimistic clear
-  input.value = '';
-  input.disabled = true;
-
-  try {
-    const res = await fetch('/api/matches/chat?matchId=' + matchId, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message }),
-    });
-    if (res.ok) {
-      // Immediately fetch instead of rendering the sent message directly.
-      // This keeps _chatLastSeen accurate (only updated via polling/fetch)
-      // and also picks up any messages from other users sent concurrently.
-      await _fetchChatMessages(matchId);
-    } else {
-      const err = await res.json();
-      showNotification(err.error || 'Could not send message', 'error');
-      input.value = message; // restore on failure
-    }
-  } catch {
-    showNotification('Could not send message', 'error');
-    input.value = message;
-  } finally {
-    input.disabled = false;
-    input.focus();
-  }
-}
-
-function _startChatPolling(matchId) {
-  if (state._chatPoller) clearInterval(state._chatPoller);
-  state._chatMatchId  = matchId;
-  state._chatLastSeen = null;
-  const feed = document.getElementById('live-chat-feed');
-  if (feed) { feed.innerHTML = ''; } // clear previous match messages
-
-  // Load initial messages, then poll every 5 seconds
-  _fetchChatMessages(matchId);
-  state._chatPoller = setInterval(() => {
-    if (!state._chatMatchId) { clearInterval(state._chatPoller); return; }
-    _fetchChatMessages(state._chatMatchId);
-  }, 5000);
-}
-
-// Also handle Enter key on the chat input (wired once at DOMContentLoaded)
-document.addEventListener('DOMContentLoaded', function() {
-  const ci = document.getElementById('chat-input');
-  if (ci) ci.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMsg(); }
-  });
-});
-
+// ─── PREDICTION FORM ─────────────────────────────────────────────
 function selectResult(choice, btn) {
   state.selectedResult = choice;
   document.querySelectorAll('.result-btn').forEach(b => b.classList.remove('selected-result'));
@@ -2766,9 +2677,8 @@ async function openRealMatchDetail(matchId) {
     }
     document.body.style.overflow = 'hidden';
 
-    // ── Always: identify current user and start chat polling ───────
-    _fetchMeId();
-    _startChatPolling(matchId);
+    // ── Load commentary for any match status ────────────────────
+    _loadMatchCommentary(matchId);
 
     // Load lineup for prediction form (upcoming + live)
     if (m.status !== 'COMPLETED') {
@@ -2785,19 +2695,16 @@ async function openRealMatchDetail(matchId) {
           return;
         }
         _fetchAndApplyLive(matchId);
-        // Also refresh lineup/events during live
         _loadLineup(matchId);
-      }, 30000); // refresh lineup every 30s during live
+        _loadMatchCommentary(matchId); // refresh commentary every 30s
+      }, 30000);
 
       // ── Live Pulse: load real prediction breakdown ──────────────
       _loadLivePulse(matchId, m.homeTeam, m.awayTeam);
 
     } else if (m.status === 'COMPLETED') {
-      // May be stale cache from an old HT→COMPLETED bug; do a quick live
-      // check to correct the display if the match is still actually in progress.
       const matchTime = new Date(m.matchDate).getTime();
       const msSinceKickoff = Date.now() - matchTime;
-      // If the match kicked off within the last 3 hours, verify status live
       if (msSinceKickoff > 0 && msSinceKickoff < 3 * 60 * 60 * 1000) {
         _fetchAndApplyLive(matchId);
       }
@@ -2806,6 +2713,7 @@ async function openRealMatchDetail(matchId) {
     showNotification('Could not load match details', 'error');
   }
 }
+
 
 
 // ─── LINEUP / PLAYER PICKER ──────────────────────────────────────
