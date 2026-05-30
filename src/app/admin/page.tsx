@@ -498,6 +498,95 @@ function ClubRequestsTab() {
   );
 }
 
+// ─── SA PSL Logos Review Tab ─────────────────────────────
+function SaLogosTab() {
+  const [teams, setTeams] = useState<{ id: number; name: string; logo: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const load = async () => {
+    setLoading(true); setError(""); setTeams([]);
+    try {
+      const r = await fetch("/api/admin/sa-logos");
+      const data = await r.json();
+      if (!r.ok) { setError(data.error || "API error"); }
+      else { setTeams(data.teams || []); }
+    } catch (e: any) {
+      setError(e.message || "Network error");
+    }
+    setLoading(false);
+  };
+
+  const jsSnippet = teams.length > 0
+    ? `  // ── South African PSL ─────────────────────────────────────────────────\n` +
+      teams.map(t => `  '${t.name}': '${t.logo}',`).join("\n")
+    : "";
+
+  const copySnippet = () => {
+    navigator.clipboard.writeText(jsSnippet).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <h3 style={sectionTitle}>🇿🇦 South African PSL Club Logos (api-football.com)</h3>
+        <button style={btnGreen} onClick={load} disabled={loading}>
+          {loading ? "Fetching…" : "Fetch from API"}
+        </button>
+      </div>
+
+      {error && (
+        <div style={{ ...card, borderColor: "rgba(248,113,113,0.3)", color: "#F87171", marginBottom: 20 }}>
+          ❌ {error}
+        </div>
+      )}
+
+      {teams.length > 0 && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 14, marginBottom: 24 }}>
+            {teams.map(t => (
+              <div key={t.id} style={{ ...card, textAlign: "center", padding: "16px 12px", marginBottom: 0 }}>
+                <img
+                  src={t.logo}
+                  alt={t.name}
+                  style={{ width: 64, height: 64, objectFit: "contain", marginBottom: 10 }}
+                  onError={e => { (e.target as HTMLImageElement).style.opacity = "0.2"; }}
+                />
+                <div style={{ fontWeight: 700, fontSize: "0.8rem", lineHeight: 1.3 }}>{t.name}</div>
+                <div style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.3)", marginTop: 4 }}>ID: {t.id}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={card}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: "0.08em" }}>
+                READY-TO-PASTE SNIPPET FOR app.js → STATIC_LOGO_MAP
+              </div>
+              <button style={btnGreen} onClick={copySnippet}>
+                {copied ? "✅ Copied!" : "Copy Snippet"}
+              </button>
+            </div>
+            <pre style={{ background: "rgba(0,0,0,0.4)", borderRadius: 10, padding: "14px 16px", fontSize: "0.72rem", color: "#6FE840", overflowX: "auto", whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
+              {jsSnippet}
+            </pre>
+          </div>
+        </>
+      )}
+
+      {!loading && teams.length === 0 && !error && (
+        <div style={{ color: "rgba(255,255,255,0.3)", padding: 48, textAlign: "center" }}>
+          Click "Fetch from API" to load all PSL clubs and their official logos from api-football.com.
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Stats Overview ───────────────────────────────────────
 function StatsTab() {
   const [stats, setStats] = useState<any>(null);
@@ -533,7 +622,7 @@ function StatsTab() {
 export default function AdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [tab, setTab] = useState<"overview" | "competitions" | "matches" | "sync" | "users" | "club-requests">("overview");
+  const [tab, setTab] = useState<"overview" | "competitions" | "matches" | "sync" | "users" | "club-requests" | "sa-logos">("overview");
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -563,6 +652,7 @@ export default function AdminPage() {
             <Tab active={tab === "sync"} onClick={() => setTab("sync")}>📡 Sync Fixtures</Tab>
             <Tab active={tab === "users"} onClick={() => setTab("users")}>Users</Tab>
             <Tab active={tab === "club-requests"} onClick={() => setTab("club-requests")}>🔍 Club Requests</Tab>
+            <Tab active={tab === "sa-logos"} onClick={() => setTab("sa-logos")}>🇿🇦 SA Logos</Tab>
           </div>
         </div>
       </div>
@@ -575,6 +665,7 @@ export default function AdminPage() {
         {tab === "sync"          && <SyncTab />}
         {tab === "users"         && <UsersTab />}
         {tab === "club-requests" && <ClubRequestsTab />}
+        {tab === "sa-logos"      && <SaLogosTab />}
       </div>
     </div>
   );

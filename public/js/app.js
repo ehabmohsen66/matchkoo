@@ -913,7 +913,7 @@ function renderLeagues(continentId) {
         "flex-shrink:0;margin-left:auto;padding:4px 12px;border-radius:100px;" +
         "border:1px solid " + (isFollowed ? "rgba(111,232,64,0.5)" : "rgba(111,232,64,0.4)") + ";" +
         "background:" + (isFollowed ? "rgba(111,232,64,0.15)" : "rgba(111,232,64,0.1)") + ";" +
-        "color:" + (isFollowed ? "#6FE840" : "#6FE840") + ";" + +
+        "color:" + (isFollowed ? "#6FE840" : "#6FE840") + ";" +
         "font-size:0.65rem;font-weight:800;cursor:pointer;font-family:inherit;" +
         "letter-spacing:0.5px;text-transform:uppercase;transition:all 0.2s;white-space:nowrap;" +
       "\">" +
