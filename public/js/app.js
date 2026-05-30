@@ -468,11 +468,11 @@ async function renderLiveMatches() {
           '</div>' +
           '<div class="vs-block">VS</div>' +
           '<div class="team-block team-block-right">' +
-            '<span class="team-score">' + (m.awayScore ?? 0) + '</span>' +
-            '<span class="team-name">' + m.awayTeam + '</span>' +
             '<div class="team-badge" style="background:#3a1a2a;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px">' +
               (m.awayLogo ? '<img src="'+m.awayLogo+'" width="40" height="40" style="border-radius:50%">' : m.awayTeam.substring(0,3).toUpperCase()) +
             '</div>' +
+            '<span class="team-name">' + m.awayTeam + '</span>' +
+            '<span class="team-score">' + (m.awayScore ?? 0) + '</span>' +
           '</div>' +
         '</div>' +
       '</div>';
