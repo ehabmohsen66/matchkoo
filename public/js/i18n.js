@@ -37,12 +37,12 @@ const I18N = {
     'Full board': 'القائمة الكاملة',
 
     // ── Challenges ──
-    'Speed Demon': 'الشيطان السريع',
-    'Predict 5 matches within 1 hr of kickoff': 'توقع 5 مباريات خلال ساعة من البداية',
     'Scoreline Sniper': 'قناص النتائج',
-    'Get 3 correct exact scorelines this week': 'احصل على 3 نتائج صحيحة هذا الأسبوع',
-    'World Traveller': 'المسافر حول العالم',
-    'Submit predictions in 4 different leagues': 'توقع في 4 دوريات مختلفة',
+    'Get 3 correct exact scorelines this week': 'احصل على 3 نتائج دقيقة صحيحة هذا الأسبوع',
+    'Confidence King': 'ملك الثقة',
+    'Predict 5 match outcomes correctly at 100% confidence': 'توقع 5 نتائج صحيحة بثقة 100%',
+    'Crystal Baller': 'كرة الكريستال',
+    'Predict the first goalscorer correctly in 3 matches': 'توقع أول هداف بشكل صحيح في 3 مباريات',
 
     // ── Discover ──
     'Discover Matches': 'اكتشف المباريات',

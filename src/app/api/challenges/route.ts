@@ -10,7 +10,7 @@ export async function GET() {
 
   const userId = (session.user as any).id;
 
-  // Start of current week (Monday)
+  // Start of current week (Monday 00:00:00)
   const now = new Date();
   const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon, ...
   const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
@@ -18,29 +18,11 @@ export async function GET() {
   weekStart.setDate(now.getDate() + diffToMonday);
   weekStart.setHours(0, 0, 0, 0);
 
-  // Next Monday reset
+  // Next Monday — used for reset display
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 7);
 
-  // All predictions this week
-  const weekPreds = await prisma.prediction.findMany({
-    where: {
-      userId,
-      createdAt: { gte: weekStart },
-    },
-    include: { match: true },
-  });
-
-  // ── Challenge 1: Speed Demon — predict 5 matches within 1hr of kickoff
-  let speedDemonCount = 0;
-  for (const p of weekPreds) {
-    const matchTime = new Date(p.match.matchDate).getTime();
-    const predTime = new Date(p.createdAt).getTime();
-    const diffMs = matchTime - predTime;
-    if (diffMs >= 0 && diffMs <= 60 * 60 * 1000) speedDemonCount++;
-  }
-
-  // ── Challenge 2: Scoreline Sniper — 3 exact correct scores this week
+  // ── Challenge 1: Scoreline Sniper — 3 exact correct scorelines this week ──
   const sniper = await prisma.prediction.count({
     where: {
       userId,
@@ -49,29 +31,56 @@ export async function GET() {
     },
   });
 
-  // ── Challenge 3: World Traveller — predictions across 4 different leagues
-  const leagueSet = new Set<string>();
-  for (const p of weekPreds) {
-    if (p.match.tournamentId) leagueSet.add(p.match.tournamentId);
-  }
+  // ── Challenge 2: Confidence King — 5 correct outcomes with 100% confidence ──
+  // Fetch week predictions that are settled correct AND had confidence=100
+  const confidenceKingCount = await prisma.prediction.count({
+    where: {
+      userId,
+      createdAt: { gte: weekStart },
+      status: "correct",
+      confidence: 100,
+    },
+  });
 
-  // Check if challenges were already rewarded this week to prevent double XP
+  // ── Challenge 3: Crystal Baller — correct first goalscorer in 3 matches ──
+  // Fetch settled predictions this week where user provided a firstGoalScorer
+  const fgsPreds = await prisma.prediction.findMany({
+    where: {
+      userId,
+      createdAt: { gte: weekStart },
+      firstGoalScorer: { not: null },
+      status: { not: null }, // settled
+    },
+    include: {
+      match: { select: { firstGoalScorer: true } },
+    },
+  });
+
+  const crystalBallerCount = fgsPreds.filter(
+    (p) =>
+      p.firstGoalScorer &&
+      p.match.firstGoalScorer &&
+      p.firstGoalScorer.trim().toLowerCase() ===
+        p.match.firstGoalScorer.trim().toLowerCase()
+  ).length;
+
+  // ── Check already-rewarded challenges to prevent double XP ──────────
   const rewardedChallenges = await prisma.challengeReward.findMany({
     where: { userId, weekStart },
     select: { challengeKey: true },
   });
   const alreadyRewarded = new Set(rewardedChallenges.map((r) => r.challengeKey));
 
-  // Award XP for newly completed challenges
+  // ── Award XP for newly completed challenges ─────────────────────────
   const toReward: { key: string; xp: number }[] = [];
-  if (speedDemonCount >= 5 && !alreadyRewarded.has("speed_demon")) {
-    toReward.push({ key: "speed_demon", xp: 500 });
-  }
   if (sniper >= 3 && !alreadyRewarded.has("scoreline_sniper")) {
     toReward.push({ key: "scoreline_sniper", xp: 750 });
   }
-  if (leagueSet.size >= 4 && !alreadyRewarded.has("world_traveller")) {
-    toReward.push({ key: "world_traveller", xp: 400 });
+  if (confidenceKingCount >= 5 && !alreadyRewarded.has("confidence_king")) {
+    toReward.push({ key: "confidence_king", xp: 500 });
+  }
+  if (crystalBallerCount >= 3 && !alreadyRewarded.has("crystal_baller")) {
+    toReward.push({ key: "crystal_baller", xp: 600 });
   }
 
   if (toReward.length > 0) {
@@ -88,7 +97,7 @@ export async function GET() {
     ]);
   }
 
-  // Compute time until next Monday
+  // ── Compute time until next Monday ──────────────────────────────────
   const msLeft = weekEnd.getTime() - now.getTime();
   const daysLeft = Math.floor(msLeft / (1000 * 60 * 60 * 24));
   const hoursLeft = Math.floor((msLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -96,17 +105,6 @@ export async function GET() {
   return NextResponse.json({
     resetIn: `${daysLeft}d ${hoursLeft}h`,
     challenges: [
-      {
-        key: "speed_demon",
-        name: "Speed Demon",
-        desc: "Predict 5 matches within 1 hr of kickoff",
-        icon: "⏱️",
-        xp: 500,
-        progress: Math.min(speedDemonCount, 5),
-        goal: 5,
-        completed: alreadyRewarded.has("speed_demon") || speedDemonCount >= 5,
-        justCompleted: toReward.some((r) => r.key === "speed_demon"),
-      },
       {
         key: "scoreline_sniper",
         name: "Scoreline Sniper",
@@ -119,15 +117,26 @@ export async function GET() {
         justCompleted: toReward.some((r) => r.key === "scoreline_sniper"),
       },
       {
-        key: "world_traveller",
-        name: "World Traveller",
-        desc: "Submit predictions in 4 different leagues",
-        icon: "🌍",
-        xp: 400,
-        progress: Math.min(leagueSet.size, 4),
-        goal: 4,
-        completed: alreadyRewarded.has("world_traveller") || leagueSet.size >= 4,
-        justCompleted: toReward.some((r) => r.key === "world_traveller"),
+        key: "confidence_king",
+        name: "Confidence King",
+        desc: "Predict 5 match outcomes correctly at 100% confidence",
+        icon: "👑",
+        xp: 500,
+        progress: Math.min(confidenceKingCount, 5),
+        goal: 5,
+        completed: alreadyRewarded.has("confidence_king") || confidenceKingCount >= 5,
+        justCompleted: toReward.some((r) => r.key === "confidence_king"),
+      },
+      {
+        key: "crystal_baller",
+        name: "Crystal Baller",
+        desc: "Predict the first goalscorer correctly in 3 matches",
+        icon: "🔮",
+        xp: 600,
+        progress: Math.min(crystalBallerCount, 3),
+        goal: 3,
+        completed: alreadyRewarded.has("crystal_baller") || crystalBallerCount >= 3,
+        justCompleted: toReward.some((r) => r.key === "crystal_baller"),
       },
     ],
   });
