@@ -2469,12 +2469,7 @@ function _applyMatchData(m) {
       const scorerInput = document.getElementById('scorer-select');
       const savedScorer = m.userPrediction?.firstGoalScorer ?? '';
       if (scorerInput) scorerInput.value = savedScorer;
-      // Also sync the dropdown if it's already populated (re-open same match)
-      const fgsDd = document.getElementById('fgs-dropdown');
-      if (fgsDd && savedScorer) {
-        fgsDd.value = savedScorer;
-        fgsDd.style.borderColor = savedScorer ? 'rgba(41,191,18,0.5)' : 'rgba(255,255,255,0.12)';
-      }
+      // Chip highlight is restored by _renderPlayerPicker after lineup loads
 
       // Restore BTTS
       const pred = m.userPrediction;
@@ -2623,7 +2618,16 @@ async function _loadLineup(matchId) {
 }
 
 function _renderPlayerPicker(lineup, events) {
-  const noMsg = document.getElementById('no-lineup-msg');
+  const noMsg       = document.getElementById('no-lineup-msg');
+  const homePlayers = document.getElementById('lineup-home-players');
+  const homeSubs    = document.getElementById('lineup-home-subs');
+  const awayPlayers = document.getElementById('lineup-away-players');
+  const awaySubs    = document.getElementById('lineup-away-subs');
+  const homeLabel   = document.getElementById('lineup-home-label');
+  const awayLabel   = document.getElementById('lineup-away-label');
+
+  // Clear previous content
+  [homePlayers, homeSubs, awayPlayers, awaySubs].forEach(el => { if (el) el.innerHTML = ''; });
 
   if (!lineup || (!lineup.home?.startXI?.length && !lineup.away?.startXI?.length)) {
     if (noMsg) noMsg.style.display = 'block';
@@ -2631,66 +2635,76 @@ function _renderPlayerPicker(lineup, events) {
   }
   if (noMsg) noMsg.style.display = 'none';
 
-  // Build set of players subbed off
+  // Build set of players subbed off (assistName = player who came off)
   const subbedOff = new Set();
+  const subbedOn  = new Set();
   if (events) {
     events.filter(e => e.type === 'subst').forEach(e => {
       if (e.assistName) subbedOff.add(e.assistName);
+      if (e.playerName) subbedOn.add(e.playerName);
     });
   }
 
   const currentScorer = (document.getElementById('scorer-select')?.value || '').trim();
-  const dropdown = document.getElementById('fgs-dropdown');
-  if (!dropdown) return;
 
-  // Build options helper
-  const makeOptions = (players, isSub) => players.map(p => {
-    const isOff = subbedOff.has(p.name);
-    const label = (p.number ? '#' + p.number + ' ' : '') + p.name + (isOff ? ' (off)' : '') + (isSub ? '' : '');
-    const opt = document.createElement('option');
-    opt.value = p.name;
-    opt.textContent = label;
-    if (isOff) opt.disabled = true;
-    if (p.name === currentScorer) opt.selected = true;
-    return opt;
-  });
+  // Set team labels
+  if (homeLabel) homeLabel.textContent = '\u26bd ' + (lineup.home?.team || 'Home').toUpperCase();
+  if (awayLabel) awayLabel.textContent = '\u26bd ' + (lineup.away?.team || 'Away').toUpperCase();
 
-  // Clear & rebuild
-  dropdown.innerHTML = '';
-  const blankOpt = document.createElement('option');
-  blankOpt.value = '';
-  blankOpt.textContent = '\u2014 Select a player \u2014';
-  dropdown.appendChild(blankOpt);
-
-  const homeTeam = lineup.home?.team || 'Home';
-  const awayTeam = lineup.away?.team || 'Away';
-  const homeXI   = lineup.home?.startXI   || [];
-  const homeSubs = lineup.home?.substitutes || [];
-  const awayXI   = lineup.away?.startXI   || [];
-  const awaySubs = lineup.away?.substitutes || [];
-
-  const addGroup = (label, players, isSub) => {
-    if (!players.length) return;
-    const grp = document.createElement('optgroup');
-    grp.label = label;
-    makeOptions(players, isSub).forEach(o => grp.appendChild(o));
-    dropdown.appendChild(grp);
+  // Helper: create a clickable player chip
+  const makeChip = (player) => {
+    const isOff = subbedOff.has(player.name);
+    const isOn  = subbedOn.has(player.name);
+    const chip  = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'player-chip'
+      + (isOff ? ' subbed-off' : '')
+      + (isOn  ? ' subbed-on'  : '')
+      + (player.name === currentScorer ? ' selected-player' : '');
+    chip.dataset.playerName = player.name;
+    chip.innerHTML =
+      (player.number ? '<span class="player-num">' + player.number + '</span> ' : '') +
+      player.name;
+    if (!isOff) {
+      chip.addEventListener('click', () => _selectPlayerChip(player.name, chip));
+    }
+    return chip;
   };
 
-  addGroup('\u26bd ' + homeTeam.toUpperCase() + ' \u2014 Starting XI', homeXI, false);
-  addGroup('\u{1F4CB} ' + homeTeam.toUpperCase() + ' \u2014 Bench', homeSubs, true);
-  addGroup('\u26bd ' + awayTeam.toUpperCase() + ' \u2014 Starting XI', awayXI, false);
-  addGroup('\u{1F4CB} ' + awayTeam.toUpperCase() + ' \u2014 Bench', awaySubs, true);
+  // Populate grids
+  const fillGrid = (container, players) => {
+    if (!container) return;
+    players.forEach(p => container.appendChild(makeChip(p)));
+  };
 
-  // Restore previous pick indicator if already selected
+  fillGrid(homePlayers, lineup.home?.startXI   || []);
+  fillGrid(homeSubs,    lineup.home?.substitutes || []);
+  fillGrid(awayPlayers, lineup.away?.startXI   || []);
+  fillGrid(awaySubs,    lineup.away?.substitutes || []);
+
+  // Restore pick indicator if scorer already chosen
   if (currentScorer) {
     const indicator = document.getElementById('fgs-pick-indicator');
     const pickName  = document.getElementById('fgs-pick-name');
-    // find the option to get the number label
-    const selOpt = [...dropdown.options].find(o => o.value === currentScorer);
     if (indicator) indicator.style.display = 'flex';
-    if (pickName && selOpt) pickName.textContent = selOpt.textContent.replace(' (off)', '');
+    if (pickName)  pickName.textContent = currentScorer;
   }
+}
+
+function _selectPlayerChip(playerName, chipEl) {
+  // Update hidden input
+  const scorerInput = document.getElementById('scorer-select');
+  if (scorerInput) scorerInput.value = playerName;
+
+  // Update chip styles — deselect all, select clicked
+  document.querySelectorAll('.player-chip').forEach(c => c.classList.remove('selected-player'));
+  if (chipEl) chipEl.classList.add('selected-player');
+
+  // Show pick indicator
+  const indicator = document.getElementById('fgs-pick-indicator');
+  const pickName  = document.getElementById('fgs-pick-name');
+  if (indicator) indicator.style.display = 'flex';
+  if (pickName)  pickName.textContent = playerName;
 }
 
 function _onFgsDropdownChange(sel) {
@@ -2714,8 +2728,8 @@ function _onFgsDropdownChange(sel) {
 function clearFGSPick() {
   const inp = document.getElementById('scorer-select');
   if (inp) inp.value = '';
-  const dropdown = document.getElementById('fgs-dropdown');
-  if (dropdown) { dropdown.value = ''; dropdown.style.borderColor = 'rgba(255,255,255,0.12)'; }
+  // Deselect all player chips
+  document.querySelectorAll('.player-chip').forEach(c => c.classList.remove('selected-player'));
   const ind = document.getElementById('fgs-pick-indicator');
   if (ind) ind.style.display = 'none';
 }
