@@ -91,7 +91,7 @@ The dashboard at `/app` is a static HTML/JS app:
 - Returns `{ lineup, events }` cached in `Match.lineup` + `Match.events` (Json fields)
 - Lineup available ~1hr before kickoff; events update live every 30s in modal
 - Subbed-off players strikethrough; substitutes shown in orange
-- +300 XP for correct first goalscorer prediction
+- +150 XP for correct first goalscorer prediction
 
 ## How Leaderboard Works (Live Data)
 - `/api/leaderboard` → global ranking by User.xp

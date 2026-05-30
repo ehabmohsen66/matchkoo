@@ -363,7 +363,7 @@ export default function Home() {
               <div className="scoring-desc">Predict the right winner or draw and earn base XP.</div>
             </div>
             <div className="scoring-card reveal reveal-delay-2">
-              <div className="scoring-xp" style={{ "color": "#ABFF4F" }}>+500 XP</div>
+              <div className="scoring-xp" style={{ "color": "#ABFF4F" }}>+200 XP</div>
               <div className="scoring-action">Exact Scoreline</div>
               <div className="scoring-desc">Nail the precise score for a massive XP bonus.</div>
             </div>
@@ -373,7 +373,7 @@ export default function Home() {
               <div className="scoring-desc">Set your confidence from 50–100% to multiply XP earned.</div>
             </div>
             <div className="scoring-card reveal reveal-delay-4">
-              <div className="scoring-xp" style={{ "color": "#FF9914" }}>+300 XP</div>
+              <div className="scoring-xp" style={{ "color": "#FF9914" }}>+150 XP</div>
               <div className="scoring-action">First Goalscorer</div>
               <div className="scoring-desc">Correctly predict which player scores first.</div>
             </div>

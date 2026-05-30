@@ -162,9 +162,9 @@ export default function HomeAr() {
       </div>
       <div className="scoring-grid">
         <div className="scoring-card reveal reveal-delay-1"><div className="scoring-xp" style={{color:'#3CB82E'}}>+100 XP</div><div className="scoring-action">النتيجة الصحيحة</div><div className="scoring-desc">توقع الفائز أو التعادل واكسب نقاطاً أساسية.</div></div>
-        <div className="scoring-card reveal reveal-delay-2"><div className="scoring-xp" style={{color:'#6FE840'}}>+500 XP</div><div className="scoring-action">النتيجة الدقيقة</div><div className="scoring-desc">أصب النتيجة بالضبط للحصول على مكافأة ضخمة.</div></div>
+        <div className="scoring-card reveal reveal-delay-2"><div className="scoring-xp" style={{color:'#6FE840'}}>+200 XP</div><div className="scoring-action">النتيجة الدقيقة</div><div className="scoring-desc">أصب النتيجة بالضبط للحصول على مكافأة ضخمة.</div></div>
         <div className="scoring-card reveal reveal-delay-3"><div className="scoring-xp" style={{color:'#08BDBD'}}>×1.4 – ×2.0</div><div className="scoring-action">مضاعف الثقة</div><div className="scoring-desc">حدد مستوى ثقتك من 50-100% لمضاعفة نقاطك.</div></div>
-        <div className="scoring-card reveal reveal-delay-4"><div className="scoring-xp" style={{color:'#FF9914'}}>+300 XP</div><div className="scoring-action">أول هداف</div><div className="scoring-desc">توقع من يسجل أول هدف في المباراة.</div></div>
+        <div className="scoring-card reveal reveal-delay-4"><div className="scoring-xp" style={{color:'#FF9914'}}>+150 XP</div><div className="scoring-action">أول هداف</div><div className="scoring-desc">توقع من يسجل أول هدف في المباراة.</div></div>
         <div className="scoring-card reveal reveal-delay-1"><div className="scoring-xp" style={{color:'#F21B3F'}}>×2 XP</div><div className="scoring-action">مكافأة التتابع</div><div className="scoring-desc">التوقعات الصحيحة المتتالية تضاعف نقاطك.</div></div>
         <div className="scoring-card reveal reveal-delay-2"><div className="scoring-xp" style={{color:'#6FE840'}}>+250 XP</div><div className="scoring-action">مكافأة يومية</div><div className="scoring-desc">أدر العجلة يومياً للحصول على نقاط ومكافآت إضافية.</div></div>
       </div>

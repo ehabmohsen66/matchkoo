@@ -164,13 +164,13 @@ export async function POST(req: NextRequest) {
             let baseXp = 0;
             if (correctResult) baseXp += 50;
             if (exactScore)    baseXp += 150;
-            if (correctScorer) baseXp += 100;
+            if (correctScorer) baseXp += 150;
             const multiplier = 1 + ((pred.confidence - 50) / 50);
             let xp = Math.round(baseXp * multiplier);
 
             // Confidence Penalty
             if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));
-            if (pred.firstGoalScorer && !correctScorer) xp -= Math.round(100 * (pred.confidence / 100));
+            if (pred.firstGoalScorer && !correctScorer) xp -= Math.round(150 * (pred.confidence / 100));
 
             // BTTS bonus — 75 XP flat
             const actualBtts2 = hs > 0 && as > 0;
@@ -460,7 +460,7 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
           let baseXp = 0;
           if (correctResult)     baseXp += 50;   // correct result
           if (exactScore)        baseXp += 150;  // exact scoreline bonus (total 200)
-          if (correctScorer)     baseXp += 100;  // first goalscorer bonus
+          if (correctScorer)     baseXp += 150;  // first goalscorer bonus
 
           // ── 5. Confidence multiplier: 50%=1.0×, 75%=1.5×, 100%=2.0× ────────
           const multiplier = 1 + ((pred.confidence - 50) / 50);
@@ -468,7 +468,7 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
 
           // ── 6. Confidence Penalty (Risk vs Reward) ───────────────────────────
           if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));
-          if (pred.firstGoalScorer && !correctScorer) xp -= Math.round(100 * (pred.confidence / 100));
+          if (pred.firstGoalScorer && !correctScorer) xp -= Math.round(150 * (pred.confidence / 100));
 
           // ── 7. Bonus predictions (flat, no confidence multiplier/penalty) ────
           if (correctBtts)       xp += 75;
