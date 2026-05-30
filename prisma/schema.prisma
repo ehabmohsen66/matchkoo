@@ -43,6 +43,7 @@ model User {
   teamReminderSnoozes TeamReminderSnooze[]
   dailySpins        DailySpin[]
   challengeRewards  ChallengeReward[]
+  chatMessages      MatchChat[]
   preferredLeagues  String[]           @default([]) // league names chosen at registration
 
   // Friends / followers
@@ -104,6 +105,7 @@ model Match {
   events            Json?   // [{ time, team, player, assist, type, detail }]
 
   predictions Prediction[]
+  chatMessages MatchChat[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -301,4 +303,20 @@ model ClubRequest {
   status     String   @default("PENDING") // PENDING | ADDED | REJECTED
 
   createdAt DateTime @default(now())
+}
+
+model MatchChat {
+  id        String   @id @default(cuid())
+  matchId   String
+  userId    String
+  userName  String
+  userImage String?
+  message   String   @db.VarChar(280)
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([matchId, createdAt])
 }

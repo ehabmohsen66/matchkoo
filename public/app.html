@@ -981,29 +981,24 @@
           <span class="live-dot"></span> Live Pulse
         </div>
         <div class="momentum-meter">
-          <span class="mm-label">Man United</span>
+          <span class="mm-label">Home</span>
           <div class="mm-bar">
-            <div class="mm-home" style="width:42%"></div>
-            <div class="mm-away" style="width:40%"></div>
+            <div class="mm-home" style="width:0%"></div>
+            <div class="mm-away" style="width:0%"></div>
           </div>
-          <span class="mm-label">Arsenal</span>
+          <span class="mm-label">Away</span>
         </div>
         <div class="vote-dist">
-          <div class="vd-item"><span class="vd-pct home-pct">42%</span><span>Home Win</span></div>
-          <div class="vd-item"><span class="vd-pct draw-pct">18%</span><span>Draw</span></div>
-          <div class="vd-item"><span class="vd-pct away-pct">40%</span><span>Away Win</span></div>
+          <div class="vd-item"><span class="vd-pct home-pct">–</span><span>Home Win</span></div>
+          <div class="vd-item"><span class="vd-pct draw-pct">–</span><span>Draw</span></div>
+          <div class="vd-item"><span class="vd-pct away-pct">–</span><span>Away Win</span></div>
         </div>
+        <div id="pulse-predictor-count" style="text-align:center;font-size:0.7rem;color:var(--text-secondary);margin-top:4px;font-weight:600;"></div>
+
         <div class="live-chat-section">
           <div class="live-chat-header">Match Chat</div>
           <div class="live-chat-feed" id="live-chat-feed">
-            <div class="chat-msg"><span class="chat-user">🇧🇷 Alex K.</span><span class="chat-text">Arsenal holding
-                strong! 🔴</span></div>
-            <div class="chat-msg"><span class="chat-user">🇩🇪 Marcus T.</span><span class="chat-text">Rashford needs to
-                step up</span></div>
-            <div class="chat-msg"><span class="chat-user">🇫🇷 Sofia L.</span><span class="chat-text">I called 2-1 away!
-                🎯</span></div>
-            <div class="chat-msg you-msg"><span class="chat-user">🇪🇬 You</span><span class="chat-text">Let's go
-                Arsenal!</span></div>
+            <!-- Messages loaded dynamically from /api/matches/chat -->
           </div>
           <div class="chat-input-row">
             <input type="text" class="chat-input" placeholder="React to the match..." id="chat-input">
