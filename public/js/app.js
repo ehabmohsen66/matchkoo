@@ -348,7 +348,7 @@ async function _renderHomeVoteWidget() {
       } else {
         cardBorder = 'rgba(255,255,255,0.08)'; cardBg = 'rgba(255,255,255,0.03)';
         btnStyle = 'background:rgba(255,153,20,0.12);border:1.5px solid rgba(255,153,20,0.35);color:#FF9914;cursor:pointer;';
-        btnLabel = '❤️ Vote +20 XP';
+        btnLabel = '❤️ Vote +50 XP';
       }
 
       const clickAttr = (!isVoted && !isBlocked)
@@ -3918,7 +3918,7 @@ function renderVoteLeagues() {
         '<span style="line-height:1.2;word-break:break-word">' + club + '</span>' +
         (voted ? '<span style="font-size:0.65rem;font-weight:700;color:var(--green)">✓ Voted</span>' :
          blocked ? '<span style="opacity:0.4;font-size:0.6rem">' + leagueWinner + '\u2019s league</span>' :
-         '<span style="opacity:0.45;font-size:0.65rem;font-weight:600">+20 XP</span>') +
+         '<span style="opacity:0.45;font-size:0.65rem;font-weight:600">+50 XP</span>') +
       '</button>';
     }).join('');
 
@@ -4082,7 +4082,7 @@ function confirmVote(el) {
         <span style="font-size:1.5rem;">❤️</span>
         <div>
           <div style="font-size:0.9rem;font-weight:800;color:#fff;">Confirm Your Vote</div>
-          <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-top:2px;">You'll earn <span style="color:#29bf12;font-weight:700;">+20 XP</span> for this vote. One vote per league per day.</div>
+          <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-top:2px;">You'll earn <span style="color:#29bf12;font-weight:700;">+50 XP</span> for this vote. One vote per league per day.</div>
         </div>
       </div>
 
@@ -4126,7 +4126,7 @@ async function castVote(el) {
     if (res.ok) {
       votedTodayMap[clubName] = true;
       if (league) leagueVotedMap[league] = clubName;
-      showNotification('+20 XP! Voted for ' + clubName, 'success');
+      showNotification('+50 XP! Voted for ' + clubName, 'success');
       renderVoteLeagues();
       loadClubLeaderboard(state.voteLeaderboardPeriod || 'alltime');
       loadContinentLeaderboards(state.continentLeaderboardPeriod || 'alltime');

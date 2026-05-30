@@ -58,18 +58,18 @@ export async function POST(req: Request) {
       }
     }
 
-    // Cast vote + award 20 XP
+    // Cast vote + award 50 XP
     await prisma.$transaction([
       prisma.clubVote.create({
         data: { userId, clubName, league, country, continent, votedDate: today },
       }),
       prisma.user.update({
         where: { id: userId },
-        data: { xp: { increment: 20 } },
+        data: { xp: { increment: 50 } },
       }),
     ]);
 
-    return NextResponse.json({ success: true, xpAwarded: 20 });
+    return NextResponse.json({ success: true, xpAwarded: 50 });
   } catch (e: any) {
     if (e.code === "P2002") {
       return NextResponse.json({ error: "Already voted for this club today" }, { status: 409 });
