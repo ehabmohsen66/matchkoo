@@ -2669,7 +2669,7 @@ async function _fetchAndApplyLive(matchId) {
           return;
         }
         _fetchAndApplyLive(matchId);
-        _loadLineup(matchId);
+        _loadLineup(matchId, 'LIVE');
       }, 30000);
     } else if (live.status === 'COMPLETED') {
       if (state._liveScoreInterval) {
@@ -2718,7 +2718,7 @@ async function openRealMatchDetail(matchId) {
 
     // Load lineup for prediction form (upcoming + live)
     if (m.status !== 'COMPLETED') {
-      _loadLineup(matchId);
+      _loadLineup(matchId, m.status);
     }
 
     if (m.status === 'LIVE') {
@@ -2731,7 +2731,7 @@ async function openRealMatchDetail(matchId) {
           return;
         }
         _fetchAndApplyLive(matchId);
-        _loadLineup(matchId);
+        _loadLineup(matchId, 'LIVE');
         _loadMatchCommentary(matchId); // refresh commentary every 30s
       }, 30000);
 
@@ -2754,7 +2754,7 @@ async function openRealMatchDetail(matchId) {
 
 // ─── LINEUP / PLAYER PICKER ──────────────────────────────────────
 
-async function _loadLineup(matchId) {
+async function _loadLineup(matchId, matchStatus) {
   // ── Reset stale state from previous match ──────────────────────
   const dropdown = document.getElementById('fgs-dropdown');
   if (dropdown) {
@@ -2779,7 +2779,14 @@ async function _loadLineup(matchId) {
     if (picker)  picker.style.display  = 'block';
 
     _renderPlayerPicker(lineup, events);
-    if (events && events.length > 0) _renderEventsTimeline(events);
+    // Only show match events for live/completed matches, not upcoming ones
+    if (events && events.length > 0 && (matchStatus === 'LIVE' || matchStatus === 'COMPLETED')) {
+      _renderEventsTimeline(events);
+    } else {
+      // Hide the events timeline container for upcoming matches
+      const evtContainer = document.getElementById('match-events-timeline');
+      if (evtContainer) evtContainer.style.display = 'none';
+    }
   } catch(e) {
     // Silently fall back to text input
     if (loading) loading.style.display = 'none';
