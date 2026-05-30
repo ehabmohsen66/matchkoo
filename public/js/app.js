@@ -1093,6 +1093,47 @@ const TEAM_DISPLAY_MAP = {
   'Ismaily SC':       { name: 'Ismaily',            logo: '/images/clubs/ismaily.png' },
   'Al Ittihad':       { name: 'Ittihad Alexandria', logo: '/images/clubs/ittihad_alexandria.png' },
   'Pharco FC':        { name: 'Pharco'              /* keep API logo */ },
+
+  // South African PSL
+  'Mamelodi Sundowns': { logo: '/images/clubs/mamelodi_sundowns.png' },
+  'Kaizer Chiefs':     { logo: '/images/clubs/kaizer_chiefs.png' },
+  'Orlando Pirates':   { logo: '/images/clubs/orlando_pirates.png' },
+  'Supersport United': { name: 'SuperSport United', logo: '/images/clubs/supersport_united.png' },
+  'SuperSport United': { logo: '/images/clubs/supersport_united.png' },
+  'Cape Town City':    { logo: '/images/clubs/cape_town_city.png' },
+  'Amazulu':           { name: 'AmaZulu', logo: '/images/clubs/amazulu.png' },
+  'AmaZulu':           { logo: '/images/clubs/amazulu.png' },
+  'Stellenbosch':      { name: 'Stellenbosch FC', logo: '/images/clubs/stellenbosch.png' },
+  'Stellenbosch FC':   { logo: '/images/clubs/stellenbosch.png' },
+  'Golden Arrows':     { logo: '/images/clubs/golden_arrows.png' },
+  'TS Galaxy':         { logo: '/images/clubs/ts_galaxy.png' },
+  'Sekhukhune United': { logo: '/images/clubs/sekhukhune_united.png' },
+  'Chippa United':     { logo: '/images/clubs/chippa_united.png' },
+  'Richards Bay FC':   { name: 'Richards Bay', logo: '/images/clubs/richards_bay.png' },
+  'Richards Bay':      { logo: '/images/clubs/richards_bay.png' },
+  'Moroka Swallows':   { name: 'Swallows FC', logo: '/images/clubs/moroka_swallows.png' },
+  'Swallows':          { name: 'Swallows FC', logo: '/images/clubs/moroka_swallows.png' },
+  'Swallows FC':       { logo: '/images/clubs/moroka_swallows.png' },
+  'Polokwane':         { name: 'Polokwane City', logo: '/images/clubs/polokwane_city.png' },
+  'Polokwane City':    { logo: '/images/clubs/polokwane_city.png' },
+  'Maritzburg United': { logo: '/images/clubs/maritzburg_united.png' },
+  'Marumo Gallants':   { logo: '/images/clubs/marumo_gallants.png' },
+
+  // Morocco Botola Pro
+  'Wydad Casablanca':    { name: 'Wydad AC' },
+  'Raja Casablanca':     { name: 'Raja CA' },
+  'AS FAR Rabat':        { name: 'AS FAR' },
+  'Renaissance Berkane': { name: 'RS Berkane' },
+  'Moghreb Tetouan':     { name: 'Moghreb Tétouan' },
+
+  // Algeria Ligue 1
+  'ES Setif':          { name: 'ES Sétif' },
+  'Mouloudia d\\'Alger': { name: 'MC Alger' },
+
+  // Tunisia Ligue 1
+  'Esperance Tunis':   { name: 'Espérance ST' },
+  'Etoile Sahel':      { name: 'Étoile Sahel' },
+  'US Monastirienne':  { name: 'US Monastir' },
 };
 
 function _resolveTeam(name, logo) {
@@ -3513,13 +3554,23 @@ const STATIC_LOGO_MAP = {
   'El Entag El Harby':  'https://media.api-sports.io/football/teams/638.png',
   'El Gouna FC':        'https://media.api-sports.io/football/teams/2288.png',
 
-  'Mamelodi Sundowns':   'https://media.api-sports.io/football/teams/2699.png',
-  'Kaizer Chiefs':       'https://media.api-sports.io/football/teams/2712.png',
-  'Orlando Pirates':     'https://media.api-sports.io/football/teams/2713.png',
-  'AmaZulu':             'https://media.api-sports.io/football/teams/10504.png',
-  'Golden Arrows':       'https://media.api-sports.io/football/teams/10506.png',
-  'Swallows FC':         'https://media.api-sports.io/football/teams/10511.png',
-  'Maritzburg United':   'https://media.api-sports.io/football/teams/10513.png',
+  // ── South African PSL ─────────────────────────────────────────────────
+  'Mamelodi Sundowns':   '/images/clubs/mamelodi_sundowns.png',
+  'Kaizer Chiefs':       '/images/clubs/kaizer_chiefs.png',
+  'Orlando Pirates':     '/images/clubs/orlando_pirates.png',
+  'SuperSport United':   '/images/clubs/supersport_united.png',
+  'Cape Town City':      '/images/clubs/cape_town_city.png',
+  'AmaZulu':             '/images/clubs/amazulu.png',
+  'Stellenbosch FC':     '/images/clubs/stellenbosch.png',
+  'Golden Arrows':       '/images/clubs/golden_arrows.png',
+  'TS Galaxy':           '/images/clubs/ts_galaxy.png',
+  'Sekhukhune United':   '/images/clubs/sekhukhune_united.png',
+  'Chippa United':       '/images/clubs/chippa_united.png',
+  'Richards Bay':        '/images/clubs/richards_bay.png',
+  'Swallows FC':         '/images/clubs/moroka_swallows.png',
+  'Polokwane City':      '/images/clubs/polokwane_city.png',
+  'Maritzburg United':   '/images/clubs/maritzburg_united.png',
+  'Marumo Gallants':     '/images/clubs/marumo_gallants.png',
   // ── Morocco Botola Pro ────────────────────────────────────────────
   'Wydad AC':            'https://media.api-sports.io/football/teams/968.png',
   'Raja CA':             'https://media.api-sports.io/football/teams/967.png',
@@ -4133,7 +4184,7 @@ function renderClubLeaderboard(data) {
     container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;">No votes yet. Be the first!</div>';
     return;
   }
-  container.innerHTML = data.slice(0, 20).map((club, i) =>
+  container.innerHTML = data.slice(0, 10).map((club, i) =>
     '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">' +
       '<div style="font-weight:800;color:' + (i===0?'#ffd700':i===1?'#c0c0c0':i===2?'#cd7f32':'rgba(255,255,255,0.4)') + ';min-width:28px;text-align:center">' + (i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)) + '</div>' +
       '<div style="flex:1">' +
