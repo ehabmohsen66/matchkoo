@@ -1128,7 +1128,7 @@ const TEAM_DISPLAY_MAP = {
 
   // Algeria Ligue 1
   'ES Setif':          { name: 'ES Sétif' },
-  'Mouloudia d\\'Alger': { name: 'MC Alger' },
+  "Mouloudia d'Alger": { name: 'MC Alger' },
 
   // Tunisia Ligue 1
   'Esperance Tunis':   { name: 'Espérance ST' },
