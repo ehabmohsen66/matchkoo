@@ -2470,18 +2470,18 @@ function _renderChatMessages(messages) {
 
   // Auto-scroll to bottom only if we added new messages
   if (addedAny) feed.scrollTop = feed.scrollHeight;
-
-  // Update _chatLastSeen to latest message timestamp
-  if (messages.length > 0) {
-    state._chatLastSeen = messages[messages.length - 1].createdAt;
-  }
+  // NOTE: _chatLastSeen is updated by _fetchChatMessages only (not here)
 }
 
 async function _fetchChatMessages(matchId) {
   try {
     const since = state._chatLastSeen ? '&since=' + encodeURIComponent(state._chatLastSeen) : '';
     const msgs  = await fetch('/api/matches/chat?matchId=' + matchId + since).then(r => r.ok ? r.json() : null);
-    if (Array.isArray(msgs)) _renderChatMessages(msgs);
+    if (Array.isArray(msgs) && msgs.length > 0) {
+      // Update watermark BEFORE rendering so concurrent sends don't clobber it
+      state._chatLastSeen = msgs[msgs.length - 1].createdAt;
+      _renderChatMessages(msgs);
+    }
   } catch { /* silent */ }
 }
 
@@ -2504,8 +2504,10 @@ async function sendChatMsg() {
       body: JSON.stringify({ message }),
     });
     if (res.ok) {
-      const msg = await res.json();
-      _renderChatMessages([msg]);
+      // Immediately fetch instead of rendering the sent message directly.
+      // This keeps _chatLastSeen accurate (only updated via polling/fetch)
+      // and also picks up any messages from other users sent concurrently.
+      await _fetchChatMessages(matchId);
     } else {
       const err = await res.json();
       showNotification(err.error || 'Could not send message', 'error');
@@ -2764,6 +2766,10 @@ async function openRealMatchDetail(matchId) {
     }
     document.body.style.overflow = 'hidden';
 
+    // ── Always: identify current user and start chat polling ───────
+    _fetchMeId();
+    _startChatPolling(matchId);
+
     // Load lineup for prediction form (upcoming + live)
     if (m.status !== 'COMPLETED') {
       _loadLineup(matchId);
@@ -2785,10 +2791,6 @@ async function openRealMatchDetail(matchId) {
 
       // ── Live Pulse: load real prediction breakdown ──────────────
       _loadLivePulse(matchId, m.homeTeam, m.awayTeam);
-
-      // ── Match Chat: start polling for live matches ──────────────
-      _fetchMeId(); // ensure we know who "You" is
-      _startChatPolling(matchId);
 
     } else if (m.status === 'COMPLETED') {
       // May be stale cache from an old HT→COMPLETED bug; do a quick live
@@ -3452,21 +3454,8 @@ document.querySelectorAll('.score-option input[type=radio]').forEach(radio => {
   });
 });
 
-// ─── SIMULATE LIVE UPDATES ───────────────────────────────────────
-let liveUpdateTimer = null;
-function startLiveSimulation() {
-  liveUpdateTimer = setInterval(() => {
-    const mm = document.querySelector('.mm-home');
-    if (mm) {
-      const current = parseFloat(mm.style.width) || 42;
-      const delta = (Math.random() - 0.5) * 3;
-      const next = Math.min(Math.max(current + delta, 20), 70);
-      mm.style.width = next + '%';
-      const homeEl = document.querySelector('.home-pct');
-      if (homeEl) homeEl.textContent = Math.round(next) + '%';
-    }
-  }, 3000);
-}
+// startLiveSimulation removed — Live Pulse now uses real prediction data
+// from /api/matches/pulse (see _loadLivePulse)
 
 
 function shareTrophy(el) {
@@ -3547,7 +3536,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   navigate(initialPage, true);
   drawWheel(0);
-  startLiveSimulation();
+  // startLiveSimulation() removed — now uses real pulse data
 
   // Replace initial history entry so popstate works correctly
   window.history.replaceState({ page: initialPage, lang }, '', path);
