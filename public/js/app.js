@@ -306,10 +306,18 @@ async function loadHomeWidgets() {
 async function _renderHomeVoteWidget() {
   const clubEl = document.getElementById('home-top-clubs');
   if (!clubEl) return;
+
+  const titleEl = document.getElementById('home-top-clubs-title');
+  if (titleEl) {
+    const now = new Date();
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    titleEl.innerHTML = `❤️ Top Clubs This Month - ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+  }
+
   try {
     // Fetch leaderboard + vote state in parallel, and ensure logos are loaded
     const [lbClubs, voteState] = await Promise.all([
-      fetch('/api/clubs/leaderboard?period=weekly').then(r => r.ok ? r.json() : []),
+      fetch('/api/clubs/leaderboard?period=monthly').then(r => r.ok ? r.json() : []),
       fetch('/api/clubs/vote-state').then(r => r.ok ? r.json() : {}).catch(() => {}),
       ensureClubLogosLoaded()
     ]);
@@ -318,7 +326,7 @@ async function _renderHomeVoteWidget() {
     const topClubs = lbClubs.slice(0, 10);
 
     if (!topClubs.length) {
-      clubEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:20px">No votes this week yet — be the first! <button onclick="navigate(\'vote\')" style="background:none;border:none;color:var(--green);cursor:pointer;font-weight:700;font-family:inherit">Vote Now →</button></div>';
+      clubEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:20px">No votes this month yet — be the first! <button onclick="navigate(\'vote\')" style="background:none;border:none;color:var(--green);cursor:pointer;font-weight:700;font-family:inherit">Vote Now →</button></div>';
       return;
     }
 
