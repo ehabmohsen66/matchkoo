@@ -5,7 +5,7 @@ import ScrollReveal from '@/components/ScrollReveal';
 
 export const metadata = {
   title: 'ماتشكو — منصة التنبؤ بنتائج كرة القدم',
-  description: 'انضم إلى 2.4 مليون متنبئ على ماتشكو. تنبأ بنتائج المباريات واكسب نقاطاً وتنافس عبر 188 دوري.',
+  description: 'انضم إلى 2.5 ألف متنبئ على ماتشكو. تنبأ بنتائج المباريات واكسب نقاطاً وتنافس عبر 188 دوري.',
 };
 
 export default function HomeAr() {
@@ -47,7 +47,7 @@ export default function HomeAr() {
     <div className="hero-content" style={{position:'relative',zIndex:1,maxWidth:'900px'}}>
       <div className="hero-kicker" style={{flexDirection:'row-reverse'}}>
         <div className="hero-kicker-dot"></div>
-        2.4 مليون متنبئ نشط الآن
+        2.5 ألف متنبئ نشط الآن
       </div>
       <h1 className="hero-title" style={{fontFamily:"'Tajawal',sans-serif",fontWeight:900}}>
         تنبأ بنتائج كرة القدم.<br />
@@ -68,7 +68,7 @@ export default function HomeAr() {
       </div>
       <div className="hero-stats">
         <div className="hero-stat-item">
-          <div className="hero-stat-num">2.4M</div>
+          <div className="hero-stat-num">2.5k</div>
           <div className="hero-stat-lbl">متنبئ</div>
         </div>
         <div className="hero-stat-divider"></div>
@@ -145,7 +145,7 @@ export default function HomeAr() {
   {/* STATS BAR */}
   <div style={{padding:'0 24px 80px'}}>
     <div className="stats-bar reveal" style={{maxWidth:'1000px',margin:'0 auto'}}>
-      <div className="stat-item"><div className="stat-value">2.4M+</div><div className="stat-label">متنبئ نشط</div></div>
+      <div className="stat-item"><div className="stat-value">2.5k+</div><div className="stat-label">متنبئ نشط</div></div>
       <div className="stat-item"><div className="stat-value">188</div><div className="stat-label">دوري حول العالم</div></div>
       <div className="stat-item"><div className="stat-value">12.5M+</div><div className="stat-label">تنبؤ تم تسجيله</div></div>
       <div className="stat-item"><div className="stat-value">67.3%</div><div className="stat-label">متوسط دقة المتصدرين</div></div>
@@ -222,14 +222,14 @@ export default function HomeAr() {
       <h2 className="cta-title" style={{fontFamily:"'Tajawal',sans-serif",fontWeight:900}}>
         مستعد لتثبت أنك تعرف كرة القدم؟
       </h2>
-      <p className="cta-sub">انضم إلى 2.4 مليون متنبئ اليوم. توقعك الأول يستغرق 30 ثانية.</p>
+      <p className="cta-sub">انضم إلى 2.5 ألف متنبئ اليوم. توقعك الأول يستغرق 30 ثانية.</p>
       <div className="cta-actions">
         <a href="/register" className="btn-primary btn-primary-lg" style={{flexDirection:'row-reverse'}}>
           ابدأ التنبؤ مجاناً
           <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fillRule="evenodd" d="M17 10a.75.75 0 00-.75-.75H5.612l4.158-3.96a.75.75 0 00-1.04-1.08l-5.5 5.25a.75.75 0 000 1.08l5.5 5.25a.75.75 0 101.04-1.08L5.612 10.75H16.25A.75.75 0 0017 10z" clipRule="evenodd"/></svg>
         </a>
       </div>
-      <div className="cta-note">✓ مجاني للأبد &nbsp;&nbsp; ✓ 188 دوري &nbsp;&nbsp; ✓ 2.4 مليون منافس</div>
+      <div className="cta-note">✓ مجاني للأبد &nbsp;&nbsp; ✓ 188 دوري &nbsp;&nbsp; ✓ 2.5 ألف منافس</div>
     </div>
   </section>
 

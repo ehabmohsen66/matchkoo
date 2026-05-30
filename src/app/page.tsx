@@ -43,7 +43,7 @@ export default function Home() {
         <div className="hero-content">
           <div className="hero-kicker">
             <div className="hero-kicker-dot"></div>
-            2.4M Predictors Active Now
+            2.5k Predictors Active Now
           </div>
           <h1 className="hero-title">
             Predict Football.<br />
@@ -64,7 +64,7 @@ export default function Home() {
           </div>
           <div className="hero-stats">
             <div className="hero-stat-item">
-              <div className="hero-stat-num">2.4M</div>
+              <div className="hero-stat-num">2.5k</div>
               <div className="hero-stat-lbl">Predictors</div>
             </div>
             <div className="hero-stat-divider"></div>
@@ -176,7 +176,7 @@ export default function Home() {
                 </div>
                 <div className="feature-item-body">
                   <div className="feature-item-title">Community Prediction Data</div>
-                  <div className="feature-item-desc">See how 2.4M predictors voted on every match in real-time split bars.</div>
+                  <div className="feature-item-desc">See how 2.5k predictors voted on every match in real-time split bars.</div>
                 </div>
               </div>
               <div className="feature-item">
@@ -330,7 +330,7 @@ export default function Home() {
       <div style={{ "padding": "0 24px 80px" }}>
         <div className="stats-bar reveal" style={{ "maxWidth": "1000px", "margin": "0 auto" }}>
           <div className="stat-item">
-            <div className="stat-value">2.4M+</div>
+            <div className="stat-value">2.5k+</div>
             <div className="stat-label">Active Predictors</div>
           </div>
           <div className="stat-item">
@@ -396,7 +396,7 @@ export default function Home() {
         <div className="section">
           <div className="section-header center reveal">
             <div className="section-tag">Community</div>
-            <h2 className="section-title">Trusted by 2.4 Million Predictors</h2>
+            <h2 className="section-title">Trusted by 2.5 Thousand Predictors</h2>
             <p className="section-sub">From hardcore fans to casual viewers, everyone has a shot at the top.</p>
           </div>
           <div className="testimonials-grid">
@@ -513,14 +513,14 @@ export default function Home() {
           <h2 className="cta-title">
             Ready to Prove You Know Football?
           </h2>
-          <p className="cta-sub">Join 2.4 million predictors today. Your first prediction takes 30 seconds.</p>
+          <p className="cta-sub">Join 2.5 thousand predictors today. Your first prediction takes 30 seconds.</p>
           <div className="cta-actions">
             <a href="/register" className="btn-primary btn-primary-lg">
               Start Predicting Free
               <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" /></svg>
             </a>
           </div>
-          <div className="cta-note">✓ Free forever &nbsp;&nbsp; ✓ 188 leagues &nbsp;&nbsp; ✓ 2.4M community</div>
+          <div className="cta-note">✓ Free forever &nbsp;&nbsp; ✓ 188 leagues &nbsp;&nbsp; ✓ 2.5k community</div>
         </div>
       </section>
 
