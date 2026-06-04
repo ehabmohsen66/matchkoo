@@ -20,6 +20,7 @@ model User {
   password      String?
   role          String    @default("USER") // USER or ADMIN
   gender        String?   @default("male")  // "male" | "female"
+  dateOfBirth   DateTime?                   // optional DOB from registration
   xp              Int  @default(0)
   streak          Int  @default(0)
   bestStreak      Int  @default(0)

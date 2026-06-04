@@ -12,7 +12,7 @@ import ReferralWelcomeBonusEmail from "@/emails/ReferralWelcomeBonusEmail";
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, password, gender, referrerId, preferredLeagues } = await req.json();
+    const { name, email, password, gender, referrerId, preferredLeagues, dateOfBirth } = await req.json();
 
     if (!email || !password || !name) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
@@ -44,6 +44,10 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
+    // Parse DOB — accept "YYYY-MM-DD" string, store as UTC midnight DateTime
+    const parsedDob = dateOfBirth ? new Date(dateOfBirth) : undefined;
+    const validDob = parsedDob && !isNaN(parsedDob.getTime()) ? parsedDob : undefined;
+
     // Create user, optionally linking referrer and persisting league preferences
     const newUser = await prisma.user.create({
       data: {
@@ -53,6 +57,7 @@ export async function POST(req: NextRequest) {
         verificationToken,
         gender: gender === "female" ? "female" : "male", // validate input
         preferredLeagues: Array.isArray(preferredLeagues) ? preferredLeagues : [],
+        ...(validDob ? { dateOfBirth: validDob } : {}),
         // Give new user their +200 XP welcome bonus immediately if referred
         xp: referrerId ? 200 : 0,
         ...(referrerId ? { referredById: referrerId } : {}),

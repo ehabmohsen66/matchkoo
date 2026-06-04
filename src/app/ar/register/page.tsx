@@ -97,6 +97,7 @@ function RegisterFormAr() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -117,10 +118,23 @@ function RegisterFormAr() {
     setLoading(true);
 
     try {
+      if (!dateOfBirth) {
+        setError("يرجى إدخال تاريخ ميلادك.");
+        setLoading(false);
+        return;
+      }
+      const dob = new Date(dateOfBirth);
+      const age = (Date.now() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+      if (age < 5 || age > 120) {
+        setError("يرجى إدخال تاريخ ميلاد صحيح.");
+        setLoading(false);
+        return;
+      }
+
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, referrerId: referrerId || undefined }),
+        body: JSON.stringify({ name, email, password, dateOfBirth, referrerId: referrerId || undefined }),
       });
 
       if (res.ok) {
@@ -271,6 +285,29 @@ function RegisterFormAr() {
                 />
               </div>
             ))}
+
+            {/* Date of birth */}
+            <div>
+              <label htmlFor="dob" style={{ display: "block", fontSize: "0.88rem", fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}>تاريخ الميلاد</label>
+              <input
+                id="dob" type="date" required
+                value={dateOfBirth}
+                max={new Date(Date.now() - 5 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                min="1900-01-01"
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                dir="ltr"
+                style={{
+                  width: "100%", background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10,
+                  padding: "11px 14px", color: "#fff", fontSize: "0.95rem",
+                  fontFamily: "inherit", boxSizing: "border-box", outline: "none",
+                  transition: "border-color 0.2s", colorScheme: "dark", textAlign: "left",
+                }}
+                onFocus={(e) => { e.target.style.borderColor = "rgba(111,232,64,0.5)"; }}
+                onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
+              />
+              <p style={{ margin: "5px 0 0", fontSize: "0.75rem", color: "rgba(255,255,255,0.25)", textAlign: "right" }}>يُستخدم لتخصيص تجربتك. لن يكون مرئياً للآخرين.</p>
+            </div>
 
             <button
               type="submit"

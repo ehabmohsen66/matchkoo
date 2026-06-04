@@ -66,6 +66,7 @@ function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [gender, setGender] = useState<'male'|'female'|''>("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -87,6 +88,10 @@ function RegisterForm() {
     setError("");
     if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
     if (!gender) { setError("Please select your gender to personalise your avatar."); return; }
+    if (!dateOfBirth) { setError("Please enter your date of birth."); return; }
+    const dob = new Date(dateOfBirth);
+    const age = (Date.now() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+    if (age < 5 || age > 120) { setError("Please enter a valid date of birth."); return; }
     setStep(2);
   };
 
@@ -100,6 +105,7 @@ function RegisterForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name, email, password, gender,
+          dateOfBirth: dateOfBirth || undefined,
           referrerId: referrerId || undefined,
           preferredLeagues: Array.from(selected),
         }),
@@ -204,6 +210,22 @@ function RegisterForm() {
                 ))}
 
                 <p style={{ margin:"-4px 0 0", fontSize:"0.76rem", color:"rgba(255,255,255,0.28)" }}>Use at least 8 characters.</p>
+
+                {/* Date of birth */}
+                <div>
+                  <label htmlFor="dob" style={{ display:"block", fontSize:"0.78rem", fontWeight:700, color:"rgba(255,255,255,0.38)", letterSpacing:"0.09em", marginBottom:7 }}>DATE OF BIRTH</label>
+                  <input
+                    id="dob" type="date" required
+                    value={dateOfBirth}
+                    max={new Date(Date.now() - 5 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                    min="1900-01-01"
+                    onChange={e => setDateOfBirth(e.target.value)}
+                    style={{ width:"100%", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"12px 14px", color:"#fff", fontSize:"0.92rem", fontFamily:"inherit", boxSizing:"border-box", outline:"none", transition:"border-color 0.2s", colorScheme:"dark" }}
+                    onFocus={e=>{ e.target.style.borderColor="rgba(111,232,64,0.5)"; }}
+                    onBlur={e=>{ e.target.style.borderColor="rgba(255,255,255,0.1)"; }}
+                  />
+                  <p style={{ margin:"5px 0 0", fontSize:"0.72rem", color:"rgba(255,255,255,0.25)" }}>Used to personalise your experience. Not publicly visible.</p>
+                </div>
 
                 {/* Gender selection */}
                 <div>
