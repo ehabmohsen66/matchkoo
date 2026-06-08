@@ -1414,129 +1414,191 @@
   <script src="/js/i18n.js?v=2.6"></script>
   <script src="/js/app.js?v=9.0"></script>
 
-  <!-- ── EDIT PROFILE MODAL ──────────────────────────────── -->
-  <div class="modal-overlay hidden" id="edit-profile-modal" onclick="if(event.target===this)closeEditProfile()">
-    <div class="edit-profile-sheet" onclick="event.stopPropagation()">
+
+  <!-- ── EDIT PROFILE MODAL v2 ──────────────────────────────── -->
+  <div id="edit-profile-modal"
+    style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:flex-end;justify-content:center;"
+    onclick="if(event.target===this)closeEditProfile()">
+
+    <div onclick="event.stopPropagation()"
+      style="background:#111827;border-radius:24px 24px 0 0;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding-bottom:40px;box-shadow:0 -16px 60px rgba(0,0,0,0.8);animation:slideUpSheet 0.3s cubic-bezier(0.32,0.72,0,1);">
+
       <!-- Drag handle -->
-      <div class="ep-drag-handle"></div>
+      <div style="width:44px;height:4px;background:rgba(255,255,255,0.15);border-radius:99px;margin:14px auto 0;"></div>
+
       <!-- Header -->
-      <div class="ep-header">
-        <div class="ep-title-wrap">
-          <div class="ep-title-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#3CB82E" stroke-width="2" width="18" height="18">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.07);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:38px;height:38px;border-radius:10px;background:rgba(60,184,46,0.12);border:1px solid rgba(60,184,46,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3CB82E" stroke-width="2" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </div>
           <div>
-            <div class="ep-title">Edit Profile</div>
-            <div class="ep-subtitle">Update your name and avatar</div>
+            <div style="font-size:1rem;font-weight:800;color:#fff;letter-spacing:0.3px;">Edit Profile</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.35);margin-top:1px;">Update your display name and avatar</div>
           </div>
         </div>
-        <button class="ep-close-btn" onclick="closeEditProfile()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
+        <button onclick="closeEditProfile()"
+          style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0;">
+          ✕
         </button>
       </div>
-      <!-- Current Avatar Preview -->
-      <div class="ep-avatar-preview-wrap">
-        <div class="ep-avatar-ring">
-          <img id="ep-preview-img" src="" alt="Current avatar" class="ep-preview-avatar">
-          <div class="ep-avatar-edit-badge">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12">
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-          </div>
+
+      <!-- Avatar Grid Label -->
+      <div style="font-size:0.68rem;font-weight:800;color:rgba(255,255,255,0.35);letter-spacing:1.5px;text-transform:uppercase;padding:18px 20px 10px;">
+        Choose Your Avatar
+      </div>
+
+      <!-- 8-Avatar Grid -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 20px;" id="ep-avatar-grid">
+
+        <!-- Avatar 1 -->
+        <button class="ep-av-btn" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=b6e3f4"
+          onclick="selectEditAvatar(this)"
+          style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:14px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;font-family:inherit;transition:all 0.18s;">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=b6e3f4"
+            style="width:58px;height:58px;border-radius:50%;display:block;" loading="lazy" alt="Felix">
+          <span style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.45);">Felix</span>
+        </button>
+
+        <!-- Avatar 2 -->
+        <button class="ep-av-btn" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Kai&backgroundColor=c0aede"
+          onclick="selectEditAvatar(this)"
+          style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:14px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;font-family:inherit;transition:all 0.18s;">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Kai&backgroundColor=c0aede"
+            style="width:58px;height:58px;border-radius:50%;display:block;" loading="lazy" alt="Kai">
+          <span style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.45);">Kai</span>
+        </button>
+
+        <!-- Avatar 3 -->
+        <button class="ep-av-btn" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Marco&backgroundColor=ffd5dc"
+          onclick="selectEditAvatar(this)"
+          style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:14px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;font-family:inherit;transition:all 0.18s;">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Marco&backgroundColor=ffd5dc"
+            style="width:58px;height:58px;border-radius:50%;display:block;" loading="lazy" alt="Marco">
+          <span style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.45);">Marco</span>
+        </button>
+
+        <!-- Avatar 4 -->
+        <button class="ep-av-btn" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Zara&backgroundColor=d1d4f9"
+          onclick="selectEditAvatar(this)"
+          style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:14px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;font-family:inherit;transition:all 0.18s;">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Zara&backgroundColor=d1d4f9"
+            style="width:58px;height:58px;border-radius:50%;display:block;" loading="lazy" alt="Zara">
+          <span style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.45);">Zara</span>
+        </button>
+
+        <!-- Avatar 5 -->
+        <button class="ep-av-btn" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Nadia&backgroundColor=b6e3f4"
+          onclick="selectEditAvatar(this)"
+          style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:14px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;font-family:inherit;transition:all 0.18s;">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Nadia&backgroundColor=b6e3f4"
+            style="width:58px;height:58px;border-radius:50%;display:block;" loading="lazy" alt="Nadia">
+          <span style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.45);">Nadia</span>
+        </button>
+
+        <!-- Avatar 6 -->
+        <button class="ep-av-btn" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Luna&backgroundColor=c0aede"
+          onclick="selectEditAvatar(this)"
+          style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:14px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;font-family:inherit;transition:all 0.18s;">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Luna&backgroundColor=c0aede"
+            style="width:58px;height:58px;border-radius:50%;display:block;" loading="lazy" alt="Luna">
+          <span style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.45);">Luna</span>
+        </button>
+
+        <!-- Avatar 7 -->
+        <button class="ep-av-btn" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Jade&backgroundColor=ffd5dc"
+          onclick="selectEditAvatar(this)"
+          style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:14px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;font-family:inherit;transition:all 0.18s;">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jade&backgroundColor=ffd5dc"
+            style="width:58px;height:58px;border-radius:50%;display:block;" loading="lazy" alt="Jade">
+          <span style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.45);">Jade</span>
+        </button>
+
+        <!-- Avatar 8 -->
+        <button class="ep-av-btn" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Sofia&backgroundColor=d1d4f9"
+          onclick="selectEditAvatar(this)"
+          style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:14px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;font-family:inherit;transition:all 0.18s;">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sofia&backgroundColor=d1d4f9"
+            style="width:58px;height:58px;border-radius:50%;display:block;" loading="lazy" alt="Sofia">
+          <span style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.45);">Sofia</span>
+        </button>
+
+      </div>
+
+      <!-- Current Selection Preview -->
+      <div id="ep-selected-preview" style="display:none;align-items:center;gap:12px;margin:14px 20px 0;padding:12px 14px;background:rgba(60,184,46,0.06);border:1px solid rgba(60,184,46,0.25);border-radius:12px;">
+        <img id="ep-preview-img" src="" style="width:44px;height:44px;border-radius:50%;border:2px solid #3CB82E;flex-shrink:0;" alt="Selected avatar">
+        <div>
+          <div style="font-size:0.75rem;font-weight:800;color:#6FE840;letter-spacing:0.5px;">✓ Avatar Selected</div>
+          <div style="font-size:0.68rem;color:rgba(255,255,255,0.4);margin-top:1px;" id="ep-preview-name">—</div>
         </div>
-        <div class="ep-avatar-hint">Tap an avatar below to change</div>
       </div>
-      <!-- Avatar Grid -->
-      <div class="ep-section-label">Choose Your Avatar</div>
-      <div class="ep-gender-filter">
-        <button class="ep-gender-btn active" onclick="filterAvatarsByGender(this, 'all')">All</button>
-        <button class="ep-gender-btn" onclick="filterAvatarsByGender(this, 'male')">Male</button>
-        <button class="ep-gender-btn" onclick="filterAvatarsByGender(this, 'female')">Female</button>
-      </div>
-      <div class="ep-avatar-grid" id="ep-avatar-grid">
-        <button class="ep-avatar-btn" data-gender="male" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=striker&amp;backgroundColor=b6e3f4" onclick="selectEditAvatar(this)" title="Striker">
-          <div class="ep-av-gender-badge male">M</div>
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=striker&amp;backgroundColor=b6e3f4" alt="Striker" loading="lazy">
-          <span>Striker</span>
-        </button>
-        <button class="ep-avatar-btn" data-gender="male" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=dragon&amp;backgroundColor=c0aede" onclick="selectEditAvatar(this)" title="Dragon">
-          <div class="ep-av-gender-badge male">M</div>
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=dragon&amp;backgroundColor=c0aede" alt="Dragon" loading="lazy">
-          <span>Dragon</span>
-        </button>
-        <button class="ep-avatar-btn" data-gender="male" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=falcon&amp;backgroundColor=ffd5dc" onclick="selectEditAvatar(this)" title="Falcon">
-          <div class="ep-av-gender-badge male">M</div>
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=falcon&amp;backgroundColor=ffd5dc" alt="Falcon" loading="lazy">
-          <span>Falcon</span>
-        </button>
-        <button class="ep-avatar-btn" data-gender="male" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=thunder&amp;backgroundColor=d1d4f9" onclick="selectEditAvatar(this)" title="Thunder">
-          <div class="ep-av-gender-badge male">M</div>
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=thunder&amp;backgroundColor=d1d4f9" alt="Thunder" loading="lazy">
-          <span>Thunder</span>
-        </button>
-        <button class="ep-avatar-btn" data-gender="female" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=aurora&amp;backgroundColor=b6e3f4&amp;top=longHair" onclick="selectEditAvatar(this)" title="Aurora">
-          <div class="ep-av-gender-badge female">F</div>
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=aurora&amp;backgroundColor=b6e3f4&amp;top=longHair" alt="Aurora" loading="lazy">
-          <span>Aurora</span>
-        </button>
-        <button class="ep-avatar-btn" data-gender="female" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=phoenix&amp;backgroundColor=ffd5dc&amp;top=longHairStraight" onclick="selectEditAvatar(this)" title="Phoenix">
-          <div class="ep-av-gender-badge female">F</div>
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=phoenix&amp;backgroundColor=ffd5dc&amp;top=longHairStraight" alt="Phoenix" loading="lazy">
-          <span>Phoenix</span>
-        </button>
-        <button class="ep-avatar-btn" data-gender="female" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=celeste&amp;backgroundColor=c0aede&amp;top=longHairCurly" onclick="selectEditAvatar(this)" title="Celeste">
-          <div class="ep-av-gender-badge female">F</div>
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=celeste&amp;backgroundColor=c0aede&amp;top=longHairCurly" alt="Celeste" loading="lazy">
-          <span>Celeste</span>
-        </button>
-        <button class="ep-avatar-btn" data-gender="female" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=nova&amp;backgroundColor=d1d4f9&amp;top=longHairBun" onclick="selectEditAvatar(this)" title="Nova">
-          <div class="ep-av-gender-badge female">F</div>
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=nova&amp;backgroundColor=d1d4f9&amp;top=longHairBun" alt="Nova" loading="lazy">
-          <span>Nova</span>
-        </button>
-      </div>
+
       <!-- Name Field -->
-      <div class="ep-section-label" style="margin-top:20px">Display Name</div>
-      <div class="ep-name-field-wrap">
-        <input type="text" id="ep-name-input" class="ep-name-input" placeholder="Enter your display name..." maxlength="40" autocomplete="off" oninput="updateNameCounter()">
-        <div class="ep-name-counter" id="ep-name-counter">0/40</div>
+      <div style="padding:18px 20px 0;">
+        <div style="font-size:0.68rem;font-weight:800;color:rgba(255,255,255,0.35);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Display Name</div>
+        <div style="position:relative;">
+          <input type="text" id="ep-name-input" maxlength="40" autocomplete="off" oninput="updateNameCounter()"
+            placeholder="Your display name…"
+            style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px 48px 13px 14px;color:#fff;font-size:0.95rem;font-weight:600;font-family:inherit;outline:none;transition:border-color 0.2s;">
+          <div id="ep-name-counter" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.25);pointer-events:none;">0/40</div>
+        </div>
       </div>
+
       <!-- Save Button -->
-      <button class="ep-save-btn" id="ep-save-btn" onclick="saveProfileChanges()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-        Save Changes
-      </button>
-      <!-- Divider -->
-      <div class="ep-divider">
-        <div class="ep-divider-line"></div>
-        <span>Security</span>
-        <div class="ep-divider-line"></div>
+      <div style="padding:14px 20px 0;">
+        <button id="ep-save-btn" onclick="saveProfileChanges()"
+          style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#3CB82E,#6FE840);color:#000;font-size:0.9rem;font-weight:800;letter-spacing:0.4px;cursor:pointer;font-family:inherit;transition:all 0.2s;box-shadow:0 4px 20px rgba(60,184,46,0.3);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="17" height="17"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Changes
+        </button>
       </div>
-      <!-- Password Change -->
-      <div class="ep-password-section">
-        <div class="ep-pw-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="20" height="20">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
+
+      <!-- Security divider -->
+      <div style="display:flex;align-items:center;gap:10px;padding:20px 20px 14px;">
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.07);"></div>
+        <span style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.2);letter-spacing:1.5px;text-transform:uppercase;">Security</span>
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.07);"></div>
+      </div>
+
+      <!-- Password Row -->
+      <div style="display:flex;align-items:center;gap:14px;margin:0 20px;padding:14px 16px;background:rgba(255,153,20,0.05);border:1px solid rgba(255,153,20,0.15);border-radius:12px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:rgba(255,153,20,0.1);border:1px solid rgba(255,153,20,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="18" height="18"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
-        <div class="ep-pw-content">
-          <div class="ep-pw-title">Password</div>
-          <div class="ep-pw-sub">We will email you a secure reset link</div>
+        <div style="flex:1;">
+          <div style="font-size:0.85rem;font-weight:700;color:#fff;">Password</div>
+          <div style="font-size:0.7rem;color:rgba(255,255,255,0.35);margin-top:1px;">We'll email you a secure reset link</div>
         </div>
-        <button class="ep-pw-btn" id="ep-pw-btn" onclick="requestPasswordChange()">
+        <button id="ep-pw-btn" onclick="requestPasswordChange()"
+          style="padding:7px 16px;border-radius:100px;border:1px solid rgba(255,153,20,0.4);background:rgba(255,153,20,0.08);color:#ff9914;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.2s;">
           Change
         </button>
       </div>
-      <div id="ep-pw-feedback" class="ep-pw-feedback hidden"></div>
+
+      <!-- PW Feedback -->
+      <div id="ep-pw-feedback" style="display:none;margin:10px 20px 0;padding:10px 14px;border-radius:10px;font-size:0.8rem;font-weight:600;line-height:1.4;"></div>
+
     </div>
   </div>
+
+  <style>
+    @keyframes slideUpSheet {
+      from { transform: translateY(100%); opacity: 0; }
+      to   { transform: translateY(0);   opacity: 1; }
+    }
+    #edit-profile-modal.open { display: flex !important; }
+    .ep-av-btn:hover { border-color: rgba(60,184,46,0.45) !important; background: rgba(60,184,46,0.07) !important; transform: translateY(-2px); }
+    .ep-av-btn.selected { border-color: #3CB82E !important; background: rgba(60,184,46,0.1) !important; box-shadow: 0 0 0 3px rgba(60,184,46,0.15); }
+    .ep-av-btn.selected span { color: #6FE840 !important; }
+    #ep-name-input:focus { border-color: rgba(60,184,46,0.5) !important; box-shadow: 0 0 0 3px rgba(60,184,46,0.1); }
+    #ep-save-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(60,184,46,0.4) !important; }
+    #ep-save-btn:active { transform: translateY(0); }
+    #ep-save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+    #ep-pw-btn:hover { background: rgba(255,153,20,0.15) !important; }
+    .ep-toast-msg { position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(17,24,39,0.97);border:1px solid rgba(60,184,46,0.5);color:#6FE840;font-size:0.85rem;font-weight:700;padding:11px 20px;border-radius:100px;z-index:999999;opacity:0;transition:all 0.3s;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+    .ep-toast-msg.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    .ep-toast-msg.err { border-color:rgba(231,76,60,0.5); color:#e74c3c; }
+  </style>
 
 </body>
