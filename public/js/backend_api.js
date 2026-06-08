@@ -293,12 +293,29 @@ const Backend = {
       const yrRank = document.querySelector('.yrb-rank');
       if (yrRank && yrRank.textContent === '#1,247') yrRank.textContent = '#' + rank.toLocaleString();
 
+      // ── Real daily XP insight ──────────────────────────────────────
+      const xpToday = data.xpToday ?? 0;
+      const todayEl = document.getElementById('yrb-today-xp');
+      if (todayEl) {
+        if (xpToday > 0) {
+          todayEl.style.color = '#3CB82E';
+          todayEl.textContent = '↑' + xpToday.toLocaleString() + ' today';
+        } else if (xpToday < 0) {
+          todayEl.style.color = '#e74c3c';
+          todayEl.textContent = '↓' + Math.abs(xpToday).toLocaleString() + ' today';
+        } else {
+          todayEl.style.color = 'rgba(255,255,255,0.4)';
+          todayEl.textContent = '— today';
+        }
+      }
+
       // Cache for later use
       window._cachedUserRank = rank;
     } catch (e) {
       // Graceful degradation — badge stays "—"
     }
   },
+
 
   async logout() {
     // Navigate to /signout — the dedicated Next.js page calls NextAuth signOut() reliably
