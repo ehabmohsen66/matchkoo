@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
         verificationToken,
         gender: gender === "female" ? "female" : "male", // validate input
         country, // Captured automatically
+        image: gender === "female" ? `https://avatar.iran.liara.run/public/girl?username=${encodeURIComponent(name)}` : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(name)}`,
         preferredLeagues: Array.isArray(preferredLeagues) ? preferredLeagues : [],
         ...(validDob ? { dateOfBirth: validDob } : {}),
         // Give new user their +200 XP welcome bonus immediately if referred
