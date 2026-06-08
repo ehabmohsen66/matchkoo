@@ -2539,8 +2539,8 @@ function _renderInviteCard(userId, userName) {
   if (existing) existing.remove();
 
   const refLink = `${window.location.origin}/register?ref=${userId}`;
-  const shareText = encodeURIComponent(`Join me on Matchkoo — the football prediction platform! Predict scores, earn XP and compete on leaderboards. Sign up with my invite link:`);
-  const waUrl = `https://wa.me/?text=${shareText}%20${encodeURIComponent(refLink)}`;
+  const shareText = encodeURIComponent(`Join me on Matchkoo — the football prediction platform! Predict scores, earn XP and compete on leaderboards.\n\nhttps://matchkoo.com/matchkoo-logo.png\n\nSign up with my invite link:`);
+  const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(refLink)}`;
   const twUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(refLink)}`;
 
   const card = document.createElement('section');
@@ -2561,9 +2561,9 @@ function _renderInviteCard(userId, userName) {
         </button>
       </div>
       <div style="display:flex;gap:10px;">
-        <a href="${waUrl}" target="_blank"
-          style="flex:1;padding:10px;background:#25D366;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:0.82rem;text-align:center;">
-          📲 WhatsApp
+        <a href="${fbUrl}" target="_blank"
+          style="flex:1;padding:10px;background:#1877F2;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:0.82rem;text-align:center;">
+          Facebook
         </a>
         <a href="${twUrl}" target="_blank"
           style="flex:1;padding:10px;background:#1DA1F2;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:0.82rem;text-align:center;">
@@ -3766,18 +3766,18 @@ document.querySelectorAll('.score-option input[type=radio]').forEach(radio => {
 function shareTrophy(el) {
   const trophyName = el.getAttribute ? el.getAttribute('data-name') : el;
   const trophyIcon = el.getAttribute ? el.getAttribute('data-icon') : arguments[1];
-  const text = encodeURIComponent('I just unlocked the "' + trophyName + '" trophy on Matchkoo! ' + trophyIcon + ' Come join me and predict football matches for XP prizes!');
+  const text = encodeURIComponent('I just unlocked the "' + trophyName + '" trophy on Matchkoo! ' + trophyIcon + ' Come join me and predict football matches for XP prizes!\n\nhttps://matchkoo.com/matchkoo-logo.png\n\n');
   const url = encodeURIComponent(window.location.origin);
   const twitterUrl = 'https://twitter.com/intent/tweet?text=' + text + '&url=' + url;
-  const whatsappUrl = 'https://wa.me/?text=' + text + '%20' + url;
+  const facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + url;
   const share = document.createElement('div');
   share.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:#0F1520;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;text-align:center;min-width:280px;box-shadow:0 32px 80px rgba(0,0,0,0.5)';
   share.innerHTML = '<div style="font-size:2.5rem;margin-bottom:8px">' + trophyIcon + '</div>' +
     '<div style="font-weight:800;color:#fff;margin-bottom:4px">' + trophyName + '</div>' +
     '<div style="color:rgba(255,255,255,0.4);font-size:0.8rem;margin-bottom:20px">Share your achievement!</div>' +
     '<div style="display:flex;gap:10px;justify-content:center">' +
+      '<a href="' + facebookUrl + '" target="_blank" style="flex:1;padding:10px;background:#1877F2;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:0.85rem">Facebook</a>' +
       '<a href="' + twitterUrl + '" target="_blank" style="flex:1;padding:10px;background:#1DA1F2;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:0.85rem">𝕏 Twitter</a>' +
-      '<a href="' + whatsappUrl + '" target="_blank" style="flex:1;padding:10px;background:#25D366;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:0.85rem">WhatsApp</a>' +
     '</div>' +
     '<button onclick="this.parentElement.remove()" style="margin-top:14px;width:100%;padding:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);border-radius:12px;cursor:pointer">Cancel</button>';
   document.body.appendChild(share);
