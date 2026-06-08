@@ -593,6 +593,14 @@ async function saveProfileChanges() {
     // Update sidebar name
     const sidebarName = document.querySelector('.user-name-sm');
     if (sidebarName) sidebarName.textContent = newName.split(' ')[0];
+    
+    // Update local state
+    if (window.Backend && window.Backend.user) {
+      window.Backend.user.name = newName;
+      if (_epSelectedAvatarUrl) {
+        window.Backend.user.image = _epSelectedAvatarUrl;
+      }
+    }
 
     // Update avatar everywhere
     if (_epSelectedAvatarUrl) {
