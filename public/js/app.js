@@ -2448,6 +2448,24 @@ async function initProfile() {
       const xpEl = document.getElementById('profile-xp');
       if (xpEl) xpEl.textContent = xp.toLocaleString() + ' XP';
 
+      // Real Insights (Stats Grid)
+      const totalPreds = u.predictionCount || 0;
+      const correctPreds = u.correctCount || 0;
+      const bestStreak = u.bestStreak || 0;
+      const accuracy = totalPreds > 0 ? ((correctPreds / totalPreds) * 100).toFixed(1) : '0.0';
+
+      const accEl = document.getElementById('profile-stat-accuracy');
+      if (accEl) accEl.textContent = accuracy + '%';
+      
+      const totalEl = document.getElementById('profile-stat-total-preds');
+      if (totalEl) totalEl.textContent = totalPreds.toLocaleString();
+      
+      const bestEl = document.getElementById('profile-stat-best-streak');
+      if (bestEl) bestEl.textContent = bestStreak.toLocaleString();
+      
+      const correctEl = document.getElementById('profile-stat-correct-preds');
+      if (correctEl) correctEl.textContent = correctPreds.toLocaleString();
+
       // Level / tier
       const TIERS = [
         { name: 'Bronze',   min: 0,     max: 2999,  cls: 'bronze'   },

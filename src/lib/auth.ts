@@ -61,7 +61,9 @@ export const authOptions: NextAuthOptions = {
         session.user.image = token.image as string;
         (session.user as any).xp              = token.xp as number;
         (session.user as any).streak          = token.streak as number ?? 0;
+        (session.user as any).bestStreak      = token.bestStreak as number ?? 0;
         (session.user as any).predictionCount = token.predictionCount as number ?? 0;
+        (session.user as any).correctCount    = token.correctCount as number ?? 0;
         (session.user as any).gender          = token.gender as string ?? "male";
         (session.user as any).country         = token.country as string ?? "EG";
       }
@@ -73,7 +75,9 @@ export const authOptions: NextAuthOptions = {
         token.role            = (user as any).role;
         token.xp              = (user as any).xp ?? 0;
         token.streak          = (user as any).streak ?? 0;
+        token.bestStreak      = (user as any).bestStreak ?? 0;
         token.predictionCount = (user as any).predictionCount ?? 0;
+        token.correctCount    = (user as any).correctCount ?? 0;
         token.gender          = (user as any).gender ?? "male";
         token.country         = (user as any).country ?? "EG";
       }
@@ -82,7 +86,7 @@ export const authOptions: NextAuthOptions = {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id as string },
-            select: { name: true, image: true, xp: true, role: true, streak: true, predictionCount: true, gender: true, country: true },
+            select: { name: true, image: true, xp: true, role: true, streak: true, bestStreak: true, predictionCount: true, correctCount: true, gender: true, country: true },
           });
           if (dbUser) {
             token.name            = dbUser.name;
@@ -90,7 +94,9 @@ export const authOptions: NextAuthOptions = {
             token.xp              = dbUser.xp;
             token.role            = dbUser.role;
             token.streak          = dbUser.streak;
+            token.bestStreak      = dbUser.bestStreak;
             token.predictionCount = dbUser.predictionCount;
+            token.correctCount    = dbUser.correctCount;
             token.gender          = dbUser.gender ?? "male";
             token.country         = dbUser.country ?? "EG";
           }
