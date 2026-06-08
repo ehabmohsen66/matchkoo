@@ -1922,7 +1922,6 @@ function openLeaguePage(id) {
 }
 
 async function openMiniLeagueDetail(leagueId) {
-  // Show a full-screen panel inside page-minileague
   const panel = document.getElementById('mini-league-detail-panel');
   if (!panel) return;
   panel.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:48px;">Loading...</div>';
@@ -1936,21 +1935,49 @@ async function openMiniLeagueDetail(leagueId) {
     const comp = COMP_META[data.competition] || COMP_META['premier_league'];
     const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
-    // Build ranking rows
-    const rankHtml = data.ranking.length ? data.ranking.map((r, i) => `
-      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
-        <div style="font-weight:800;min-width:28px;color:${i===0?'#ffd700':i===1?'#c0c0c0':i===2?'#cd7f32':'rgba(255,255,255,0.4)'};text-align:center">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>
-        <img src="${r.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+encodeURIComponent(r.name)}" width="34" height="34" style="border-radius:50%;border:2px solid ${r.isMe?'var(--green)':'rgba(255,255,255,0.1)'}">
-        <div style="flex:1">
-          <div style="font-weight:700;font-size:0.9rem;color:${r.isMe?'var(--green)':'var(--text-primary)'}">
-            ${r.name}${r.isMe?' <span style="font-size:0.65rem;color:var(--green)">YOU</span>':''}
-          </div>
-        </div>
-        <div style="font-weight:800;color:var(--cyan);font-size:0.85rem">${(r.xp||0).toLocaleString()} XP</div>
-      </div>
-    `).join('') : '<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:0.85rem;">No predictions scored yet. Predict upcoming games!</div>';
+    // ── Top-3 Podium ──
+    const top3 = data.ranking.slice(0, 3);
+    const podiumOrder   = [top3[1], top3[0], top3[2]];
+    const podiumColors  = ['#C0C0C0', '#FFD700', '#CD7F32'];
+    const podiumLabels  = ['2nd', '1st', '3rd'];
+    const podiumHeights = ['68px', '92px', '56px'];
+    const podiumMedals  = ['🥈', '🥇', '🥉'];
+    const podiumHtml = top3.length ? `
+      <div style="display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:20px;padding-top:8px;">
+        ${podiumOrder.map((r, i) => r ? `
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;">
+            <div style="font-size:1.2rem;">${podiumMedals[i]}</div>
+            <img src="${r.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+encodeURIComponent(r.name)}"
+                 width="${i===1?52:40}" height="${i===1?52:40}"
+                 style="border-radius:50%;border:2.5px solid ${podiumColors[i]};box-shadow:0 0 10px ${podiumColors[i]}44;">
+            <div style="font-size:0.65rem;font-weight:700;color:#fff;text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.name}">
+              ${r.name}${r.isMe?' <span style="color:var(--green);font-size:0.55rem">YOU</span>':''}
+            </div>
+            <div style="font-size:0.65rem;font-weight:800;color:${podiumColors[i]};">${(r.xp||0).toLocaleString()} XP</div>
+            <div style="width:100%;background:${podiumColors[i]}18;border:1px solid ${podiumColors[i]}44;border-radius:8px 8px 0 0;height:${podiumHeights[i]};display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:0.78rem;font-weight:900;color:${podiumColors[i]};">${podiumLabels[i]}</span>
+            </div>
+          </div>` : `<div style="flex:1;"></div>`
+        ).join('')}
+      </div>` : '';
 
-    // Build fixture rows
+    // ── Rows rank 4+ ──
+    const rankRestHtml = data.ranking.slice(3).map((r, i) => `
+      <div style="display:flex;align-items:center;gap:9px;padding:9px 0;border-top:1px solid rgba(255,255,255,0.05);">
+        <div style="font-weight:800;min-width:22px;color:rgba(255,255,255,0.3);font-size:0.78rem;text-align:center">#${i+4}</div>
+        <img src="${r.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+encodeURIComponent(r.name)}" width="28" height="28"
+             style="border-radius:50%;border:2px solid ${r.isMe?'var(--green)':'rgba(255,255,255,0.08)'}">
+        <div style="flex:1;font-size:0.82rem;font-weight:${r.isMe?700:500};color:${r.isMe?'var(--green)':'var(--text-primary)'}">
+          ${r.name}${r.isMe?' <span style="font-size:0.58rem;color:var(--green)">YOU</span>':''}
+        </div>
+        <div style="font-weight:800;color:var(--cyan);font-size:0.78rem">${(r.xp||0).toLocaleString()} XP</div>
+      </div>`).join('');
+
+    const rankingContent = data.ranking.length === 0
+      ? '<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:0.82rem;">No predictions scored yet.<br>Predict upcoming games!</div>'
+      : podiumHtml + rankRestHtml;
+
+    // ── Build fixture rows ──
     const today = new Date(); today.setHours(0,0,0,0);
     let lastLabel = '';
     const fixtureHtml = data.fixtures.length ? data.fixtures.map(m => {
@@ -1958,26 +1985,22 @@ async function openMiniLeagueDetail(leagueId) {
       const mDay = new Date(t); mDay.setHours(0,0,0,0);
       const diffDays = Math.round((mDay - today) / 86400000);
       const dayLabel = diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : DAY_NAMES[t.getDay()];
-      const timeStr = t.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      const timeStr = t.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit'}) + ' ' + t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
       let sep = '';
-      if (dayLabel !== lastLabel) { lastLabel = dayLabel; sep = `<div class="fixture-day-header">${dayLabel}</div>`; }
+      if (dayLabel !== lastLabel) { lastLabel = dayLabel; sep = `<div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;padding:10px 0 5px;">${dayLabel}</div>`; }
       const hasPred = !!m.userPrediction;
-      const homeLogo = m.homeLogo ? `<img src="${m.homeLogo}" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">` : `<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">${m.homeTeam.substring(0,3).toUpperCase()}</div>`;
-      const awayLogo = m.awayLogo ? `<img src="${m.awayLogo}" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">` : `<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">${m.awayTeam.substring(0,3).toUpperCase()}</div>`;
+      const homeLogo = m.homeLogo ? `<img src="${m.homeLogo}" width="28" height="28" style="border-radius:50%;border:1.5px solid rgba(255,255,255,0.1)">` : `<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:rgba(255,255,255,0.4)">${m.homeTeam.substring(0,3).toUpperCase()}</div>`;
+      const awayLogo = m.awayLogo ? `<img src="${m.awayLogo}" width="28" height="28" style="border-radius:50%;border:1.5px solid rgba(255,255,255,0.1)">` : `<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:rgba(255,255,255,0.4)">${m.awayTeam.substring(0,3).toUpperCase()}</div>`;
       return sep + `
-        <div class="fixture-row" onclick="openRealMatchDetail('${m.id}')" role="button" tabindex="0" style="${hasPred?'border-left:3px solid var(--green);':''}">
-          <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:10px">${homeLogo}${awayLogo}</div>
-          <div class="fixture-teams" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-            <div style="min-width:0">
-              <div class="fixture-league-name">${hasPred?'✓ Predicted':'Predict'}</div>
-              <div class="fixture-team-names">${m.homeTeam} vs ${m.awayTeam}</div>
-            </div>
+        <div onclick="openRealMatchDetail('${m.id}')" role="button" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:10px;margin-bottom:4px;background:${hasPred?'rgba(60,184,46,0.06)':'rgba(255,255,255,0.02)'};border:1px solid ${hasPred?'rgba(60,184,46,0.2)':'rgba(255,255,255,0.05)'};">
+          <div style="display:flex;gap:3px;flex-shrink:0;">${homeLogo}${awayLogo}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.68rem;font-weight:700;color:${hasPred?'var(--green)':'rgba(255,255,255,0.35)'};">${hasPred?'✓ Predicted':'Predict'}</div>
+            <div style="font-size:0.8rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.homeTeam} vs ${m.awayTeam}</div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
-            <div style="color:var(--text-muted);font-size:0.8rem;min-width:110px;text-align:right">${timeStr}</div>
-          </div>
+          <div style="font-size:0.68rem;color:var(--text-muted);text-align:right;flex-shrink:0;">${timeStr}</div>
         </div>`;
-    }).join('') : '<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:0.85rem;">No upcoming fixtures for this competition in the next 7 days.</div>';
+    }).join('') : '<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:0.82rem;">No upcoming fixtures.</div>';
 
     panel.innerHTML = `
       <!-- Header -->
@@ -1993,12 +2016,12 @@ async function openMiniLeagueDetail(leagueId) {
       </div>
 
       <!-- Invite code -->
-      <div style="background:rgba(8,189,189,0.08);border:1px solid rgba(8,189,189,0.2);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="background:rgba(8,189,189,0.08);border:1px solid rgba(8,189,189,0.2);border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:0.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Invite Code</span>
         <code style="font-size:0.9rem;font-weight:800;color:var(--cyan);cursor:pointer;" onclick="navigator.clipboard.writeText('${data.inviteCode}');showNotification('Code copied!','success')">${data.inviteCode} 📋</code>
       </div>
 
-      <!-- Live Now strip (hidden when no live matches) -->
+      <!-- Live Now strip -->
       ${data.liveMatches.length ? `
       <div style="margin-bottom:16px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
@@ -2022,15 +2045,22 @@ async function openMiniLeagueDetail(leagueId) {
         </div>
       </div>` : ''}
 
-      <!-- Tabs -->
-      <div style="display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:16px;">
-        <button id="ml-tab-rank" onclick="switchMlTab('rank')" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid var(--cyan);color:var(--cyan);font-weight:800;font-size:0.85rem;cursor:pointer;">🏆 Ranking</button>
-        <button id="ml-tab-fix" onclick="switchMlTab('fix')" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-muted);font-weight:700;font-size:0.85rem;cursor:pointer;">📅 Fixtures</button>
-      </div>
+      <!-- Two-column layout: Rankings (left, with podium) | Fixtures (right) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
 
-      <!-- Tab content -->
-      <div id="ml-tab-content-rank">${rankHtml}</div>
-      <div id="ml-tab-content-fix" class="hidden">${fixtureHtml}</div>
+        <!-- LEFT: Rankings with podium -->
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;">
+          <div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;">🏆 Rankings</div>
+          ${rankingContent}
+        </div>
+
+        <!-- RIGHT: Fixtures -->
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;">
+          <div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">📅 Fixtures</div>
+          ${fixtureHtml}
+        </div>
+
+      </div>
     `;
   } catch(e) {
     panel.innerHTML = '<div style="color:var(--red);padding:32px;">Failed to load league detail.</div>';
