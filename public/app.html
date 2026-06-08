@@ -737,6 +737,14 @@
             </div>
           </div>
         </div>
+        <!-- Edit Profile Button -->
+        <button class="edit-profile-btn" onclick="openEditProfile()" id="edit-profile-btn" title="Edit Profile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Edit
+        </button>
       </div>
 
       <!-- Stats Grid -->
@@ -1406,4 +1414,130 @@
   <script src="/js/data.js?v=5.7"></script>
   <script src="/js/i18n.js?v=2.6"></script>
   <script src="/js/app.js?v=9.0"></script>
+
+  <!-- ── EDIT PROFILE MODAL ──────────────────────────────── -->
+  <div class="modal-overlay hidden" id="edit-profile-modal" onclick="if(event.target===this)closeEditProfile()">
+    <div class="edit-profile-sheet" onclick="event.stopPropagation()">
+      <!-- Drag handle -->
+      <div class="ep-drag-handle"></div>
+      <!-- Header -->
+      <div class="ep-header">
+        <div class="ep-title-wrap">
+          <div class="ep-title-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3CB82E" stroke-width="2" width="18" height="18">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div>
+            <div class="ep-title">Edit Profile</div>
+            <div class="ep-subtitle">Update your name and avatar</div>
+          </div>
+        </div>
+        <button class="ep-close-btn" onclick="closeEditProfile()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <!-- Current Avatar Preview -->
+      <div class="ep-avatar-preview-wrap">
+        <div class="ep-avatar-ring">
+          <img id="ep-preview-img" src="" alt="Current avatar" class="ep-preview-avatar">
+          <div class="ep-avatar-edit-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12">
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ep-avatar-hint">Tap an avatar below to change</div>
+      </div>
+      <!-- Avatar Grid -->
+      <div class="ep-section-label">Choose Your Avatar</div>
+      <div class="ep-gender-filter">
+        <button class="ep-gender-btn active" onclick="filterAvatarsByGender(this, 'all')">All</button>
+        <button class="ep-gender-btn" onclick="filterAvatarsByGender(this, 'male')">Male</button>
+        <button class="ep-gender-btn" onclick="filterAvatarsByGender(this, 'female')">Female</button>
+      </div>
+      <div class="ep-avatar-grid" id="ep-avatar-grid">
+        <button class="ep-avatar-btn" data-gender="male" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=striker&amp;backgroundColor=b6e3f4" onclick="selectEditAvatar(this)" title="Striker">
+          <div class="ep-av-gender-badge male">M</div>
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=striker&amp;backgroundColor=b6e3f4" alt="Striker" loading="lazy">
+          <span>Striker</span>
+        </button>
+        <button class="ep-avatar-btn" data-gender="male" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=dragon&amp;backgroundColor=c0aede" onclick="selectEditAvatar(this)" title="Dragon">
+          <div class="ep-av-gender-badge male">M</div>
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=dragon&amp;backgroundColor=c0aede" alt="Dragon" loading="lazy">
+          <span>Dragon</span>
+        </button>
+        <button class="ep-avatar-btn" data-gender="male" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=falcon&amp;backgroundColor=ffd5dc" onclick="selectEditAvatar(this)" title="Falcon">
+          <div class="ep-av-gender-badge male">M</div>
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=falcon&amp;backgroundColor=ffd5dc" alt="Falcon" loading="lazy">
+          <span>Falcon</span>
+        </button>
+        <button class="ep-avatar-btn" data-gender="male" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=thunder&amp;backgroundColor=d1d4f9" onclick="selectEditAvatar(this)" title="Thunder">
+          <div class="ep-av-gender-badge male">M</div>
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=thunder&amp;backgroundColor=d1d4f9" alt="Thunder" loading="lazy">
+          <span>Thunder</span>
+        </button>
+        <button class="ep-avatar-btn" data-gender="female" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=aurora&amp;backgroundColor=b6e3f4&amp;top=longHair" onclick="selectEditAvatar(this)" title="Aurora">
+          <div class="ep-av-gender-badge female">F</div>
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=aurora&amp;backgroundColor=b6e3f4&amp;top=longHair" alt="Aurora" loading="lazy">
+          <span>Aurora</span>
+        </button>
+        <button class="ep-avatar-btn" data-gender="female" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=phoenix&amp;backgroundColor=ffd5dc&amp;top=longHairStraight" onclick="selectEditAvatar(this)" title="Phoenix">
+          <div class="ep-av-gender-badge female">F</div>
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=phoenix&amp;backgroundColor=ffd5dc&amp;top=longHairStraight" alt="Phoenix" loading="lazy">
+          <span>Phoenix</span>
+        </button>
+        <button class="ep-avatar-btn" data-gender="female" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=celeste&amp;backgroundColor=c0aede&amp;top=longHairCurly" onclick="selectEditAvatar(this)" title="Celeste">
+          <div class="ep-av-gender-badge female">F</div>
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=celeste&amp;backgroundColor=c0aede&amp;top=longHairCurly" alt="Celeste" loading="lazy">
+          <span>Celeste</span>
+        </button>
+        <button class="ep-avatar-btn" data-gender="female" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=nova&amp;backgroundColor=d1d4f9&amp;top=longHairBun" onclick="selectEditAvatar(this)" title="Nova">
+          <div class="ep-av-gender-badge female">F</div>
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=nova&amp;backgroundColor=d1d4f9&amp;top=longHairBun" alt="Nova" loading="lazy">
+          <span>Nova</span>
+        </button>
+      </div>
+      <!-- Name Field -->
+      <div class="ep-section-label" style="margin-top:20px">Display Name</div>
+      <div class="ep-name-field-wrap">
+        <input type="text" id="ep-name-input" class="ep-name-input" placeholder="Enter your display name..." maxlength="40" autocomplete="off" oninput="updateNameCounter()">
+        <div class="ep-name-counter" id="ep-name-counter">0/40</div>
+      </div>
+      <!-- Save Button -->
+      <button class="ep-save-btn" id="ep-save-btn" onclick="saveProfileChanges()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Save Changes
+      </button>
+      <!-- Divider -->
+      <div class="ep-divider">
+        <div class="ep-divider-line"></div>
+        <span>Security</span>
+        <div class="ep-divider-line"></div>
+      </div>
+      <!-- Password Change -->
+      <div class="ep-password-section">
+        <div class="ep-pw-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="20" height="20">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div class="ep-pw-content">
+          <div class="ep-pw-title">Password</div>
+          <div class="ep-pw-sub">We will email you a secure reset link</div>
+        </div>
+        <button class="ep-pw-btn" id="ep-pw-btn" onclick="requestPasswordChange()">
+          Change
+        </button>
+      </div>
+      <div id="ep-pw-feedback" class="ep-pw-feedback hidden"></div>
+    </div>
+  </div>
+
 </body>

@@ -471,3 +471,220 @@ async function handleSignOut() {
   if (label) { label.textContent = 'Signing out…'; }
   await Backend.logout();
 }
+
+// ═══════════════════════════════════════════════════════════════════
+//  EDIT PROFILE — Open / Close / Avatar Select / Save / Password
+// ═══════════════════════════════════════════════════════════════════
+
+// Track the selected avatar URL while editing
+let _editSelectedAvatarUrl = null;
+
+function openEditProfile() {
+  const overlay = document.getElementById('edit-profile-modal');
+  if (!overlay) return;
+
+  // Pre-fill current avatar
+  const currentAvatarImg = document.getElementById('profile-avatar-img');
+  const previewImg = document.getElementById('ep-preview-img');
+  if (previewImg && currentAvatarImg) {
+    previewImg.src = currentAvatarImg.src;
+  }
+  _editSelectedAvatarUrl = currentAvatarImg ? currentAvatarImg.src : null;
+
+  // Pre-fill current name
+  const nameInput = document.getElementById('ep-name-input');
+  const profileNameEl = document.getElementById('profile-name');
+  if (nameInput && profileNameEl) {
+    nameInput.value = profileNameEl.textContent.trim() === '—' ? '' : profileNameEl.textContent.trim();
+    updateNameCounter();
+  }
+
+  // Mark currently selected avatar button
+  highlightMatchingAvatar(_editSelectedAvatarUrl);
+
+  // Clear any previous pw feedback
+  const feedback = document.getElementById('ep-pw-feedback');
+  if (feedback) { feedback.className = 'ep-pw-feedback hidden'; feedback.textContent = ''; }
+
+  // Show modal
+  overlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditProfile() {
+  const overlay = document.getElementById('edit-profile-modal');
+  if (!overlay) return;
+  overlay.classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function updateNameCounter() {
+  const nameInput = document.getElementById('ep-name-input');
+  const counter = document.getElementById('ep-name-counter');
+  if (!nameInput || !counter) return;
+  const len = nameInput.value.length;
+  counter.textContent = `${len}/40`;
+  counter.style.color = len > 35 ? '#ff9914' : len >= 40 ? '#e74c3c' : 'rgba(255,255,255,0.25)';
+}
+
+function selectEditAvatar(btn) {
+  // Remove 'selected' from all avatar buttons
+  document.querySelectorAll('.ep-avatar-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  const url = btn.dataset.url;
+  _editSelectedAvatarUrl = url;
+
+  // Update preview image
+  const previewImg = document.getElementById('ep-preview-img');
+  if (previewImg) {
+    previewImg.style.opacity = '0.6';
+    previewImg.src = url;
+    previewImg.onload = () => { previewImg.style.opacity = '1'; };
+  }
+}
+
+function filterAvatarsByGender(btn, gender) {
+  // Update tab active state
+  document.querySelectorAll('.ep-gender-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Filter avatar buttons
+  document.querySelectorAll('.ep-avatar-btn').forEach(b => {
+    if (gender === 'all' || b.dataset.gender === gender) {
+      b.style.display = '';
+    } else {
+      b.style.display = 'none';
+    }
+  });
+}
+
+function highlightMatchingAvatar(currentUrl) {
+  document.querySelectorAll('.ep-avatar-btn').forEach(b => {
+    b.classList.remove('selected');
+    if (b.dataset.url === currentUrl) b.classList.add('selected');
+  });
+}
+
+async function saveProfileChanges() {
+  const nameInput = document.getElementById('ep-name-input');
+  const saveBtn = document.getElementById('ep-save-btn');
+
+  const newName = nameInput ? nameInput.value.trim() : '';
+  if (!newName || newName.length < 2) {
+    showEpToast('Name must be at least 2 characters', true);
+    return;
+  }
+
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="animation:spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg> Saving...';
+
+  try {
+    const payload = { name: newName };
+    if (_editSelectedAvatarUrl) payload.image = _editSelectedAvatarUrl;
+
+    const res = await fetch('/api/user/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Failed to save');
+    }
+
+    // Update UI with new name + avatar
+    const profileNameEl = document.getElementById('profile-name');
+    if (profileNameEl) profileNameEl.textContent = newName;
+
+    // Update sidebar name
+    const sidebarName = document.querySelector('.sidebar-user-name');
+    if (sidebarName) sidebarName.textContent = newName.split(' ')[0];
+
+    // Update avatar on profile page + sidebar
+    if (_editSelectedAvatarUrl) {
+      const profileAvatarImg = document.getElementById('profile-avatar-img');
+      if (profileAvatarImg) profileAvatarImg.src = _editSelectedAvatarUrl;
+      const sidebarAvatarImg = document.querySelector('.sidebar-user .user-avatar-sm img');
+      if (sidebarAvatarImg) sidebarAvatarImg.src = _editSelectedAvatarUrl;
+    }
+
+    closeEditProfile();
+    showEpToast('✓ Profile updated!', false);
+  } catch (err) {
+    showEpToast(err.message || 'Error saving profile', true);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg> Save Changes';
+  }
+}
+
+async function requestPasswordChange() {
+  const pwBtn = document.getElementById('ep-pw-btn');
+  const feedback = document.getElementById('ep-pw-feedback');
+  if (!pwBtn || !feedback) return;
+
+  pwBtn.disabled = true;
+  pwBtn.textContent = 'Sending…';
+
+  // Get user email from session (stored in Backend.user)
+  const email = Backend && Backend.user && Backend.user.email;
+  if (!email) {
+    showPwFeedback('Could not find your email address.', false);
+    pwBtn.disabled = false;
+    pwBtn.textContent = 'Change';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    if (res.ok) {
+      showPwFeedback('✓ Password reset email sent! Check your inbox.', true);
+      pwBtn.textContent = 'Sent ✓';
+    } else {
+      const data = await res.json().catch(() => ({}));
+      showPwFeedback(data.error || 'Something went wrong. Please try again.', false);
+      pwBtn.disabled = false;
+      pwBtn.textContent = 'Change';
+    }
+  } catch(err) {
+    showPwFeedback('Network error. Please try again.', false);
+    pwBtn.disabled = false;
+    pwBtn.textContent = 'Change';
+  }
+}
+
+function showPwFeedback(msg, isSuccess) {
+  const feedback = document.getElementById('ep-pw-feedback');
+  if (!feedback) return;
+  feedback.className = 'ep-pw-feedback ' + (isSuccess ? 'success' : 'error');
+  feedback.textContent = msg;
+}
+
+function showEpToast(msg, isError) {
+  // Remove old toast if any
+  const old = document.getElementById('ep-toast-el');
+  if (old) old.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'ep-toast-el';
+  toast.className = 'ep-toast' + (isError ? ' error' : '');
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+
+  // Trigger animation
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => toast.classList.add('visible'));
+  });
+
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 350);
+  }, 3000);
+}
