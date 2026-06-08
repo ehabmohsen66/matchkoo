@@ -2158,47 +2158,79 @@ async function openMiniLeagueDetail(leagueId) {
     const comp = COMP_META[data.competition] || COMP_META['premier_league'];
     const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
-    // ── Top-3 Podium ──
+    // ── Top-3 Podium (Using Main Leaderboard Styles) ──
     const top3 = data.ranking.slice(0, 3);
-    const podiumOrder   = [top3[1], top3[0], top3[2]];
-    const podiumColors  = ['#C0C0C0', '#FFD700', '#CD7F32'];
-    const podiumLabels  = ['2nd', '1st', '3rd'];
-    const podiumHeights = ['68px', '92px', '56px'];
-    const podiumMedals  = ['🥈', '🥇', '🥉'];
     const podiumHtml = top3.length ? `
-      <div style="display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:20px;padding-top:8px;">
-        ${podiumOrder.map((r, i) => r ? `
-          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;">
-            <div style="font-size:1.2rem;">${podiumMedals[i]}</div>
-            <img src="${r.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+encodeURIComponent(r.name)}"
-                 width="${i===1?52:40}" height="${i===1?52:40}"
-                 style="border-radius:50%;border:2.5px solid ${podiumColors[i]};box-shadow:0 0 10px ${podiumColors[i]}44;">
-            <div style="font-size:0.65rem;font-weight:700;color:#fff;text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.name}">
-              ${r.name}${r.isMe?' <span style="color:var(--green);font-size:0.55rem">YOU</span>':''}
+      <div class="podium-section" style="margin-top:10px;">
+        <div class="podium-row">
+          ${top3[1] ? `
+          <div class="podium-card rank2">
+            <div class="podium-avatar">
+              <img src="${top3[1].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[1].name || 'player')}" alt="${top3[1].name}">
+              <div class="level-badge ${_xpToLevel(top3[1].xp||0).cls}">${_xpToLevel(top3[1].xp||0).badge}</div>
             </div>
-            <div style="font-size:0.65rem;font-weight:800;color:${podiumColors[i]};">${(r.xp||0).toLocaleString()} XP</div>
-            <div style="width:100%;background:${podiumColors[i]}18;border:1px solid ${podiumColors[i]}44;border-radius:8px 8px 0 0;height:${podiumHeights[i]};display:flex;align-items:center;justify-content:center;">
-              <span style="font-size:0.78rem;font-weight:900;color:${podiumColors[i]};">${podiumLabels[i]}</span>
+            <div class="podium-name">${top3[1].name}${top3[1].isMe ? ' (You)' : ''}</div>
+            <div class="podium-xp">${(top3[1].xp||0).toLocaleString()} XP</div>
+            <div class="podium-block rank2-block"><span class="rank-num">#2</span></div>
+          </div>` : '<div class="podium-card rank2" style="visibility:hidden"></div>'}
+
+          ${top3[0] ? `
+          <div class="podium-card rank1">
+            <div class="crown-icon">
+              <svg viewBox="0 0 24 24" fill="#ff9914" width="30" height="30"><path d="M2 20h20l-2-10-6 5-2-8-2 8-6-5-2 10z" /></svg>
             </div>
-          </div>` : `<div style="flex:1;"></div>`
-        ).join('')}
+            <div class="podium-avatar">
+              <img src="${top3[0].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[0].name || 'player')}" alt="${top3[0].name}">
+              <div class="level-badge ${_xpToLevel(top3[0].xp||0).cls}">${_xpToLevel(top3[0].xp||0).badge}</div>
+            </div>
+            <div class="podium-name">${top3[0].name}${top3[0].isMe ? ' (You)' : ''}</div>
+            <div class="podium-xp">${(top3[0].xp||0).toLocaleString()} XP</div>
+            <div class="podium-block rank1-block"><span class="rank-num">#1</span></div>
+          </div>` : '<div class="podium-card rank1" style="visibility:hidden"></div>'}
+
+          ${top3[2] ? `
+          <div class="podium-card rank3">
+            <div class="podium-avatar">
+              <img src="${top3[2].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[2].name || 'player')}" alt="${top3[2].name}">
+              <div class="level-badge ${_xpToLevel(top3[2].xp||0).cls}">${_xpToLevel(top3[2].xp||0).badge}</div>
+            </div>
+            <div class="podium-name">${top3[2].name}${top3[2].isMe ? ' (You)' : ''}</div>
+            <div class="podium-xp">${(top3[2].xp||0).toLocaleString()} XP</div>
+            <div class="podium-block rank3-block"><span class="rank-num">#3</span></div>
+          </div>` : '<div class="podium-card rank3" style="visibility:hidden"></div>'}
+        </div>
       </div>` : '';
 
-    // ── Rows rank 4+ ──
-    const rankRestHtml = data.ranking.slice(3).map((r, i) => `
-      <div style="display:flex;align-items:center;gap:9px;padding:9px 0;border-top:1px solid rgba(255,255,255,0.05);">
-        <div style="font-weight:800;min-width:22px;color:rgba(255,255,255,0.3);font-size:0.78rem;text-align:center">#${i+4}</div>
-        <img src="${r.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+encodeURIComponent(r.name)}" width="28" height="28"
-             style="border-radius:50%;border:2px solid ${r.isMe?'var(--green)':'rgba(255,255,255,0.08)'}">
-        <div style="flex:1;font-size:0.82rem;font-weight:${r.isMe?700:500};color:${r.isMe?'var(--green)':'var(--text-primary)'}">
-          ${r.name}${r.isMe?' <span style="font-size:0.58rem;color:var(--green)">YOU</span>':''}
+    // ── Rows rank 4+ (Using Main Leaderboard Styles) ──
+    const rankRestHtml = data.ranking.slice(3).map((u, i) => {
+      const lvl = _xpToLevel(u.xp || 0);
+      const avatar = u.image || ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name || 'player'));
+      const streak = u.streak || 0;
+      const acc = u.accuracy != null ? Math.round(u.accuracy) + '%' : '';
+      return `
+      <div class="mini-lb-row ${u.isMe ? 'you-row' : ''}" role="row">
+        <div class="lb-rank" style="color:var(--text-muted);font-weight:800">#${u.rank || (i+4)}</div>
+        <div class="lb-avatar">
+          <img src="${avatar}" alt="${u.name || 'Player'}" width="36" height="36" style="border-radius:50%">
+          <div class="level-badge-sm ${lvl.cls}">${lvl.badge}</div>
         </div>
-        <div style="font-weight:800;color:var(--cyan);font-size:0.78rem">${(r.xp||0).toLocaleString()} XP</div>
-      </div>`).join('');
+        <div class="lb-info">
+          <div class="lb-name">
+            ${u.name || 'Player'}
+            ${u.isMe ? '<span class="level-badge ' + lvl.cls + '">YOU</span>' : ''}
+            ${streak >= 3 ? '<span style="font-size:0.7rem;margin-left:4px" title="' + streak + ' streak">🔥' + streak + '</span>' : ''}
+          </div>
+          <div class="lb-sub" style="font-size:0.7rem;color:var(--text-muted)">${lvl.label}${acc ? ' · ' + acc + ' accuracy' : ''}</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-xp" style="font-weight:800;color:var(--green)">${(u.xp||0).toLocaleString()} XP</div>
+        </div>
+      </div>`;
+    }).join('');
 
     const rankingContent = data.ranking.length === 0
       ? '<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:0.82rem;">No predictions scored yet.<br>Predict upcoming games!</div>'
-      : podiumHtml + rankRestHtml;
+      : podiumHtml + (data.ranking.length > 3 ? `<div class="leaderboard-table" style="margin-top:0">${rankRestHtml}</div>` : '');
 
     // ── Build fixture rows ──
     const today = new Date(); today.setHours(0,0,0,0);
