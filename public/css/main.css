@@ -2194,9 +2194,6 @@ body[data-role="admin"] .admin-only { display: block !important; }
    EDIT PROFILE BUTTON (on profile hero card)
 ════════════════════════════════════════════════════════════ */
 .edit-profile-btn {
-  position: absolute;
-  top: 20px;
-  right: 20px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -2211,6 +2208,9 @@ body[data-role="admin"] .admin-only { display: block !important; }
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-left: auto;
 }
 .edit-profile-btn:hover {
   background: rgba(60,184,46,0.18);
