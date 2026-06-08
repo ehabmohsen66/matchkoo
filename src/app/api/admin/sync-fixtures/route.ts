@@ -171,7 +171,7 @@ export async function POST(req: NextRequest) {
 
             // Confidence Penalty
             if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));
-            if (pred.firstGoalScorer && !correctScorer) xp -= Math.round(150 * (pred.confidence / 100));
+            if (pred.firstGoalScorer && !correctScorer) xp -= 100;
 
             // BTTS bonus — 75 XP flat
             const actualBtts2 = hs > 0 && as > 0;
@@ -470,7 +470,7 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
 
           // ── 6. Confidence Penalty (Risk vs Reward) ───────────────────────────
           if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));
-          if (pred.firstGoalScorer && !correctScorer) xp -= Math.round(150 * (pred.confidence / 100));
+          if (pred.firstGoalScorer && !correctScorer) xp -= 100;
 
           // ── 7. Bonus predictions (flat, no confidence multiplier/penalty) ────
           if (correctBtts)       xp += 75;

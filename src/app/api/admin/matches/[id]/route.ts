@@ -60,7 +60,7 @@ export async function PATCH(
 
       // Confidence Penalty (Risk vs Reward)
       if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));
-      if (pred.firstGoalScorer && !correctFGS) xp -= Math.round(100 * (pred.confidence / 100));
+      if (pred.firstGoalScorer && !correctFGS) xp -= 100;
 
       // BTTS bonus — 75 XP flat (no confidence multiplier)
       const actualBtts = homeScore > 0 && awayScore > 0;
