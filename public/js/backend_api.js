@@ -270,7 +270,20 @@ const Backend = {
     const profileXpLabel = document.querySelector('.xp-label-row span:last-child');
     if (profileXpLabel) profileXpLabel.textContent = `${(this.user.xp || 0).toLocaleString()} XP`;
     const xpFill = document.querySelector('.xp-fill');
-    if (xpFill) xpFill.style.width = `${Math.min((this.user.xp / 20000) * 100, 100)}%`;
+    if (xpFill) {
+      const xp = this.user.xp || 0;
+      const TIERS = [
+        { min: 0,     max: 2999   },
+        { min: 3000,  max: 9999   },
+        { min: 10000, max: 19999  },
+        { min: 20000, max: 49999  },
+        { min: 50000, max: Infinity }
+      ];
+      const tier = TIERS.find(t => xp >= t.min && xp <= t.max) || TIERS[0];
+      const nextTier = TIERS[TIERS.indexOf(tier) + 1];
+      const pct = nextTier ? Math.min(100, ((xp - tier.min) / (nextTier.min - tier.min)) * 100) : 100;
+      xpFill.style.width = pct.toFixed(1) + '%';
+    }
 
     // ── Rank badge — shows "—" until _fetchAndShowGlobalRank fills it in ─
     // (populated immediately via /api/leaderboard/my-rank)
