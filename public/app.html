@@ -721,8 +721,15 @@
           <div class="level-badge-lg" id="profile-level-badge">...</div>
         </div>
         <div class="profile-info">
-          <h1 class="profile-name" id="profile-name">—</h1>
-          <div class="profile-meta">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <h1 class="profile-name" id="profile-name" style="margin:0">—</h1>
+            <button onclick="openEditProfile()" id="edit-profile-btn"
+              style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:100px;border:1px solid rgba(60,184,46,0.5);background:rgba(60,184,46,0.1);color:#6FE840;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit Profile
+            </button>
+          </div>
+          <div class="profile-meta" style="margin-top:8px">
             <span class="profile-flag" id="profile-flag">🌍</span>
             <span class="profile-global-rank" id="profile-global-rank" style="opacity:0.4">Loading...</span>
           </div>
@@ -737,14 +744,6 @@
             </div>
           </div>
         </div>
-        <!-- Edit Profile Button -->
-        <button class="edit-profile-btn" onclick="openEditProfile()" id="edit-profile-btn" title="Edit Profile">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-          Edit
-        </button>
       </div>
 
       <!-- Stats Grid -->
