@@ -4859,7 +4859,7 @@ async function fetchUpcomingPredictedMatches() {
   const res = await fetch('/api/predictions?status=upcoming');
   if (!res.ok) return [];
   const data = await res.json();
-  return data.predictions || [];
+  return Array.isArray(data) ? data : (data.predictions || []);
 }
 
 async function renderBoostMatchSelector(boostType) {

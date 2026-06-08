@@ -1594,8 +1594,8 @@
   </style>
 
   <!-- ─── BOOST MODALS (Joker, Shield, Demon) ────────────────── -->
-  <div class="modal-overlay hidden" id="boost-modal-overlay" onclick="closeBoostModal()">
-    <div class="modal-sheet" onclick="event.stopPropagation()" id="boost-modal" style="max-height:85vh;overflow-y:auto;background:#111827;border-radius:24px 24px 0 0;width:100%;max-width:500px;padding:24px;position:absolute;bottom:0;box-shadow:0 -8px 48px rgba(0,0,0,0.5);">
+  <div class="modal-overlay hidden" id="boost-modal-overlay" onclick="closeBoostModal()" style="align-items:center;">
+    <div class="modal-sheet" onclick="event.stopPropagation()" id="boost-modal" style="max-height:85vh;overflow-y:auto;background:#111827;border-radius:24px;width:100%;max-width:440px;padding:24px;position:relative;box-shadow:0 8px 48px rgba(0,0,0,0.5);margin:20px;">
       <button onclick="closeBoostModal()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.07);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
       <h2 id="boost-modal-title" style="color:#fff;font-family:'Russo One',sans-serif;margin-top:0;font-size:1.4rem;">Boost</h2>
       <p id="boost-modal-desc" style="color:rgba(255,255,255,0.6);font-size:0.9rem;margin-bottom:20px;line-height:1.5;"></p>
