@@ -2440,6 +2440,10 @@ async function initProfile() {
       const avatarEl = document.getElementById('profile-avatar-img');
       if (avatarEl) avatarEl.src = u.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name || 'user');
 
+      // Flag
+      const flagEl = document.getElementById('profile-flag');
+      if (flagEl) flagEl.textContent = _getFlagEmoji(u.country || 'EG');
+
       // XP display
       const xpEl = document.getElementById('profile-xp');
       if (xpEl) xpEl.textContent = xp.toLocaleString() + ' XP';

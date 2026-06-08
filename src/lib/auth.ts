@@ -24,7 +24,7 @@ export const authOptions: NextAuthOptions = {
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
-          select: { id: true, email: true, name: true, password: true, role: true, xp: true, streak: true, predictionCount: true, gender: true, emailVerified: true },
+          select: { id: true, email: true, name: true, password: true, role: true, xp: true, streak: true, predictionCount: true, gender: true, emailVerified: true, country: true },
         });
 
         if (!user || !user.password) return null;
@@ -46,6 +46,7 @@ export const authOptions: NextAuthOptions = {
           streak: (user as any).streak ?? 0,
           predictionCount: (user as any).predictionCount ?? 0,
           gender: (user as any).gender ?? "male",
+          country: (user as any).country ?? "EG",
         };
       },
     }),
@@ -62,6 +63,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).streak          = token.streak as number ?? 0;
         (session.user as any).predictionCount = token.predictionCount as number ?? 0;
         (session.user as any).gender          = token.gender as string ?? "male";
+        (session.user as any).country         = token.country as string ?? "EG";
       }
       return session;
     },
@@ -73,13 +75,14 @@ export const authOptions: NextAuthOptions = {
         token.streak          = (user as any).streak ?? 0;
         token.predictionCount = (user as any).predictionCount ?? 0;
         token.gender          = (user as any).gender ?? "male";
+        token.country         = (user as any).country ?? "EG";
       }
       // Refresh user fields from DB on every token refresh (so it stays current)
       if (token.id && !user) {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id as string },
-            select: { name: true, image: true, xp: true, role: true, streak: true, predictionCount: true, gender: true },
+            select: { name: true, image: true, xp: true, role: true, streak: true, predictionCount: true, gender: true, country: true },
           });
           if (dbUser) {
             token.name            = dbUser.name;
@@ -89,6 +92,7 @@ export const authOptions: NextAuthOptions = {
             token.streak          = dbUser.streak;
             token.predictionCount = dbUser.predictionCount;
             token.gender          = dbUser.gender ?? "male";
+            token.country         = dbUser.country ?? "EG";
           }
         } catch {}
       }

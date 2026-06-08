@@ -715,10 +715,13 @@
     <div class="page hidden" id="page-profile">
       <!-- Profile Hero -->
       <div class="profile-hero">
-        <div class="profile-avatar-wrap">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=kickoff" alt="Profile avatar" class="profile-avatar"
-            id="profile-avatar-img">
-          <div class="level-badge-lg" id="profile-level-badge">...</div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:16px;">
+          <div class="profile-avatar-wrap">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=kickoff" alt="Profile avatar" class="profile-avatar"
+              id="profile-avatar-img">
+            <div class="level-badge-lg" id="profile-level-badge">...</div>
+          </div>
+          <div class="profile-flag" id="profile-flag" style="font-size: 1.4rem; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">🌍</div>
         </div>
         <div class="profile-info">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
@@ -730,7 +733,6 @@
             </button>
           </div>
           <div class="profile-meta" style="margin-top:8px">
-            <span class="profile-flag" id="profile-flag">🌍</span>
             <span class="profile-global-rank" id="profile-global-rank" style="opacity:0.4">Loading...</span>
           </div>
           <div class="profile-bio" id="profile-bio"></div>
