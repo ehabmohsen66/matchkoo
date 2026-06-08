@@ -4940,9 +4940,10 @@ async function openDemonModal() {
   content.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5)">Loading your Mini Leagues...</div>';
 
   try {
-    const res = await fetch('/api/mini-leagues');
+    const res = await fetch('/api/tournaments');
     if (!res.ok) throw new Error('Failed to fetch mini leagues');
-    _demonLeagues = await res.json();
+    const allTournaments = await res.json();
+    _demonLeagues = allTournaments.filter(t => t.registrationMode === 'INVITE_ONLY' && t.userRegistered);
     
     if (_demonLeagues.length === 0) {
       content.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5)">You are not in any mini leagues.</div>';
