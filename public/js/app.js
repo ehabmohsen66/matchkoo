@@ -4884,6 +4884,9 @@ async function renderBoostMatchSelector(boostType) {
 }
 
 async function applyBoostToMatch(matchId, boostType, event) {
+  const boostName = boostType === 'JOKER' ? 'The Joker (2X XP)' : 'Scoreline Shield';
+  if (!confirm(`Are you sure you want to apply ${boostName} to this match? You can only use this once per week.`)) return;
+
   const btn = event.currentTarget;
   const originalText = btn.textContent;
   btn.textContent = 'Applying...';
