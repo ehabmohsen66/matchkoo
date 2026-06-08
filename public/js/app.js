@@ -2449,22 +2449,22 @@ async function initProfile() {
       if (xpEl) xpEl.textContent = xp.toLocaleString() + ' XP';
 
       // Real Insights (Stats Grid)
-      const totalPreds = u.predictionCount || 0;
-      const correctPreds = u.correctCount || 0;
-      const bestStreak = u.bestStreak || 0;
-      const accuracy = totalPreds > 0 ? ((correctPreds / totalPreds) * 100).toFixed(1) : '0.0';
-
-      const accEl = document.getElementById('profile-stat-accuracy');
-      if (accEl) accEl.textContent = accuracy + '%';
-      
-      const totalEl = document.getElementById('profile-stat-total-preds');
-      if (totalEl) totalEl.textContent = totalPreds.toLocaleString();
-      
-      const bestEl = document.getElementById('profile-stat-best-streak');
-      if (bestEl) bestEl.textContent = bestStreak.toLocaleString();
-      
-      const correctEl = document.getElementById('profile-stat-correct-preds');
-      if (correctEl) correctEl.textContent = correctPreds.toLocaleString();
+      try {
+        const s = await fetch('/api/predictions/stats').then(r => r.ok ? r.json() : null);
+        if (s) {
+          const accEl = document.getElementById('profile-stat-accuracy');
+          if (accEl) accEl.textContent = (s.accuracy || 0) + '%';
+          
+          const totalEl = document.getElementById('profile-stat-total-preds');
+          if (totalEl) totalEl.textContent = (s.allPredictions || 0).toLocaleString();
+          
+          const bestEl = document.getElementById('profile-stat-best-streak');
+          if (bestEl) bestEl.textContent = (u.bestStreak || 0).toLocaleString();
+          
+          const correctEl = document.getElementById('profile-stat-correct-preds');
+          if (correctEl) correctEl.textContent = (s.correct || 0).toLocaleString();
+        }
+      } catch(e) { console.error('Failed to load profile stats:', e); }
 
       // Level / tier
       const TIERS = [
