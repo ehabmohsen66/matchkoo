@@ -560,113 +560,121 @@
 
     <!-- ════════════════ LEADERBOARD PAGE ════════════════ -->
     <div class="page hidden" id="page-leaderboard">
-      <div class="page-header-block">
-        <h1 class="page-title">Leaderboard</h1>
-      </div>
 
-      <div class="lb-scope-tabs">
-        <button class="lb-tab active" onclick="setLBScope('global')" id="lb-global">🌍 Global</button>
-        <button class="lb-tab" onclick="setLBScope('myleagues')" id="lb-myleagues">⭐ My Leagues</button>
-      </div>
+      <!-- Detail panel (hidden until league tile clicked) -->
+      <div id="league-detail-panel" class="hidden"></div>
 
-      <div class="lb-time-tabs">
-        <button class="time-tab active" onclick="setTimePeriod('week')">This Week</button>
-        <button class="time-tab" onclick="setTimePeriod('month')">This Month</button>
-        <button class="time-tab" onclick="setTimePeriod('alltime')">All Time</button>
-      </div>
+      <!-- List view (shown by default) -->
+      <div id="league-list-view">
+        <div class="page-header-block">
+          <h1 class="page-title">Leaderboard</h1>
+        </div>
 
-      <!-- Top 3 Podium -->
-      <div class="podium-section">
-        <div class="podium-row">
-          <div class="podium-card rank2">
-            <div class="podium-avatar">
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=alex" alt="Alex">
-              <div class="level-badge silver">S</div>
+        <div class="lb-scope-tabs">
+          <button class="lb-tab active" onclick="setLBScope('global')" id="lb-global">🌍 Global</button>
+          <button class="lb-tab" onclick="setLBScope('myleagues')" id="lb-myleagues">⭐ My Leagues</button>
+        </div>
+
+        <div class="lb-time-tabs">
+          <button class="time-tab active" onclick="setTimePeriod('week')">This Week</button>
+          <button class="time-tab" onclick="setTimePeriod('month')">This Month</button>
+          <button class="time-tab" onclick="setTimePeriod('alltime')">All Time</button>
+        </div>
+
+        <!-- Top 3 Podium -->
+        <div class="podium-section">
+          <div class="podium-row">
+            <div class="podium-card rank2">
+              <div class="podium-avatar">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=alex" alt="Alex">
+                <div class="level-badge silver">S</div>
+              </div>
+              <div class="podium-name">Alex K.</div>
+              <div class="podium-flag">🇧🇷</div>
+              <div class="podium-xp">89,420 XP</div>
+              <div class="podium-block rank2-block">
+                <span class="rank-num">#2</span>
+              </div>
             </div>
-            <div class="podium-name">Alex K.</div>
-            <div class="podium-flag">🇧🇷</div>
-            <div class="podium-xp">89,420 XP</div>
-            <div class="podium-block rank2-block">
-              <span class="rank-num">#2</span>
+            <div class="podium-card rank1">
+              <div class="crown-icon">
+                <svg viewBox="0 0 24 24" fill="#ff9914" width="30" height="30">
+                  <path d="M2 20h20l-2-10-6 5-2-8-2 8-6-5-2 10z" />
+                </svg>
+              </div>
+              <div class="podium-avatar">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=marcus" alt="Marcus">
+                <div class="level-badge legend">L</div>
+              </div>
+              <div class="podium-name">Marcus T.</div>
+              <div class="podium-flag">🇩🇪</div>
+              <div class="podium-xp">142,880 XP</div>
+              <div class="podium-block rank1-block">
+                <span class="rank-num">#1</span>
+              </div>
+            </div>
+            <div class="podium-card rank3">
+              <div class="podium-avatar">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=sofia" alt="Sofia">
+                <div class="level-badge gold">G</div>
+              </div>
+              <div class="podium-name">Sofia L.</div>
+              <div class="podium-flag">🇫🇷</div>
+              <div class="podium-xp">76,150 XP</div>
+              <div class="podium-block rank3-block">
+                <span class="rank-num">#3</span>
+              </div>
             </div>
           </div>
-          <div class="podium-card rank1">
-            <div class="crown-icon">
-              <svg viewBox="0 0 24 24" fill="#ff9914" width="30" height="30">
-                <path d="M2 20h20l-2-10-6 5-2-8-2 8-6-5-2 10z" />
-              </svg>
-            </div>
-            <div class="podium-avatar">
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=marcus" alt="Marcus">
-              <div class="level-badge legend">L</div>
-            </div>
-            <div class="podium-name">Marcus T.</div>
-            <div class="podium-flag">🇩🇪</div>
-            <div class="podium-xp">142,880 XP</div>
-            <div class="podium-block rank1-block">
-              <span class="rank-num">#1</span>
-            </div>
-          </div>
-          <div class="podium-card rank3">
-            <div class="podium-avatar">
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=sofia" alt="Sofia">
-              <div class="level-badge gold">G</div>
-            </div>
-            <div class="podium-name">Sofia L.</div>
-            <div class="podium-flag">🇫🇷</div>
-            <div class="podium-xp">76,150 XP</div>
-            <div class="podium-block rank3-block">
-              <span class="rank-num">#3</span>
-            </div>
-          </div>
         </div>
-      </div>
 
-      <!-- Your Rank Banner -->
-      <div class="your-rank-banner">
-        <div class="yrb-left">
-          <span class="yrb-rank">#1,247</span>
-          <span class="yrb-label">Your Rank</span>
-        </div>
-        <div class="yrb-center">
-          <div class="user-avatar-sm">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=kickoff" alt="You">
-            <div class="level-badge-sm gold">G</div>
+        <!-- Your Rank Banner -->
+        <div class="your-rank-banner">
+          <div class="yrb-left">
+            <span class="yrb-rank">#1,247</span>
+            <span class="yrb-label">Your Rank</span>
           </div>
-          <div>
-            <div class="yrb-name">You (Ihab)</div>
-            <div class="yrb-xp">12,450 XP · 67.3% acc</div>
+          <div class="yrb-center">
+            <div class="user-avatar-sm">
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=kickoff" alt="You">
+              <div class="level-badge-sm gold">G</div>
+            </div>
+            <div>
+              <div class="yrb-name">You (Ihab)</div>
+              <div class="yrb-xp">12,450 XP · 67.3% acc</div>
+            </div>
+          </div>
+          <div class="yrb-right">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="20" height="20">
+              <polyline points="18 15 12 9 6 15" />
+            </svg>
+            <span id="yrb-today-xp">— today</span>
           </div>
         </div>
-        <div class="yrb-right">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="20" height="20">
-            <polyline points="18 15 12 9 6 15" />
-          </svg>
-          <span id="yrb-today-xp">— today</span>
-        </div>
-      </div>
 
-      <div class="leaderboard-table" id="leaderboard-table">
-        <!-- Injected by JS -->
-      </div>
+        <div class="leaderboard-table" id="leaderboard-table">
+          <!-- Injected by JS -->
+        </div>
 
-      <!-- My Leagues Ranks (shown only when myleagues tab active) -->
-      <div id="my-leagues-ranks" style="display:none">
-        <div
-          style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:16px 0 12px">
-          My League Rankings</div>
-        <div style="font-size:0.7rem;color:rgba(255,255,255,0.35);padding-bottom:8px;">Your rank among all predictors in each competition</div>
-        <div id="my-leagues-ranks-list">
-          <div style="text-align:center;color:var(--text-muted);padding:32px">Loading your league ranks...</div>
+        <!-- My Leagues Ranks (shown only when myleagues tab active) -->
+        <div id="my-leagues-ranks" style="display:none">
+          <div
+            style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:16px 0 12px">
+            My League Rankings</div>
+          <div style="font-size:0.7rem;color:rgba(255,255,255,0.35);padding-bottom:8px;">Your rank among all predictors in each competition</div>
+          <div id="my-leagues-ranks-list">
+            <div style="text-align:center;color:var(--text-muted);padding:32px">Loading your league ranks...</div>
+          </div>
+          <div
+            style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:16px 0 12px;margin-top:8px;border-top:1px solid rgba(255,255,255,0.06)">
+            My Mini Leagues</div>
+          <div id="my-minileagues-ranks-list">
+            <div style="text-align:center;color:var(--text-muted);padding:32px">No mini leagues joined yet</div>
+          </div>
         </div>
-        <div
-          style="font-size:0.75rem;font-weight:800;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;padding:16px 0 12px;margin-top:8px;border-top:1px solid rgba(255,255,255,0.06)">
-          My Mini Leagues</div>
-        <div id="my-minileagues-ranks-list">
-          <div style="text-align:center;color:var(--text-muted);padding:32px">No mini leagues joined yet</div>
-        </div>
-      </div>
+      </div><!-- /league-list-view -->
     </div>
+
 
     <!-- ════════════════ MINI LEAGUES PAGE ════════════════ -->
     <div class="page hidden" id="page-minileague">
