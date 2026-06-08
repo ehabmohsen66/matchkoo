@@ -1772,145 +1772,16 @@ async function loadMyLeagueRanks() {
 
 // ─── Official League Detail Panel ────────────────────────────────────────────
 async function openLeagueDetail(tournamentId) {
-  const panel   = document.getElementById('league-detail-panel');
-  const listView = document.getElementById('league-list-view');
-  if (!panel || !listView) return;
-
-  panel.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:60px;">Loading...</div>';
-  panel.classList.remove('hidden');
-  listView.classList.add('hidden');
-
-  try {
-    const [lbRows, matchesRes] = await Promise.all([
-      fetch('/api/leaderboard?tournamentId=' + tournamentId).then(r => r.ok ? r.json() : []),
-      fetch('/api/matches?tournamentId=' + tournamentId).then(r => r.ok ? r.json() : []),
-    ]);
-
-    // Tournament meta
-    const tourRes = await fetch('/api/tournaments').then(r => r.ok ? r.json() : []);
-    const tour = tourRes.find(t => t.id === tournamentId) || {};
-    const comp = _compFromTournament(tour) || COMP_META['premier_league'];
-    const name = (tour.name || '').replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '').trim();
-
-    const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-
-    // ── Podium top 3 ──
-    const top3 = lbRows.slice(0, 3);
-    const podiumOrder  = [top3[1], top3[0], top3[2]];
-    const podiumColors = ['#C0C0C0','#FFD700','#CD7F32'];
-    const podiumLabels = ['2nd','1st','3rd'];
-    const podiumHeights= ['68px','92px','56px'];
-    const podiumMedals = ['🥈','🥇','🥉'];
-    const podiumHtml = top3.length ? `
-      <div style="display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:20px;padding-top:8px;">
-        ${podiumOrder.map((r,i) => r ? `
-          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;">
-            <div style="font-size:1.2rem;">${podiumMedals[i]}</div>
-            <img src="${r.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+encodeURIComponent(r.name)}"
-                 width="${i===1?52:40}" height="${i===1?52:40}"
-                 style="border-radius:50%;border:2.5px solid ${podiumColors[i]};box-shadow:0 0 10px ${podiumColors[i]}44;">
-            <div style="font-size:0.65rem;font-weight:700;color:#fff;text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.name}">
-              ${r.name}${r.isMe?' <span style="color:var(--green);font-size:0.55rem">YOU</span>':''}
-            </div>
-            <div style="font-size:0.65rem;font-weight:800;color:${podiumColors[i]};">${(r.xp||0).toLocaleString()} XP</div>
-            <div style="width:100%;background:${podiumColors[i]}18;border:1px solid ${podiumColors[i]}44;border-radius:8px 8px 0 0;height:${podiumHeights[i]};display:flex;align-items:center;justify-content:center;">
-              <span style="font-size:0.78rem;font-weight:900;color:${podiumColors[i]};">${podiumLabels[i]}</span>
-            </div>
-          </div>` : `<div style="flex:1;"></div>`
-        ).join('')}
-      </div>` : '';
-
-    // ── Rows 4+ ──
-    const rankRestHtml = lbRows.slice(3).map((r,i) => `
-      <div style="display:flex;align-items:center;gap:9px;padding:9px 0;border-top:1px solid rgba(255,255,255,0.05);">
-        <div style="font-weight:800;min-width:22px;color:rgba(255,255,255,0.3);font-size:0.78rem;text-align:center">#${i+4}</div>
-        <img src="${r.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+encodeURIComponent(r.name)}" width="28" height="28"
-             style="border-radius:50%;border:2px solid ${r.isMe?'var(--green)':'rgba(255,255,255,0.08)'}">
-        <div style="flex:1;font-size:0.82rem;font-weight:${r.isMe?700:500};color:${r.isMe?'var(--green)':'var(--text-primary)'}">
-          ${r.name}${r.isMe?' <span style="font-size:0.58rem;color:var(--green)">YOU</span>':''}
-        </div>
-        <div style="font-weight:800;color:var(--cyan);font-size:0.78rem">${(r.xp||0).toLocaleString()} XP</div>
-      </div>`).join('');
-
-    const rankingContent = lbRows.length === 0
-      ? '<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:0.82rem;">No predictions scored yet.</div>'
-      : podiumHtml + rankRestHtml;
-
-    // ── Fixtures (next 7 days) ──
-    const now = new Date(); now.setHours(0,0,0,0);
-    const cutoff = new Date(now); cutoff.setDate(cutoff.getDate() + 7);
-    const upcoming = matchesRes.filter(m => {
-      const d = new Date(m.matchDate);
-      return m.status === 'UPCOMING' && d >= now && d <= cutoff;
-    }).sort((a,b) => new Date(a.matchDate) - new Date(b.matchDate));
-
-    let lastLabel = '';
-    const fixtureHtml = upcoming.length ? upcoming.map(m => {
-      const t = new Date(m.matchDate);
-      const mDay = new Date(t); mDay.setHours(0,0,0,0);
-      const diffDays = Math.round((mDay - now) / 86400000);
-      const dayLabel = diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : DAY_NAMES[t.getDay()];
-      const timeStr = t.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit'}) + ' ' + t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-      let sep = '';
-      if (dayLabel !== lastLabel) { lastLabel = dayLabel; sep = `<div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;padding:10px 0 5px;">${dayLabel}</div>`; }
-      const hasPred = !!m.userPrediction;
-      const homeLogo = m.homeLogo ? `<img src="${m.homeLogo}" width="28" height="28" style="border-radius:50%;border:1.5px solid rgba(255,255,255,0.1)">` : `<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:rgba(255,255,255,0.4)">${m.homeTeam.substring(0,3).toUpperCase()}</div>`;
-      const awayLogo = m.awayLogo ? `<img src="${m.awayLogo}" width="28" height="28" style="border-radius:50%;border:1.5px solid rgba(255,255,255,0.1)">` : `<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:rgba(255,255,255,0.4)">${m.awayTeam.substring(0,3).toUpperCase()}</div>`;
-      return sep + `
-        <div onclick="openRealMatchDetail('${m.id}')" role="button" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:10px;margin-bottom:4px;background:${hasPred?'rgba(60,184,46,0.06)':'rgba(255,255,255,0.02)'};border:1px solid ${hasPred?'rgba(60,184,46,0.2)':'rgba(255,255,255,0.05)'};">
-          <div style="display:flex;gap:3px;flex-shrink:0;">${homeLogo}${awayLogo}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:0.68rem;font-weight:700;color:${hasPred?'var(--green)':'rgba(255,255,255,0.35)'};">${hasPred?'✓ Predicted':'Predict'}</div>
-            <div style="font-size:0.8rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.homeTeam} vs ${m.awayTeam}</div>
-          </div>
-          <div style="font-size:0.68rem;color:var(--text-muted);text-align:right;flex-shrink:0;">${timeStr}</div>
-        </div>`;
-    }).join('') : '<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:0.82rem;">No upcoming fixtures in the next 7 days.</div>';
-
-    panel.innerHTML = `
-      <!-- Header -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-        <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:52px;height:52px;border-radius:14px;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <img src="${comp.logo}" width="40" height="40" style="object-fit:contain;">
-          </div>
-          <div>
-            <div style="font-size:1.1rem;font-weight:800;color:var(--text-primary)">${name}</div>
-            <div style="font-size:0.78rem;color:var(--text-muted)">${lbRows.length} predictor${lbRows.length===1?'':'s'}</div>
-          </div>
-        </div>
-        <button onclick="closeLeagueDetail()" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-pill);padding:8px 16px;color:var(--text-primary);cursor:pointer;font-size:0.85rem;font-weight:700;">← Back</button>
-      </div>
-
-      <!-- Two-column: Rankings | Fixtures -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
-
-        <!-- LEFT: Rankings -->
-        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;">
-          <div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;">🏆 Rankings</div>
-          ${rankingContent}
-        </div>
-
-        <!-- RIGHT: Fixtures -->
-        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;">
-          <div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">📅 Next Fixtures</div>
-          ${fixtureHtml}
-        </div>
-
-      </div>
-    `;
-  } catch(e) {
-    panel.innerHTML = '<div style="color:var(--red);padding:32px;">Failed to load league detail.</div>';
+  // Create / get the league detail overlay inside the leaderboard page
+  let panel = document.getElementById('league-detail-overlay');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'league-detail-overlay';
+    panel.style.cssText = 'position:fixed;inset:0;z-index:200;background:var(--bg-primary);overflow-y:auto;padding:20px;box-sizing:border-box;';
+    document.body.appendChild(panel);
   }
-}
-
-function closeLeagueDetail() {
-  const panel   = document.getElementById('league-detail-panel');
-  const listView = document.getElementById('league-list-view');
-  if (panel)    panel.classList.add('hidden');
-  if (listView) listView.classList.remove('hidden');
-}
-
+  panel.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:60px;">Loading...</div>';
+  panel.style.display = 'block';
 
   try {
     const [lbRows, matchesRes] = await Promise.all([
@@ -2035,6 +1906,12 @@ function closeLeagueDetail() {
     panel.innerHTML = '<div style="color:var(--red);padding:32px;">Failed to load league detail.</div>';
   }
 }
+
+function closeLeagueDetail() {
+  const panel = document.getElementById('league-detail-overlay');
+  if (panel) panel.style.display = 'none';
+}
+
 
 
 function setTimePeriod(period) {
