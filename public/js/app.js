@@ -1886,7 +1886,7 @@ const COMP_META = {
   la_liga:                 { label: 'La Liga',           logo: 'https://media.api-sports.io/football/leagues/140.png', color: '#ee8707', accent: '#fff' },
   champions_league:        { label: 'Champions League', logo: 'https://media.api-sports.io/football/leagues/2.png',   color: '#001489', accent: '#f0c040' },
   egyptian_premier_league: { label: 'Egyptian Premier', logo: 'https://media.api-sports.io/football/leagues/233.png', color: '#c8102e', accent: '#fff' },
-  world_cup:               { label: 'World Cup',        logo: 'https://media.api-sports.io/football/leagues/1.png',   color: '#006233', accent: '#ffd700' },
+  world_cup:               { label: 'FIFA World Cup 2026', logo: '/images/wc2026-logo.png',                              color: '#17458F', accent: '#ffd700' },
 };
 
 // Returns an <img> badge for a competition
@@ -1901,7 +1901,7 @@ function _compKeyFromName(name) {
     .replace(/\s+\[\d+\]$/, '')
     .trim();
   if (n.includes('egyptian')) return 'egyptian_premier_league';
-  if (n.includes('world cup') || n.includes('fifa world cup')) return 'world_cup';
+  if (n.includes('world cup') || n.includes('fifa world cup') || n.includes('fifa world cup 2026')) return 'world_cup';
   if (n.includes('champions')) return 'champions_league';
   if (n.includes('la liga')) return 'la_liga';
   if (n.includes('premier league')) return 'premier_league';
