@@ -1803,48 +1803,109 @@ async function initLeagueDetail() {
 
     const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
-    // ── Podium top 3 ──────────────────────────────────────────────────────────
+    // ── Podium top 3 (Using Main Leaderboard Styles) ──────────────────────────
     const top3 = lbRows.slice(0, 3);
-    const podiumOrder  = [top3[1], top3[0], top3[2]];
-    const podiumColors = ['#C0C0C0','#FFD700','#CD7F32'];
-    const podiumLabels = ['2nd','1st','3rd'];
-    const podiumHeights = ['76px','104px','62px'];
-    const podiumMedals  = ['🥈','🥇','🥉'];
-
     const podiumHtml = top3.length ? `
-      <div style="display:flex;align-items:flex-end;justify-content:center;gap:12px;margin-bottom:24px;padding:16px 0 0;">
-        ${podiumOrder.map((r, i) => r ? `
-          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;max-width:120px;">
-            <div style="font-size:1.4rem;">${podiumMedals[i]}</div>
-            <img src="${r.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(r.name || 'player')}"
-                 width="${i===1?58:44}" height="${i===1?58:44}"
-                 style="border-radius:50%;border:3px solid ${podiumColors[i]};box-shadow:0 0 14px ${podiumColors[i]}55;">
-            <div style="font-size:0.7rem;font-weight:700;color:#fff;text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.name}">
-              ${r.name}${r.isMe ? ' <span style="color:var(--green);font-size:0.6rem;font-weight:800;">YOU</span>' : ''}
+      <div class="podium-section" style="margin-top:20px;">
+        <div class="podium-row">
+          ${top3[1] ? `
+          <div class="podium-card rank2">
+            <div class="podium-avatar">
+              <img src="${top3[1].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[1].name || 'player')}" alt="${top3[1].name}">
+              <div class="level-badge silver">S</div>
             </div>
-            <div style="font-size:0.68rem;font-weight:800;color:${podiumColors[i]};">${(r.xp||0).toLocaleString()} XP</div>
-            <div style="width:100%;background:linear-gradient(180deg,${podiumColors[i]}30,${podiumColors[i]}10);border:1px solid ${podiumColors[i]}50;border-radius:10px 10px 0 0;height:${podiumHeights[i]};display:flex;align-items:center;justify-content:center;">
-              <span style="font-size:0.9rem;font-weight:900;color:${podiumColors[i]};">${podiumLabels[i]}</span>
+            <div class="podium-name">${top3[1].name}${top3[1].isMe ? ' (You)' : ''}</div>
+            <div class="podium-xp">${(top3[1].xp||0).toLocaleString()} XP</div>
+            <div class="podium-block rank2-block"><span class="rank-num">#2</span></div>
+          </div>` : '<div class="podium-card rank2" style="visibility:hidden"></div>'}
+
+          ${top3[0] ? `
+          <div class="podium-card rank1">
+            <div class="crown-icon">
+              <svg viewBox="0 0 24 24" fill="#ff9914" width="30" height="30"><path d="M2 20h20l-2-10-6 5-2-8-2 8-6-5-2 10z" /></svg>
             </div>
-          </div>` : `<div style="flex:1;"></div>`
-        ).join('')}
+            <div class="podium-avatar">
+              <img src="${top3[0].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[0].name || 'player')}" alt="${top3[0].name}">
+              <div class="level-badge legend">L</div>
+            </div>
+            <div class="podium-name">${top3[0].name}${top3[0].isMe ? ' (You)' : ''}</div>
+            <div class="podium-xp">${(top3[0].xp||0).toLocaleString()} XP</div>
+            <div class="podium-block rank1-block"><span class="rank-num">#1</span></div>
+          </div>` : '<div class="podium-card rank1" style="visibility:hidden"></div>'}
+
+          ${top3[2] ? `
+          <div class="podium-card rank3">
+            <div class="podium-avatar">
+              <img src="${top3[2].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[2].name || 'player')}" alt="${top3[2].name}">
+              <div class="level-badge gold">G</div>
+            </div>
+            <div class="podium-name">${top3[2].name}${top3[2].isMe ? ' (You)' : ''}</div>
+            <div class="podium-xp">${(top3[2].xp||0).toLocaleString()} XP</div>
+            <div class="podium-block rank3-block"><span class="rank-num">#3</span></div>
+          </div>` : '<div class="podium-card rank3" style="visibility:hidden"></div>'}
+        </div>
       </div>` : '<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:0.85rem;">No scores yet. Be the first to predict!</div>';
 
-    // ── Rank rows 4+ ──────────────────────────────────────────────────────────
-    const rankRestHtml = lbRows.slice(3).map((r, i) => `
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid rgba(255,255,255,0.05);">
-        <div style="font-weight:800;min-width:26px;color:rgba(255,255,255,0.3);font-size:0.8rem;text-align:center;">#${i+4}</div>
-        <img src="${r.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(r.name || 'player')}" width="32" height="32"
-             style="border-radius:50%;border:2px solid ${r.isMe ? 'var(--green)' : 'rgba(255,255,255,0.08)'}">
-        <div style="flex:1;font-size:0.85rem;font-weight:${r.isMe?700:500};color:${r.isMe?'var(--green)':'var(--text-primary)'}">
-          ${r.name}${r.isMe ? ' <span style="font-size:0.62rem;color:var(--green);font-weight:800;">YOU</span>' : ''}
+    // ── Rank rows 4+ (Using Main Leaderboard Styles) ──────────────────────────
+    const rankRestHtml = lbRows.slice(3).map((u) => {
+      const lvl = _xpToLevel(u.xp || 0);
+      const avatar = u.image || ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name || 'player'));
+      const streak = u.streak || 0;
+      const acc = u.accuracy != null ? Math.round(u.accuracy) + '%' : '';
+      return `
+      <div class="mini-lb-row ${u.isMe ? 'you-row' : ''}" role="row">
+        <div class="lb-rank" style="color:var(--text-muted);font-weight:800">#${u.rank}</div>
+        <div class="lb-avatar">
+          <img src="${avatar}" alt="${u.name || 'Player'}" width="36" height="36" style="border-radius:50%">
+          <div class="level-badge-sm ${lvl.cls}">${lvl.badge}</div>
         </div>
-        <div style="font-weight:800;color:#7dd3fc;font-size:0.82rem;">${(r.xp||0).toLocaleString()} XP</div>
-      </div>`).join('');
+        <div class="lb-info">
+          <div class="lb-name">
+            ${u.name || 'Player'}
+            ${u.isMe ? '<span class="level-badge ' + lvl.cls + '">YOU</span>' : ''}
+            ${streak >= 3 ? '<span style="font-size:0.7rem;margin-left:4px" title="' + streak + ' streak">🔥' + streak + '</span>' : ''}
+          </div>
+          <div class="lb-sub" style="font-size:0.7rem;color:var(--text-muted)">${lvl.label}${acc ? ' · ' + acc + ' accuracy' : ''}</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-xp" style="font-weight:800;color:var(--green)">${(u.xp||0).toLocaleString()} XP</div>
+        </div>
+      </div>`;
+    }).join('');
 
-    const rankingContent = podiumHtml + rankRestHtml;
+    const rankingContent = podiumHtml + (lbRows.length > 3 ? `<div class="leaderboard-table" style="margin-top:0">${rankRestHtml}</div>` : '');
 
-    // ── Fixtures ──────────────────────────────────────────────────────────────
+    // ── Your Rank Banner ──────────────────────────────────────────────────────
+    const me = lbRows.find(r => r.isMe);
+    let myRankBannerHtml = '';
+    if (me) {
+      const lvl = _xpToLevel(me.xp || 0);
+      myRankBannerHtml = `
+      <div class="your-rank-banner" style="margin-top:20px;margin-bottom:20px;">
+        <div class="yrb-left">
+          <span class="yrb-rank">#${me.rank}</span>
+          <span class="yrb-label">Your Rank</span>
+        </div>
+        <div class="yrb-center">
+          <div class="user-avatar-sm">
+            <img src="${me.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(me.name || 'player')}" alt="You">
+            <div class="level-badge-sm ${lvl.cls}">${lvl.badge}</div>
+          </div>
+          <div>
+            <div class="yrb-name">${me.name} (You)</div>
+            <div class="yrb-xp">${(me.xp||0).toLocaleString()} XP · ${me.accuracy!=null ? Math.round(me.accuracy)+'%' : '0%'} acc</div>
+          </div>
+        </div>
+        <div class="yrb-right">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="20" height="20">
+            <polyline points="18 15 12 9 6 15" />
+          </svg>
+          <span>— today</span>
+        </div>
+      </div>`;
+    }
+
+    // ── Fixtures (Bottom grid) ──────────────────────────────────────────────
     const nowD = new Date(); nowD.setHours(0,0,0,0);
     const cutoffD = new Date(nowD); cutoffD.setDate(cutoffD.getDate() + 14);
     const upcoming = matchesRes
@@ -1858,45 +1919,45 @@ async function initLeagueDetail() {
       const diff = Math.round((mDay - nowD) / 86400000);
       const dayLabel = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : DAY_NAMES[mt.getDay()] + ' ' + mt.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
       const timeStr = mt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-      let sep = '';
-      if (dayLabel !== lastDayLabel) {
-        lastDayLabel = dayLabel;
-        sep = `<div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;padding:14px 0 6px;">${dayLabel}</div>`;
-      }
+      
       const hasPred = !!m.userPrediction;
       const homeLogo = m.homeLogo
-        ? `<img src="${m.homeLogo}" width="32" height="32" style="border-radius:50%;border:2px solid rgba(255,255,255,0.12);">`
-        : `<div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:rgba(255,255,255,0.5);">${(m.homeTeam||'').substring(0,3).toUpperCase()}</div>`;
+        ? `<img src="${m.homeLogo}" width="24" height="24" style="border-radius:50%;">`
+        : `<div style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;">${(m.homeTeam||'').substring(0,3).toUpperCase()}</div>`;
       const awayLogo = m.awayLogo
-        ? `<img src="${m.awayLogo}" width="32" height="32" style="border-radius:50%;border:2px solid rgba(255,255,255,0.12);">`
-        : `<div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:rgba(255,255,255,0.5);">${(m.awayTeam||'').substring(0,3).toUpperCase()}</div>`;
-      return sep + `
+        ? `<img src="${m.awayLogo}" width="24" height="24" style="border-radius:50%;">`
+        : `<div style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;">${(m.awayTeam||'').substring(0,3).toUpperCase()}</div>`;
+      return `
         <div onclick="openRealMatchDetail('${m.id}')" role="button"
-             style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;margin-bottom:6px;
+             style="cursor:pointer;display:flex;flex-direction:column;align-items:center;padding:12px;border-radius:12px;
                     background:${hasPred?'rgba(60,184,46,0.07)':'rgba(255,255,255,0.025)'};
                     border:1px solid ${hasPred?'rgba(60,184,46,0.22)':'rgba(255,255,255,0.06)'};
-                    transition:background 0.15s;"
+                    transition:background 0.15s; min-width: 140px; text-align:center;"
              onmouseenter="this.style.background='rgba(255,255,255,0.06)'" onmouseleave="this.style.background='${hasPred?'rgba(60,184,46,0.07)':'rgba(255,255,255,0.025)'}'">
-          <div style="display:flex;gap:4px;flex-shrink:0;">${homeLogo}${awayLogo}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:0.72rem;font-weight:700;color:${hasPred?'var(--green)':'rgba(255,255,255,0.4)'};margin-bottom:2px;">${hasPred?'✓ Predicted':'Predict →'}</div>
-            <div style="font-size:0.88rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.homeTeam} <span style="color:rgba(255,255,255,0.3);font-size:0.75rem;">vs</span> ${m.awayTeam}</div>
+          <div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.4);margin-bottom:8px;letter-spacing:0.5px;">${dayLabel} · ${timeStr}</div>
+          <div style="display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:8px;">
+            ${homeLogo}
+            <span style="font-size:0.7rem;color:rgba(255,255,255,0.3);font-weight:700;">VS</span>
+            ${awayLogo}
           </div>
-          <div style="font-size:0.7rem;color:var(--text-muted);text-align:right;flex-shrink:0;">${timeStr}</div>
+          <div style="font-size:0.75rem;font-weight:700;color:#fff;margin-bottom:2px;">${m.homeTeam}</div>
+          <div style="font-size:0.75rem;font-weight:700;color:#fff;margin-bottom:8px;">${m.awayTeam}</div>
+          <div style="font-size:0.7rem;font-weight:800;color:${hasPred?'var(--green)':'var(--cyan)'};padding:4px 10px;background:rgba(0,0,0,0.2);border-radius:100px;">
+            ${hasPred?'✓ Predicted':'Predict'}
+          </div>
         </div>`;
-    }).join('') : '<div style="color:var(--text-muted);text-align:center;padding:32px;font-size:0.85rem;">No upcoming fixtures in the next 14 days.</div>';
+    }).join('') : '<div style="color:var(--text-muted);font-size:0.85rem;">No upcoming fixtures in the next 14 days.</div>';
 
     // ── Build final page HTML ─────────────────────────────────────────────────
     content.innerHTML = `
-      <!-- Back button + header -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <div class="page-header-block" style="display:flex;align-items:center;justify-content:space-between;border-bottom:none;padding-bottom:0;">
         <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <img src="${comp.logo}" width="38" height="38" style="object-fit:contain;">
+          <div style="width:48px;height:48px;border-radius:12px;background:rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <img src="${comp.logo}" width="36" height="36" style="object-fit:contain;">
           </div>
           <div>
-            <div style="font-size:1.3rem;font-weight:900;color:#fff;letter-spacing:-0.3px;">${name}</div>
-            <div style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin-top:2px;">${lbRows.length} predictor${lbRows.length===1?'':'s'} · Official League</div>
+            <h1 class="page-title" style="margin:0;font-size:1.6rem;text-transform:uppercase;letter-spacing:1px;">${name}</h1>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.4);margin-top:2px;">${lbRows.length} predictor${lbRows.length===1?'':'s'} · Official League</div>
           </div>
         </div>
         <button onclick="navigate('leaderboard');"
@@ -1907,32 +1968,19 @@ async function initLeagueDetail() {
         </button>
       </div>
 
-      <!-- Divider -->
-      <div style="height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.1),transparent);margin-bottom:24px;"></div>
+      <!-- Main Leaderboard Layout -->
+      ${podiumHtml}
+      ${myRankBannerHtml}
+      ${rankingContent.includes('leaderboard-table') ? rankingContent.split('</div`>')[0].replace(podiumHtml, '') : ''}
 
-      <!-- Two-column grid -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
-
-        <!-- LEFT: Rankings -->
-        <div style="background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:18px;padding:20px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <span style="font-size:1.1rem;">🏆</span>
-            <span style="font-size:0.7rem;font-weight:800;color:rgba(255,255,255,0.35);letter-spacing:1.5px;text-transform:uppercase;">Rankings</span>
-          </div>
-          <div style="font-size:0.72rem;color:rgba(255,255,255,0.25);margin-bottom:16px;">All-time XP earned in this league</div>
-          ${rankingContent}
-        </div>
-
-        <!-- RIGHT: Fixtures -->
-        <div style="background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:18px;padding:20px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <span style="font-size:1.1rem;">📅</span>
-            <span style="font-size:0.7rem;font-weight:800;color:rgba(255,255,255,0.35);letter-spacing:1.5px;text-transform:uppercase;">Upcoming Fixtures</span>
-          </div>
-          <div style="font-size:0.72rem;color:rgba(255,255,255,0.25);margin-bottom:4px;">Next 14 days · click to predict</div>
+      <!-- Fixtures Section at Bottom -->
+      <div style="margin-top:40px;border-top:1px solid rgba(255,255,255,0.06);padding-top:24px;">
+        <h2 style="font-size:1rem;font-weight:900;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;">
+          📅 Upcoming Fixtures
+        </h2>
+        <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;scrollbar-width:thin;">
           ${fixtureHtml}
         </div>
-
       </div>
     `;
   } catch(e) {
