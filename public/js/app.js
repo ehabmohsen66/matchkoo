@@ -1617,11 +1617,13 @@ async function initLeaderboard(period) {
       const u = podiumOrder[i];
       if (!u) return;
       const nameEl = card.querySelector('.podium-name');
+      const flagEl = card.querySelector('.podium-flag');
       const xpEl   = card.querySelector('.podium-xp');
       const imgEl  = card.querySelector('img');
       const rnkEl  = card.querySelector('.rank-num');
       const rank   = i === 0 ? 2 : i === 1 ? 1 : 3;
       if (nameEl) nameEl.textContent = u.name || 'Player';
+      if (flagEl) flagEl.textContent = _getFlagEmoji(u.country);
       if (xpEl)   xpEl.textContent   = (u.xp || 0).toLocaleString() + ' XP';
       if (imgEl)  imgEl.src = u.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name || 'user');
       if (rnkEl)  rnkEl.textContent  = '#' + rank;
@@ -1815,6 +1817,7 @@ async function initLeagueDetail() {
               <div class="level-badge silver">S</div>
             </div>
             <div class="podium-name">${top3[1].name}${top3[1].isMe ? ' (You)' : ''}</div>
+            <div class="podium-flag">${_getFlagEmoji(top3[1].country)}</div>
             <div class="podium-xp">${(top3[1].xp||0).toLocaleString()} XP</div>
             <div class="podium-block rank2-block"><span class="rank-num">#2</span></div>
           </div>` : '<div class="podium-card rank2" style="visibility:hidden"></div>'}
@@ -1829,6 +1832,7 @@ async function initLeagueDetail() {
               <div class="level-badge legend">L</div>
             </div>
             <div class="podium-name">${top3[0].name}${top3[0].isMe ? ' (You)' : ''}</div>
+            <div class="podium-flag">${_getFlagEmoji(top3[0].country)}</div>
             <div class="podium-xp">${(top3[0].xp||0).toLocaleString()} XP</div>
             <div class="podium-block rank1-block"><span class="rank-num">#1</span></div>
           </div>` : '<div class="podium-card rank1" style="visibility:hidden"></div>'}
@@ -1840,6 +1844,7 @@ async function initLeagueDetail() {
               <div class="level-badge gold">G</div>
             </div>
             <div class="podium-name">${top3[2].name}${top3[2].isMe ? ' (You)' : ''}</div>
+            <div class="podium-flag">${_getFlagEmoji(top3[2].country)}</div>
             <div class="podium-xp">${(top3[2].xp||0).toLocaleString()} XP</div>
             <div class="podium-block rank3-block"><span class="rank-num">#3</span></div>
           </div>` : '<div class="podium-card rank3" style="visibility:hidden"></div>'}
@@ -2001,6 +2006,12 @@ function setTimePeriod(period) {
   });
   // Re-fetch leaderboard with the selected period
   initLeaderboard(period);
+}
+
+function _getFlagEmoji(countryCode) {
+  const code = (countryCode || 'EG').toUpperCase();
+  if (code.length !== 2) return '';
+  return String.fromCodePoint(...code.split('').map(c => 127397 + c.charCodeAt(0)));
 }
 
 function _xpToLevel(xp) {
@@ -2170,6 +2181,7 @@ async function openMiniLeagueDetail(leagueId) {
               <div class="level-badge ${_xpToLevel(top3[1].xp||0).cls}">${_xpToLevel(top3[1].xp||0).badge}</div>
             </div>
             <div class="podium-name">${top3[1].name}${top3[1].isMe ? ' (You)' : ''}</div>
+            <div class="podium-flag">${_getFlagEmoji(top3[1].country)}</div>
             <div class="podium-xp">${(top3[1].xp||0).toLocaleString()} XP</div>
             <div class="podium-block rank2-block"><span class="rank-num">#2</span></div>
           </div>` : '<div class="podium-card rank2" style="visibility:hidden"></div>'}
@@ -2184,6 +2196,7 @@ async function openMiniLeagueDetail(leagueId) {
               <div class="level-badge ${_xpToLevel(top3[0].xp||0).cls}">${_xpToLevel(top3[0].xp||0).badge}</div>
             </div>
             <div class="podium-name">${top3[0].name}${top3[0].isMe ? ' (You)' : ''}</div>
+            <div class="podium-flag">${_getFlagEmoji(top3[0].country)}</div>
             <div class="podium-xp">${(top3[0].xp||0).toLocaleString()} XP</div>
             <div class="podium-block rank1-block"><span class="rank-num">#1</span></div>
           </div>` : '<div class="podium-card rank1" style="visibility:hidden"></div>'}
@@ -2195,6 +2208,7 @@ async function openMiniLeagueDetail(leagueId) {
               <div class="level-badge ${_xpToLevel(top3[2].xp||0).cls}">${_xpToLevel(top3[2].xp||0).badge}</div>
             </div>
             <div class="podium-name">${top3[2].name}${top3[2].isMe ? ' (You)' : ''}</div>
+            <div class="podium-flag">${_getFlagEmoji(top3[2].country)}</div>
             <div class="podium-xp">${(top3[2].xp||0).toLocaleString()} XP</div>
             <div class="podium-block rank3-block"><span class="rank-num">#3</span></div>
           </div>` : '<div class="podium-card rank3" style="visibility:hidden"></div>'}

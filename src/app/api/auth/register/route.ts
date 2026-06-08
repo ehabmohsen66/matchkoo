@@ -48,6 +48,9 @@ export async function POST(req: NextRequest) {
     const parsedDob = dateOfBirth ? new Date(dateOfBirth) : undefined;
     const validDob = parsedDob && !isNaN(parsedDob.getTime()) ? parsedDob : undefined;
 
+    // Capture registration country from Vercel IP headers (fallback to 'EG' for local dev)
+    const country = req.headers.get("x-vercel-ip-country") || "EG";
+
     // Create user, optionally linking referrer and persisting league preferences
     const newUser = await prisma.user.create({
       data: {
@@ -56,6 +59,7 @@ export async function POST(req: NextRequest) {
         password: hashedPassword,
         verificationToken,
         gender: gender === "female" ? "female" : "male", // validate input
+        country, // Captured automatically
         preferredLeagues: Array.isArray(preferredLeagues) ? preferredLeagues : [],
         ...(validDob ? { dateOfBirth: validDob } : {}),
         // Give new user their +200 XP welcome bonus immediately if referred

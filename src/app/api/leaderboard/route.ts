@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
       const userIds = rows.map((r) => r.userId);
       const users   = await prisma.user.findMany({
         where: { id: { in: userIds } },
-        select: { id: true, name: true, image: true, streak: true, correctCount: true, predictionCount: true },
+        select: { id: true, name: true, image: true, streak: true, correctCount: true, predictionCount: true, country: true },
       });
       const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
       return NextResponse.json(
@@ -112,6 +112,7 @@ export async function GET(req: NextRequest) {
           userId: r.userId,
           name:   userMap[r.userId]?.name ?? "Unknown",
           image:  userMap[r.userId]?.image ?? null,
+          country: userMap[r.userId]?.country ?? "EG",
           xp:     r._sum.xpEarned ?? 0,
           streak: userMap[r.userId]?.streak ?? 0,
           accuracy: userMap[r.userId]?.predictionCount
@@ -138,7 +139,7 @@ export async function GET(req: NextRequest) {
       const userIds = rows.map((r) => r.userId);
       const users   = await prisma.user.findMany({
         where: { id: { in: userIds }, role: "USER" },
-        select: { id: true, name: true, image: true, streak: true, correctCount: true, predictionCount: true },
+        select: { id: true, name: true, image: true, streak: true, correctCount: true, predictionCount: true, country: true },
       });
       const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
       return NextResponse.json(
@@ -147,6 +148,7 @@ export async function GET(req: NextRequest) {
           userId:   r.userId,
           name:     userMap[r.userId]?.name ?? "Unknown",
           image:    userMap[r.userId]?.image ?? null,
+          country:  userMap[r.userId]?.country ?? "EG",
           xp:       r._sum.xpEarned ?? 0,
           streak:   userMap[r.userId]?.streak ?? 0,
           accuracy: userMap[r.userId]?.predictionCount
@@ -160,7 +162,7 @@ export async function GET(req: NextRequest) {
     // ── Global all-time leaderboard ───────────────────────────────────
     const users = await prisma.user.findMany({
       where: { role: "USER" },
-      select: { id: true, name: true, image: true, xp: true, streak: true, correctCount: true, predictionCount: true },
+      select: { id: true, name: true, image: true, xp: true, streak: true, correctCount: true, predictionCount: true, country: true },
       orderBy: { xp: "desc" },
       take: 100,
     });
@@ -170,6 +172,7 @@ export async function GET(req: NextRequest) {
         userId:   u.id,
         name:     u.name ?? "Unknown",
         image:    u.image ?? null,
+        country:  u.country ?? "EG",
         xp:       u.xp,
         streak:   u.streak,
         accuracy: u.predictionCount
