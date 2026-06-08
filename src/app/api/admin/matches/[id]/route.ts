@@ -44,7 +44,8 @@ export async function PATCH(
         (pred.homeScore > pred.awayScore && homeScore > awayScore) ||
         (pred.homeScore < pred.awayScore && homeScore < awayScore) ||
         (pred.homeScore === pred.awayScore && homeScore === awayScore);
-      const exactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
+      const trueExactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
+      const exactScore = trueExactScore || (pred.isShield && correctResult);
       const correctFGS = !!(firstGoalScorer && pred.firstGoalScorer?.toLowerCase() === firstGoalScorer.toLowerCase());
 
       // Base XP

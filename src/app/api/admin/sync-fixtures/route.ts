@@ -157,7 +157,8 @@ export async function POST(req: NextRequest) {
               (pred.homeScore > pred.awayScore && hs > as) ||
               (pred.homeScore < pred.awayScore && hs < as) ||
               (pred.homeScore === pred.awayScore && hs === as);
-            const exactScore = pred.homeScore === hs && pred.awayScore === as;
+            const trueExactScore = pred.homeScore === hs && pred.awayScore === as;
+            const exactScore = trueExactScore || (pred.isShield && correctResult);
             const correctScorer = !!pred.firstGoalScorer && !!staleMatch.firstGoalScorer &&
               pred.firstGoalScorer.trim().toLowerCase() === staleMatch.firstGoalScorer.trim().toLowerCase();
 
@@ -439,7 +440,8 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
             (pred.homeScore > pred.awayScore  && homeScore > awayScore)  ||
             (pred.homeScore < pred.awayScore  && homeScore < awayScore)  ||
             (pred.homeScore === pred.awayScore && homeScore === awayScore);
-          const exactScore    = pred.homeScore === homeScore && pred.awayScore === awayScore;
+          const trueExactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
+          const exactScore    = trueExactScore || (pred.isShield && correctResult);
           const correctScorer = !!pred.firstGoalScorer &&
             !!existing.firstGoalScorer &&
             pred.firstGoalScorer.trim().toLowerCase() === existing.firstGoalScorer.trim().toLowerCase();

@@ -47,10 +47,10 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const { matchId, homeScore, awayScore, firstGoalScorer, confidence, isDouble, btts, totalGoals } = await req.json();
+    const { matchId, homeScore, awayScore, firstGoalScorer, confidence, isDouble, isJoker, isShield, btts, totalGoals } = await req.json();
 
-    if (!matchId || homeScore == null || awayScore == null) {
-      return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+    if (!matchId) {
+      return NextResponse.json({ message: "Missing matchId" }, { status: 400 });
     }
 
     const match = await prisma.match.findUnique({ where: { id: matchId } });
@@ -61,26 +61,74 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Predictions are locked — match has started" }, { status: 400 });
     }
 
-    // Enforce one double per round per tournament
-    if (isDouble) {
-      const existingDouble = await prisma.prediction.findFirst({
+    // Map frontend's isJoker to backend's isDouble schema field
+    const applyJoker = isJoker || isDouble;
+    const applyShield = isShield;
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    if (applyJoker) {
+      const recentJoker = await prisma.prediction.findFirst({
         where: {
           userId: session.user.id,
           isDouble: true,
-          match: { tournamentId: match.tournamentId, round: match.round },
+          createdAt: { gte: sevenDaysAgo },
           NOT: { matchId },
         },
       });
-      if (existingDouble) {
-        return NextResponse.json({ message: "You already have a double marker in this round" }, { status: 400 });
+      if (recentJoker) {
+        return NextResponse.json({ message: "You can only use The Joker once every 7 days" }, { status: 400 });
       }
     }
 
-    const prediction = await prisma.prediction.upsert({
-      where: { userId_matchId: { userId: session.user.id, matchId } },
-      update: { homeScore, awayScore, firstGoalScorer, confidence: confidence ?? 50, isDouble: isDouble ?? false, btts: btts ?? null, totalGoals: totalGoals ?? null, updatedAt: new Date() },
-      create: { userId: session.user.id, matchId, homeScore, awayScore, firstGoalScorer, confidence: confidence ?? 50, isDouble: isDouble ?? false, btts: btts ?? null, totalGoals: totalGoals ?? null },
-    });
+    if (applyShield) {
+      const recentShield = await prisma.prediction.findFirst({
+        where: {
+          userId: session.user.id,
+          isShield: true,
+          createdAt: { gte: sevenDaysAgo },
+          NOT: { matchId },
+        },
+      });
+      if (recentShield) {
+        return NextResponse.json({ message: "You can only use Scoreline Shield once every 7 days" }, { status: 400 });
+      }
+    }
+
+    // If it's just a boost update, we don't require scores.
+    const isBoostUpdate = homeScore == null && awayScore == null;
+    let prediction;
+
+    if (isBoostUpdate) {
+      prediction = await prisma.prediction.update({
+        where: { userId_matchId: { userId: session.user.id, matchId } },
+        data: {
+          ...(applyJoker !== undefined && { isDouble: applyJoker }),
+          ...(applyShield !== undefined && { isShield: applyShield }),
+          updatedAt: new Date(),
+        }
+      });
+    } else {
+      prediction = await prisma.prediction.upsert({
+        where: { userId_matchId: { userId: session.user.id, matchId } },
+        update: { 
+          homeScore, awayScore, firstGoalScorer, 
+          confidence: confidence ?? 50, 
+          isDouble: applyJoker ?? false, 
+          isShield: applyShield ?? false,
+          btts: btts ?? null, totalGoals: totalGoals ?? null, 
+          updatedAt: new Date() 
+        },
+        create: { 
+          userId: session.user.id, matchId, homeScore, awayScore, firstGoalScorer, 
+          confidence: confidence ?? 50, 
+          isDouble: applyJoker ?? false, 
+          isShield: applyShield ?? false,
+          btts: btts ?? null, totalGoals: totalGoals ?? null 
+        },
+      });
+    }
 
     return NextResponse.json(prediction, { status: 201 });
   } catch (error) {

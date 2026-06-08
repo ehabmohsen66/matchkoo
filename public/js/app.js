@@ -4847,3 +4847,186 @@ function changeLanguage(lang) {
   const newUrl = _buildUrl(lang, currentPage);
   window.history.pushState({ page: currentPage, lang }, '', newUrl);
 }
+
+// ─── BOOST MODALS LOGIC ──────────────────────────────────────────
+
+function closeBoostModal() {
+  document.getElementById('boost-modal-overlay')?.classList.add('hidden');
+}
+
+async function fetchUpcomingPredictedMatches() {
+  // Fetch upcoming matches the user has predicted, to apply Joker or Shield
+  const res = await fetch('/api/predictions?status=upcoming');
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.predictions || [];
+}
+
+async function renderBoostMatchSelector(boostType) {
+  const content = document.getElementById('boost-modal-content');
+  content.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5)">Loading your upcoming predictions...</div>';
+  
+  const matches = await fetchUpcomingPredictedMatches();
+  if (matches.length === 0) {
+    content.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5)">You have no upcoming predictions.<br>Make a prediction first to use this boost!</div>';
+    return;
+  }
+
+  content.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px;">' + matches.map(p => `
+    <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-weight:700;font-size:0.95rem;">${p.match.homeTeam} vs ${p.match.awayTeam}</div>
+        <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:4px;">Your Prediction: ${p.homeScore}-${p.awayScore}</div>
+      </div>
+      <button onclick="applyBoostToMatch('${p.matchId}', '${boostType}', event)" style="background:#29bf12;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;">Apply</button>
+    </div>
+  `).join('') + '</div>';
+}
+
+async function applyBoostToMatch(matchId, boostType, event) {
+  const btn = event.currentTarget;
+  const originalText = btn.textContent;
+  btn.textContent = 'Applying...';
+  btn.disabled = true;
+
+  try {
+    const payload = { matchId };
+    if (boostType === 'JOKER') payload.isJoker = true;
+    if (boostType === 'SHIELD') payload.isShield = true;
+
+    const res = await fetch('/api/predictions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to apply boost');
+
+    showNotification('Boost successfully applied!', 'success');
+    closeBoostModal();
+  } catch (err) {
+    showNotification(err.message, 'error');
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+function openJokerModal() {
+  document.getElementById('boost-modal-title').textContent = 'The Joker';
+  document.getElementById('boost-modal-desc').textContent = 'Select an upcoming prediction to apply 2× XP. You can use this once per week.';
+  document.getElementById('boost-modal-overlay').classList.remove('hidden');
+  renderBoostMatchSelector('JOKER');
+}
+
+function openShieldModal() {
+  document.getElementById('boost-modal-title').textContent = 'Scoreline Shield';
+  document.getElementById('boost-modal-desc').textContent = 'Select an upcoming prediction. If you miss the exact score but get the result right, you still earn full XP. Used once per week.';
+  document.getElementById('boost-modal-overlay').classList.remove('hidden');
+  renderBoostMatchSelector('SHIELD');
+}
+
+// ─── THE DEMON LOGIC ──────────────────────────────────────────────
+
+let _demonLeagues = [];
+let _selectedDemonLeague = null;
+
+async function openDemonModal() {
+  document.getElementById('boost-modal-title').textContent = 'The Demon 😈';
+  document.getElementById('boost-modal-desc').textContent = 'Deduct 500XP from a rival to ruin their ranking. You can only use this once per mini-league.';
+  document.getElementById('boost-modal-overlay').classList.remove('hidden');
+  
+  const content = document.getElementById('boost-modal-content');
+  content.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5)">Loading your Mini Leagues...</div>';
+
+  try {
+    const res = await fetch('/api/mini-leagues');
+    if (!res.ok) throw new Error('Failed to fetch mini leagues');
+    _demonLeagues = await res.json();
+    
+    if (_demonLeagues.length === 0) {
+      content.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5)">You are not in any mini leagues.</div>';
+      return;
+    }
+
+    renderDemonLeagueList();
+  } catch(e) {
+    content.innerHTML = '<div style="color:#e01a4f;text-align:center;padding:20px;">Error loading leagues</div>';
+  }
+}
+
+function renderDemonLeagueList() {
+  const content = document.getElementById('boost-modal-content');
+  content.innerHTML = '<div style="margin-bottom:12px;font-weight:700;">Step 1: Select a Mini League</div>' +
+    '<div style="display:flex;flex-direction:column;gap:12px;">' + 
+    _demonLeagues.map(l => `
+      <div onclick="selectDemonLeague('${l.id}')" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-weight:700;">${l.name}</span>
+        <span style="font-size:0.8rem;color:rgba(255,255,255,0.5);">Select ➔</span>
+      </div>
+    `).join('') + '</div>';
+}
+
+async function selectDemonLeague(leagueId) {
+  _selectedDemonLeague = leagueId;
+  const content = document.getElementById('boost-modal-content');
+  content.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5)">Loading rivals...</div>';
+  
+  try {
+    const res = await fetch('/api/mini-leagues/' + leagueId);
+    if (!res.ok) throw new Error('Failed to load league details');
+    const data = await res.json();
+    
+    const rivals = data.ranking.filter(r => !r.isMe);
+    if (rivals.length === 0) {
+      content.innerHTML = '<button onclick="renderDemonLeagueList()" style="background:none;border:none;color:#1DA1F2;cursor:pointer;margin-bottom:16px;">← Back</button><br><div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5)">No other members in this league.</div>';
+      return;
+    }
+
+    content.innerHTML = '<button onclick="renderDemonLeagueList()" style="background:none;border:none;color:#1DA1F2;cursor:pointer;margin-bottom:16px;font-weight:700;">← Back to Leagues</button>' +
+      '<div style="margin-bottom:12px;font-weight:700;color:#e01a4f;">Step 2: Choose your victim</div>' +
+      '<div style="display:flex;flex-direction:column;gap:12px;">' +
+      rivals.map(r => `
+        <div style="background:rgba(224,26,79,0.1);border:1px solid rgba(224,26,79,0.3);border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <img src="${r.image || '/images/default-avatar.png'}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
+            <div>
+              <div style="font-weight:700;">${r.name}</div>
+              <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);">Rank: ${r.rank} | XP: ${r.xp}</div>
+            </div>
+          </div>
+          <button onclick="castDemon('${r.userId}', '${r.name}', event)" style="background:#e01a4f;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;">Deduct 500XP</button>
+        </div>
+      `).join('') + '</div>';
+
+  } catch(e) {
+    content.innerHTML = '<div style="color:#e01a4f;text-align:center;padding:20px;">Error loading rivals</div>';
+  }
+}
+
+async function castDemon(targetUserId, targetName, event) {
+  if (!confirm(`Are you sure you want to deduct 500XP from ${targetName}? You can only do this once in this league.`)) return;
+  
+  const btn = event.currentTarget;
+  const originalText = btn.textContent;
+  btn.textContent = 'Casting...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/boosts/demon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ miniLeagueId: _selectedDemonLeague, targetUserId })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to use The Demon');
+
+    showNotification(`The Demon has been cast! ${targetName} lost 500XP!`, 'success');
+    closeBoostModal();
+  } catch(e) {
+    showNotification(e.message, 'error');
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}

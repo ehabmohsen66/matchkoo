@@ -123,6 +123,7 @@ model Prediction {
   firstGoalScorer String?
   confidence      Int     @default(50)  // 50–100
   isDouble        Boolean @default(false) // double XP joker (one per round)
+  isShield        Boolean @default(false) // scoreline shield
   btts            Boolean?              // both teams to score
   totalGoals      Int?                  // predicted total goals in match
   xpEarned        Int?    // populated after match result
@@ -321,4 +322,15 @@ model MatchChat {
   createdAt DateTime @default(now())
 
   @@index([matchId, createdAt])
+}
+
+model DemonUsage {
+  id           String @id @default(cuid())
+  miniLeagueId String
+  sourceUserId String
+  targetUserId String
+  amount       Int    @default(500)
+  createdAt    DateTime @default(now())
+
+  @@unique([miniLeagueId, sourceUserId])
 }

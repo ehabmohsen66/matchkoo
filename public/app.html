@@ -814,36 +814,32 @@
           <h2 class="section-title">Boost Inventory</h2>
         </div>
         <div class="boosts-grid">
-          <div class="boost-card" onclick="useBoost('double-xp')" style="display:none">
+          <div class="boost-card" onclick="openJokerModal()">
             <div class="boost-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="28" height="28">
                 <path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z" />
               </svg>
             </div>
-            <div class="boost-name">Double XP</div>
-            <div class="boost-desc">2× XP on next correct prediction</div>
-            <div class="boost-qty">×3</div>
+            <div class="boost-name">The Joker</div>
+            <div class="boost-desc">2× XP on next correct prediction (1x/week)</div>
           </div>
-          <div class="boost-card" onclick="useBoost('scoreline-shield')">
+          <div class="boost-card" onclick="openShieldModal()">
             <div class="boost-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="#29bf12" stroke-width="2" width="28" height="28">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
             </div>
             <div class="boost-name">Scoreline Shield</div>
-            <div class="boost-desc">Near-miss still earns full XP</div>
-            <div class="boost-qty">×1</div>
+            <div class="boost-desc">Near-miss earns full XP (1x/week)</div>
           </div>
-          <div class="boost-card" onclick="useBoost('wildcard')">
+          <div class="boost-card" onclick="openDemonModal()">
             <div class="boost-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#abff4f" stroke-width="2" width="28" height="28">
-                <polygon
-                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="#e01a4f" stroke-width="2" width="28" height="28">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
               </svg>
             </div>
-            <div class="boost-name">Wildcard</div>
-            <div class="boost-desc">Cancel any prediction before kickoff</div>
-            <div class="boost-qty">×2</div>
+            <div class="boost-name">The Demon</div>
+            <div class="boost-desc">Deduct 500XP from a mini-league rival</div>
           </div>
         </div>
       </section>
@@ -1596,5 +1592,17 @@
     .ep-toast-msg.show { opacity:1; transform:translateX(-50%) translateY(0); }
     .ep-toast-msg.err { border-color:rgba(231,76,60,0.5); color:#e74c3c; }
   </style>
+
+  <!-- ─── BOOST MODALS (Joker, Shield, Demon) ────────────────── -->
+  <div class="modal-overlay hidden" id="boost-modal-overlay" onclick="closeBoostModal()">
+    <div class="modal-sheet" onclick="event.stopPropagation()" id="boost-modal" style="max-height:85vh;overflow-y:auto;background:#111827;border-radius:24px 24px 0 0;width:100%;max-width:500px;padding:24px;position:absolute;bottom:0;box-shadow:0 -8px 48px rgba(0,0,0,0.5);">
+      <button onclick="closeBoostModal()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.07);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      <h2 id="boost-modal-title" style="color:#fff;font-family:'Russo One',sans-serif;margin-top:0;font-size:1.4rem;">Boost</h2>
+      <p id="boost-modal-desc" style="color:rgba(255,255,255,0.6);font-size:0.9rem;margin-bottom:20px;line-height:1.5;"></p>
+      <div id="boost-modal-content">
+        <!-- Dynamically injected match list or mini league list -->
+      </div>
+    </div>
+  </div>
 
 </body>

@@ -110,15 +110,29 @@ export async function GET(
       league.registrations.map((r) => [r.userId, r.user])
     );
 
+    // Fetch Demon Usage penalties
+    const demonRows = await prisma.demonUsage.groupBy({
+      by: ["targetUserId"],
+      where: { miniLeagueId: id },
+      _sum: { amount: true }
+    });
+    
+    const demonMap = Object.fromEntries(
+      demonRows.map(r => [r.targetUserId, r._sum.amount || 0])
+    );
+
     const ranking = memberIds
       .map((uid) => {
         const pred = predRows.find((r) => r.userId === uid);
         const user = memberMap[uid];
+        const penalty = demonMap[uid] || 0;
+        const totalXp = (pred?._sum?.xpEarned ?? 0) - penalty;
+        
         return {
           userId: uid,
           name: user?.name ?? "Unknown",
           image: user?.image ?? null,
-          xp: pred?._sum?.xpEarned ?? 0,
+          xp: totalXp,
           isMe: uid === userId,
         };
       })
