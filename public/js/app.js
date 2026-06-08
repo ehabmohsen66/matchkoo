@@ -4885,34 +4885,43 @@ async function renderBoostMatchSelector(boostType) {
 
 async function applyBoostToMatch(matchId, boostType, event) {
   const boostName = boostType === 'JOKER' ? 'The Joker (2X XP)' : 'Scoreline Shield';
-  if (!confirm(`Are you sure you want to apply ${boostName} to this match? You can only use this once per week.`)) return;
-
+  const color = boostType === 'JOKER' ? '#ff9914' : '#29bf12';
+  const icon = boostType === 'JOKER' ? '<span style="font-size: 32px; font-weight: bold; font-family: \'Russo One\', sans-serif; color: #ff9914;">2X</span>' : '<svg viewBox="0 0 24 24" fill="none" stroke="#29bf12" stroke-width="2" width="40" height="40"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>';
+  
   const btn = event.currentTarget;
   const originalText = btn.textContent;
-  btn.textContent = 'Applying...';
-  btn.disabled = true;
 
-  try {
-    const payload = { matchId };
-    if (boostType === 'JOKER') payload.isJoker = true;
-    if (boostType === 'SHIELD') payload.isShield = true;
+  _showBoostConfirmModal({
+    title: `Apply ${boostType === 'JOKER' ? 'The Joker' : 'Scoreline Shield'}?`,
+    subtitle: `You are applying ${boostName} to this match. You can only use this once per week.`,
+    iconHtml: icon,
+    color: color,
+    onConfirm: async () => {
+      btn.textContent = 'Applying...';
+      btn.disabled = true;
+      try {
+        const payload = { matchId };
+        if (boostType === 'JOKER') payload.isJoker = true;
+        if (boostType === 'SHIELD') payload.isShield = true;
 
-    const res = await fetch('/api/predictions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+        const res = await fetch('/api/predictions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to apply boost');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to apply boost');
 
-    showNotification('Boost successfully applied!', 'success');
-    closeBoostModal();
-  } catch (err) {
-    showNotification(err.message, 'error');
-    btn.textContent = originalText;
-    btn.disabled = false;
-  }
+        showNotification('Boost successfully applied!', 'success');
+        closeBoostModal();
+      } catch (err) {
+        showNotification(err.message, 'error');
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    }
+  });
 }
 
 function openJokerModal() {
@@ -5009,28 +5018,91 @@ async function selectDemonLeague(leagueId) {
 }
 
 async function castDemon(targetUserId, targetName, event) {
-  if (!confirm(`Are you sure you want to deduct 500XP from ${targetName}? You can only do this once in this league.`)) return;
-  
   const btn = event.currentTarget;
   const originalText = btn.textContent;
-  btn.textContent = 'Casting...';
-  btn.disabled = true;
 
-  try {
-    const res = await fetch('/api/boosts/demon', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ miniLeagueId: _selectedDemonLeague, targetUserId })
-    });
+  _showBoostConfirmModal({
+    title: 'Cast The Demon?',
+    subtitle: `Are you sure you want to deduct 500XP from ${targetName}? You can only do this once in this league.`,
+    iconHtml: '<span style="font-size: 38px;">😈</span>',
+    color: '#e01a4f',
+    onConfirm: async () => {
+      btn.textContent = 'Casting...';
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/boosts/demon', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ miniLeagueId: _selectedDemonLeague, targetUserId })
+        });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to use The Demon');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to use The Demon');
 
-    showNotification(`The Demon has been cast! ${targetName} lost 500XP!`, 'success');
-    closeBoostModal();
-  } catch(e) {
-    showNotification(e.message, 'error');
-    btn.textContent = originalText;
-    btn.disabled = false;
-  }
+        showNotification(`The Demon has been cast! ${targetName} lost 500XP!`, 'success');
+        closeBoostModal();
+      } catch(e) {
+        showNotification(e.message, 'error');
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    }
+  });
+}
+
+function _showBoostConfirmModal(opts) {
+  const existing = document.getElementById('boost-confirm-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'boost-confirm-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;';
+  
+  const hexToRgb = (hex) => {
+    let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? `${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)}` : '255,255,255';
+  };
+  const rgb = hexToRgb(opts.color);
+
+  modal.innerHTML = `
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);" onclick="document.getElementById('boost-confirm-modal').remove()"></div>
+    <div style="position:relative;background:linear-gradient(135deg,#0f1923,#131e2b);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:32px 28px;max-width:360px;width:100%;box-shadow:0 32px 80px rgba(0,0,0,0.6);animation:voteModalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="display:flex;justify-content:center;margin-bottom:16px;">
+          <div style="position:relative;width:80px;height:80px;border-radius:50%;background:rgba(${rgb},0.1);border:2px solid rgba(${rgb},0.3);display:flex;align-items:center;justify-content:center;overflow:hidden;">
+            ${opts.iconHtml}
+          </div>
+        </div>
+        <div style="font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:6px;">${opts.title}</div>
+      </div>
+
+      <div style="background:rgba(${rgb},0.08);border:1px solid rgba(${rgb},0.2);border-radius:14px;padding:14px 16px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:1.5rem;">⚠️</span>
+        <div>
+          <div style="font-size:0.9rem;font-weight:800;color:#fff;">Confirm Action</div>
+          <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-top:2px;">${opts.subtitle}</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('boost-confirm-modal').remove()"
+          style="flex:1;padding:13px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s;"
+          onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+          Cancel
+        </button>
+        <button id="boost-confirm-btn"
+          style="flex:2;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,${opts.color},${opts.color});color:#000;font-size:0.9rem;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 20px rgba(${rgb},0.4);transition:all 0.2s;"
+          onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 24px rgba(${rgb},0.55)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 20px rgba(${rgb},0.4)'">
+          Confirm
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  
+  document.getElementById('boost-confirm-btn').onclick = () => {
+    document.getElementById('boost-confirm-modal').remove();
+    opts.onConfirm();
+  };
 }
