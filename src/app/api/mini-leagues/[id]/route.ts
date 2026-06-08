@@ -77,18 +77,19 @@ export async function GET(
       return validNames.includes(normalised) && m.status === "LIVE";
     });
 
-    // Per-mini-league ranking: sum xpEarned for predictions on the filtered matches
-    const matchIds = fixtures.map((m) => m.id);
 
-    // Also include completed matches for scoring
-    const allCompMatches = await prisma.match.findMany({
-      where: {
-        status: { in: ["UPCOMING", "LIVE", "COMPLETED"] },
-        tournament: { name: { in: validNames } },
-      },
-      select: { id: true },
+
+    // Also include completed matches for scoring.
+    // Use the same normalised-name filter as fixtures (raw DB `in` won't match
+    // names like "UEFA Champions League 2025 [2]").
+    const allTournamentMatches = await prisma.match.findMany({
+      where: { status: { in: ["UPCOMING", "LIVE", "COMPLETED"] } },
+      include: { tournament: { select: { name: true } } },
     });
-    const allCompMatchIds = allCompMatches.map((m) => m.id);
+    const allCompMatchIds = allTournamentMatches
+      .filter((m) => validNames.includes(normaliseName(m.tournament.name)))
+      .map((m) => m.id);
+
 
     const memberIds = league.registrations.map((r) => r.userId);
 
