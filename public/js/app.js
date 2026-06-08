@@ -2530,7 +2530,6 @@ async function initProfile() {
       renderTrophies(u, statsObj, globalRankNum);
     }
   } catch(e) { console.error('initProfile error', e); }
-  renderLeagueAccuracy();
 }
 
 function _renderInviteCard(userId, userName) {
@@ -2627,21 +2626,7 @@ function renderTrophies(user, stats, globalRank) {
   ).join('');
 }
 
-function renderLeagueAccuracy() {
-  const container = document.getElementById('league-accuracy-list');
-  if (!container) return;
-  container.innerHTML = DATA.leagueAccuracy.map(la => `
-    <div class="acc-row">
-      <div class="acc-league-name">${la.name}</div>
-      <div class="acc-bar-wrap">
-        <div class="acc-bar">
-          <div class="acc-bar-fill" style="width:${la.pct}%"></div>
-        </div>
-      </div>
-      <div class="acc-pct">${la.pct}%</div>
-    </div>
-  `).join('');
-}
+
 
 function useBoost(type) {
   const names = { 'double-xp': 'Double XP', 'scoreline-shield': 'Scoreline Shield', 'wildcard': 'Wildcard' };
