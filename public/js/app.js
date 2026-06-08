@@ -1752,7 +1752,7 @@ async function loadMyLeagueRanks() {
       if (miniListEl) miniListEl.innerHTML = myMiniLeagues.map(t => {
         const comp = COMP_META[t.competition] || COMP_META['premier_league'];
         const logoHtml = `<img src="${comp.logo}" width="30" height="30" style="object-fit:contain;">`;
-        return '<div style="display:flex;align-items:center;gap:14px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05);cursor:pointer" onclick="navigate(\'minileague\')">' +
+        return '<div style="display:flex;align-items:center;gap:14px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05);cursor:pointer" onclick="navigateToMiniLeague(\'' + t.id + '\')">' +
           '<div style="width:34px;height:34px;display:flex;align-items:center;justify-content:center">' + logoHtml + '</div>' +
           '<div style="flex:1">' +
             '<div style="font-weight:700;color:#fff;font-size:0.88rem">' + t.name + '</div>' +
@@ -2049,6 +2049,13 @@ function switchMlTab(tab) {
 function closeMiniLeagueDetail() {
   document.getElementById('mini-league-detail-panel').classList.add('hidden');
   document.getElementById('mini-league-list-view').classList.remove('hidden');
+}
+
+// Navigate to the mini leagues page and immediately open a specific league's detail
+function navigateToMiniLeague(leagueId) {
+  navigate('minileague');
+  // Wait for the page to render and initMiniLeagues() to complete before opening detail
+  setTimeout(() => openMiniLeagueDetail(leagueId), 300);
 }
 
 async function createLeague() {
