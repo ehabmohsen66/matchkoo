@@ -84,7 +84,7 @@ function navigate(page, skipHistory = false) {
   if (page === 'live') initLivePage();
   if (page === 'leagues') initLeaguesPage();
   if (page === 'predictions') initPredictions();
-  if (page === 'leaderboard') initLeaderboard();
+  if (page === 'leaderboard') initLeaderboard(state.lbPeriod);
   if (page === 'league-detail') initLeagueDetail();
   if (page === 'minileague') initMiniLeagues();
   if (page === 'profile') initProfile();
