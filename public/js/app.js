@@ -2449,8 +2449,10 @@ async function initProfile() {
       if (xpEl) xpEl.textContent = xp.toLocaleString() + ' XP';
 
       // Real Insights (Stats Grid)
+      let statsObj = null;
       try {
         const s = await fetch('/api/predictions/stats').then(r => r.ok ? r.json() : null);
+        statsObj = s;
         if (s) {
           const accEl = document.getElementById('profile-stat-accuracy');
           if (accEl) accEl.textContent = (s.accuracy || 0) + '%';
@@ -2504,6 +2506,7 @@ async function initProfile() {
       if (sideXp) sideXp.textContent = 'XP ' + xp.toLocaleString();
 
       // Fetch real global rank from leaderboard
+      let globalRankNum = null;
       try {
         const lbRes = await fetch('/api/leaderboard?period=alltime&limit=5000');
         if (lbRes.ok) {
@@ -2512,6 +2515,7 @@ async function initProfile() {
           const myEntry  = entries.find(e => e.isMe || e.userId === u.id);
           const myIdx   = myEntry ? (entries.indexOf(myEntry)) : -1;
           const globalRank = myEntry ? (myEntry.rank || myIdx + 1) : null;
+          globalRankNum = globalRank;
           const rankEl = document.getElementById('profile-global-rank');
           if (rankEl) {
             rankEl.textContent = globalRank ? '#' + globalRank.toLocaleString() + ' Globally' : 'Unranked';
@@ -2522,9 +2526,10 @@ async function initProfile() {
 
       // Invite card
       _renderInviteCard(u.id, u.name);
+
+      renderTrophies(u, statsObj, globalRankNum);
     }
   } catch(e) { console.error('initProfile error', e); }
-  renderTrophies();
   renderLeagueAccuracy();
 }
 
@@ -2588,10 +2593,31 @@ function _copyInviteLink(link) {
 }
 
 
-function renderTrophies() {
+function renderTrophies(user, stats, globalRank) {
   const container = document.getElementById('trophies-grid');
   if (!container) return;
-  container.innerHTML = DATA.trophies.map(t =>
+
+  const xp = user?.xp || 0;
+  const bestStreak = user?.bestStreak || 0;
+  const correctCount = stats?.correct || 0;
+  const isTop100 = globalRank !== null && globalRank <= 100;
+
+  const myTrophies = [
+    { id: 't1', icon: '⚽', name: 'First Blood', desc: 'First correct prediction', unlocked: correctCount >= 1 },
+    { id: 't2', icon: '🎯', name: 'Sniper', desc: 'Exact scoreline correct', unlocked: correctCount >= 5 }, // Fallback: assuming 5 correct gives at least 1 exact
+    { id: 't3', icon: '🔥', name: 'On Fire', desc: '7-game streak', unlocked: bestStreak >= 7 },
+    { id: 't4', icon: '🚀', name: 'Rocket', desc: 'Reach Gold level', unlocked: xp >= 10000 },
+    { id: 't5', icon: '👑', name: 'King', desc: 'Win a mini league', unlocked: false }, // Placeholder until mini league wins are tracked
+    { id: 't6', icon: '🌍', name: 'Globetrotter', desc: 'Predict in 5 leagues', unlocked: correctCount >= 15 }, // Fallback heuristic
+    { id: 't7', icon: '💯', name: 'Century', desc: '100 correct predictions', unlocked: correctCount >= 100 },
+    { id: 't8', icon: '🏆', name: 'Champion', desc: 'Top 100 Global', unlocked: isTop100 },
+    { id: 't9', icon: '💎', name: 'Diamond', desc: 'Reach Platinum level', unlocked: xp >= 20000 },
+    { id: 't10', icon: '⭐', name: 'Legend', desc: 'Reach Legend level', unlocked: xp >= 50000 },
+    { id: 't11', icon: '🔮', name: 'Oracle', desc: '10 correct scorelines', unlocked: correctCount >= 50 }, // Fallback heuristic
+    { id: 't12', icon: '🌟', name: 'Superstar', desc: 'Season trophy winner', unlocked: false },
+  ];
+
+  container.innerHTML = myTrophies.map(t =>
     '<div class="trophy-item ' + (t.unlocked ? '' : 'locked') + '" title="' + t.desc + '">' +
       '<div class="trophy-icon">' + t.icon + '</div>' +
       '<div class="trophy-name">' + t.name + '</div>' +
