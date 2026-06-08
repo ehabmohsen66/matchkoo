@@ -57,6 +57,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string;
         session.user.name = token.name as string;
         session.user.email = token.email as string;
+        session.user.image = token.image as string;
         (session.user as any).xp              = token.xp as number;
         (session.user as any).streak          = token.streak as number ?? 0;
         (session.user as any).predictionCount = token.predictionCount as number ?? 0;
@@ -73,14 +74,16 @@ export const authOptions: NextAuthOptions = {
         token.predictionCount = (user as any).predictionCount ?? 0;
         token.gender          = (user as any).gender ?? "male";
       }
-      // Refresh XP from DB on every token refresh (so it stays current)
+      // Refresh user fields from DB on every token refresh (so it stays current)
       if (token.id && !user) {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id as string },
-            select: { xp: true, role: true, streak: true, predictionCount: true, gender: true },
+            select: { name: true, image: true, xp: true, role: true, streak: true, predictionCount: true, gender: true },
           });
           if (dbUser) {
+            token.name            = dbUser.name;
+            token.image           = dbUser.image;
             token.xp              = dbUser.xp;
             token.role            = dbUser.role;
             token.streak          = dbUser.streak;
