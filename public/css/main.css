@@ -1302,7 +1302,7 @@ input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
 /* ─── TABLET (768px) ────────────────────────────────────────── */
 @media (max-width: 768px) {
   .sidebar { transform: translateX(calc(-1 * var(--sidebar-w))); }
-  .sidebar.mobile-open { transform: translateX(0); box-shadow: 8px 0 40px rgba(0,0,0,0.15); }
+  .sidebar.mobile-open { transform: translateX(0); box-shadow: 8px 0 40px rgba(0,0,0,0.15); padding-bottom: calc(var(--mobile-nav) + 20px) !important; }
   .sidebar-logo { padding-top: 64px !important; }
   .mobile-header { display: flex; }
   .mobile-nav    { display: flex; }
