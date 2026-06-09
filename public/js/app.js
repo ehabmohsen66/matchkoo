@@ -1848,7 +1848,7 @@ async function initLeagueDetail() {
           <div class="podium-card rank2">
             <div class="podium-avatar">
               <img src="${top3[1].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[1].name || 'player')}" alt="${top3[1].name}">
-              <div class="level-badge silver">S</div>
+              <div class="level-badge ${_xpToLevel(top3[1].xp||0).cls}">${_xpToLevel(top3[1].xp||0).badge}</div>
             </div>
             <div class="podium-name">${top3[1].name}${top3[1].isMe ? ' (You)' : ''}</div>
             <div class="podium-flag">${_getFlagEmoji(top3[1].country)}</div>
@@ -1863,7 +1863,7 @@ async function initLeagueDetail() {
             </div>
             <div class="podium-avatar">
               <img src="${top3[0].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[0].name || 'player')}" alt="${top3[0].name}">
-              <div class="level-badge legend">L</div>
+              <div class="level-badge ${_xpToLevel(top3[0].xp||0).cls}">${_xpToLevel(top3[0].xp||0).badge}</div>
             </div>
             <div class="podium-name">${top3[0].name}${top3[0].isMe ? ' (You)' : ''}</div>
             <div class="podium-flag">${_getFlagEmoji(top3[0].country)}</div>
@@ -1875,7 +1875,7 @@ async function initLeagueDetail() {
           <div class="podium-card rank3">
             <div class="podium-avatar">
               <img src="${top3[2].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[2].name || 'player')}" alt="${top3[2].name}">
-              <div class="level-badge gold">G</div>
+              <div class="level-badge ${_xpToLevel(top3[2].xp||0).cls}">${_xpToLevel(top3[2].xp||0).badge}</div>
             </div>
             <div class="podium-name">${top3[2].name}${top3[2].isMe ? ' (You)' : ''}</div>
             <div class="podium-flag">${_getFlagEmoji(top3[2].country)}</div>
@@ -2071,11 +2071,11 @@ function _getFlagEmoji(countryCode) {
 }
 
 function _xpToLevel(xp) {
-  if (xp >= 50000) return { label: 'Legend', cls: 'legend', badge: 'L' };
+  if (xp >= 50000) return { label: 'Legend',   cls: 'legend',   badge: 'L' };
   if (xp >= 20000) return { label: 'Platinum', cls: 'platinum', badge: 'P' };
-  if (xp >= 10000) return { label: 'Gold', cls: 'gold', badge: 'G' };
-  if (xp >= 4000)  return { label: 'Silver', cls: 'silver', badge: 'S' };
-  return { label: 'Bronze', cls: 'bronze', badge: 'B' };
+  if (xp >= 10000) return { label: 'Gold',     cls: 'gold',     badge: 'G' };
+  if (xp >= 1000)  return { label: 'Silver',   cls: 'silver',   badge: 'S' };
+  return                  { label: 'Bronze',   cls: 'bronze',   badge: 'B' };
 }
 
 function renderLeaderboardTable(entries) {
@@ -2533,8 +2533,8 @@ async function initProfile() {
 
       // Level / tier
       const TIERS = [
-        { name: 'Bronze',   min: 0,     max: 2999,  cls: 'bronze'   },
-        { name: 'Silver',   min: 3000,  max: 9999,  cls: 'silver'   },
+        { name: 'Bronze',   min: 0,     max: 999,   cls: 'bronze'   },
+        { name: 'Silver',   min: 1000,  max: 9999,  cls: 'silver'   },
         { name: 'Gold',     min: 10000, max: 19999, cls: 'gold'     },
         { name: 'Platinum', min: 20000, max: 49999, cls: 'platinum' },
         { name: 'Legend',   min: 50000, max: Infinity, cls: 'legend' },
