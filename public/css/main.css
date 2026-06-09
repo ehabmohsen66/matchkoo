@@ -875,10 +875,10 @@ a { text-decoration: none; color: inherit; }
 .podium-card.rank3 .podium-avatar img { border: 2px solid #cd7f32; }
 .podium-name { font-size: 0.82rem; font-weight: 800; text-align: center; }
 .podium-xp   { font-size: 0.85rem; color: var(--orange); font-weight: 700; }
-.podium-block { width: 100%; border-radius: var(--radius-sm) var(--radius-sm) 0 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font-family: 'Russo One', sans-serif; font-size: 1.4rem; color: rgba(0,0,0,0.15); }
-.rank1-block { background: linear-gradient(180deg, rgba(255,153,20,0.3), rgba(255,153,20,0.1)); border-top: 3px solid var(--orange); height: 70px; }
-.rank2-block { background: linear-gradient(180deg, rgba(144,144,144,0.2), rgba(144,144,144,0.05)); border-top: 3px solid #909090; height: 50px; }
-.rank3-block { background: linear-gradient(180deg, rgba(205,127,50,0.2), rgba(205,127,50,0.05)); border-top: 3px solid #cd7f32; height: 35px; }
+.podium-block { width: 100%; border-radius: var(--radius-sm) var(--radius-sm) 0 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font-family: 'Russo One', sans-serif; font-size: 1.4rem; }
+.rank1-block { background: linear-gradient(180deg, rgba(255,153,20,0.3), rgba(255,153,20,0.1)); border-top: 3px solid var(--orange); height: 70px; color: #ff9914; }
+.rank2-block { background: linear-gradient(180deg, rgba(144,144,144,0.2), rgba(144,144,144,0.05)); border-top: 3px solid #909090; height: 50px; color: #c0c0c0; }
+.rank3-block { background: linear-gradient(180deg, rgba(205,127,50,0.2), rgba(205,127,50,0.05)); border-top: 3px solid #cd7f32; height: 35px; color: #cd7f32; }
 
 .your-rank-band {
   display: flex; align-items: center; gap: 16px;
