@@ -909,11 +909,15 @@ function renderLeagues(continentId) {
 
     const isCompleted = !!(l.status && l.status.toUpperCase() === 'COMPLETED');
 
+    // Real DB tournament ID — null for static placeholder leagues
+    const realTournamentId = l._realId || null;
+    const safeTournamentId = realTournamentId ? String(realTournamentId).replace(/'/g, "\\'") : '';
+
     const followBtn = isCompleted
       ? ""
       : "<button " +
         "  id=\"follow-btn-" + safeId + "\" " +
-        "  onclick=\"event.stopPropagation();toggleFollow('" + safeId + "','" + safeName + "','" + canonicalName.replace(/'/g,"\\'") + "')\" " +
+        "  onclick=\"event.stopPropagation();toggleFollow('" + safeId + "','" + safeName + "','" + canonicalName.replace(/'/g,"\\'") + "','" + safeTournamentId + "')\" " +
         "  style=\"" +
           "flex-shrink:0;margin-left:auto;padding:4px 12px;border-radius:100px;" +
           "border:1px solid " + (isFollowed ? "rgba(111,232,64,0.5)" : "rgba(111,232,64,0.4)") + ";" +
@@ -941,7 +945,8 @@ function renderLeagues(continentId) {
 }
 
 // ── Join / Leave a league from the Discover page ─────────────────────────
-async function toggleFollow(leagueId, leagueName, canonicalName) {
+// tournamentId = real DB cuid, or empty string for static placeholder leagues
+async function toggleFollow(leagueId, leagueName, canonicalName, tournamentId) {
   const btn = document.getElementById('follow-btn-' + leagueId);
   if (!btn) return;
 
@@ -952,7 +957,8 @@ async function toggleFollow(leagueId, leagueName, canonicalName) {
   btn.disabled = true;
   btn.textContent = '…';
 
-  const ok = await Backend.toggleLeagueFollow(canonicalName, action);
+  // Pass real tournament ID so backend can also update Registration table
+  const ok = await Backend.toggleLeagueFollow(canonicalName, action, tournamentId || null);
 
   if (ok) {
     const nowFollowed = action === 'follow';

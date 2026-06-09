@@ -419,8 +419,10 @@ const Backend = {
   },
 
   // ─── LEAGUE FOLLOW / UNFOLLOW ────────────────────────────────────
-  async toggleLeagueFollow(canonicalLeagueName, action) {
+  // tournamentId = real DB cuid (present for hydrated leagues, null for static placeholders)
+  async toggleLeagueFollow(canonicalLeagueName, action, tournamentId = null) {
     try {
+      // 1. Update the user's preferredLeagues list (controls fixture filtering)
       const res = await fetch('/api/user/preferences', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -430,7 +432,25 @@ const Backend = {
       const data = await res.json();
       // Update local cache
       this.preferredLeagues = data.preferredLeagues || [];
-      // Refresh Today's Fixtures to reflect the new preference
+
+      // 2. For real DB leagues also create/delete a Registration row
+      //    (drives leaderboard membership and "My Leagues" counts)
+      if (tournamentId) {
+        if (action === 'follow') {
+          // Ignore errors — e.g. already registered (P2002)
+          await fetch('/api/tournaments/' + tournamentId + '/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({}),
+          }).catch(() => {});
+        } else {
+          await fetch('/api/tournaments/' + tournamentId + '/register', {
+            method: 'DELETE',
+          }).catch(() => {});
+        }
+      }
+
+      // 3. Refresh Today's Fixtures to reflect the new preference
       await this._refreshTodayFixtures();
       return true;
     } catch (e) {
