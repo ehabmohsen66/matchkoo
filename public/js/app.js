@@ -2032,23 +2032,26 @@ async function initLeagueDetail() {
         </div>
       </div>` : ''}
 
-      <!-- Main Leaderboard Layout -->
-      ${podiumHtml}
-      ${myRankBannerHtml}
-      ${rankingContent.includes('leaderboard-table') ? rankingContent.split('</div`>')[0].replace(podiumHtml, '') : ''}
-
-      <!-- Fixtures Section at Bottom -->
-      <div style="margin-top:40px;border-top:1px solid rgba(255,255,255,0.06);padding-top:24px;">
+      <!-- Fixtures Section at Top -->
+      <div style="margin-top:24px;margin-bottom:32px;">
         <h2 style="font-size:1rem;font-weight:900;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;">
           ${isCompletedLeague ? '📋 Past Fixtures' : '📅 Upcoming Fixtures'}
         </h2>
         <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;scrollbar-width:thin;">
           ${isCompletedLeague
             ? (matchesRes.length
-                ? '<div style="color:rgba(255,255,255,0.35);font-size:0.85rem;padding:16px 0;">This season\'s matches have all been played. Check your predictions in the <strong style="color:rgba(255,255,255,0.6);">Predictions</strong> tab.</div>'
+                ? '<div style="color:rgba(255,255,255,0.35);font-size:0.85rem;padding:16px 0;">This season\\'s matches have all been played. Check your predictions in the <strong style="color:rgba(255,255,255,0.6);">Predictions</strong> tab.</div>'
                 : '<div style="color:var(--text-muted);font-size:0.85rem;">No match data available.</div>')
             : fixtureHtml}
         </div>
+      </div>
+
+      <!-- Main Leaderboard Layout at Bottom -->
+      <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:24px;">
+        <h2 style="font-size:1rem;font-weight:900;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;">🏆 Rankings</h2>
+        ${podiumHtml}
+        ${myRankBannerHtml}
+        ${rankingContent.includes('leaderboard-table') ? rankingContent.split('</div`>')[0].replace(podiumHtml, '') : ''}
       </div>
     `;
   } catch(e) {
