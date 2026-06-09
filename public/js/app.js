@@ -2675,7 +2675,7 @@ function _renderInviteCard(userId, userName) {
   if (existing) existing.remove();
 
   const refLink = `${window.location.origin}/register?ref=${userId}`;
-  const shareText = encodeURIComponent(`Join me on Matchkoo — the football prediction platform! Predict scores, earn XP and compete on leaderboards.\n\nhttps://matchkoo.com/matchkoo-logo.png\n\nSign up with my invite link:`);
+  const shareText = encodeURIComponent(`Join me on Matchkoo — the football prediction platform! Predict scores, earn XP and compete on leaderboards.\n\nSign up with my invite link:`);
   const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(refLink)}`;
   const twUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(refLink)}`;
 
@@ -3887,7 +3887,7 @@ document.querySelectorAll('.score-option input[type=radio]').forEach(radio => {
 function shareTrophy(el) {
   const trophyName = el.getAttribute ? el.getAttribute('data-name') : el;
   const trophyIcon = el.getAttribute ? el.getAttribute('data-icon') : arguments[1];
-  const text = encodeURIComponent('I just unlocked the "' + trophyName + '" trophy on Matchkoo! ' + trophyIcon + ' Come join me and predict football matches for XP prizes!\n\nhttps://matchkoo.com/matchkoo-logo.png\n\n');
+  const text = encodeURIComponent('I just unlocked the "' + trophyName + '" trophy on Matchkoo! ' + trophyIcon + ' Come join me and predict football matches for XP prizes!\n\n');
   const url = encodeURIComponent(window.location.origin);
   const twitterUrl = 'https://twitter.com/intent/tweet?text=' + text + '&url=' + url;
   const facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + url;
