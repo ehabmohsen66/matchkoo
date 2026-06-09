@@ -205,6 +205,7 @@ const Backend = {
             _realId: t.id,
             canonicalName: cfg.canonicalName, // used by toggleFollow (no year)
             season: t.season || (seasonYear ? seasonYear.toString() : null),
+            status: t.status || 'ONGOING',
             comingSoon: false,
           };
 

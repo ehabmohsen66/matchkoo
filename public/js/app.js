@@ -907,20 +907,33 @@ function renderLeagues(continentId) {
       canonicalName.toLowerCase().includes(p.toLowerCase())
     );
 
-    const followBtn =
-      "<button " +
-      "  id=\"follow-btn-" + safeId + "\" " +
-      "  onclick=\"event.stopPropagation();toggleFollow('" + safeId + "','" + safeName + "','" + canonicalName.replace(/'/g,"\\'") + "')\" " +
-      "  style=\"" +
-        "flex-shrink:0;margin-left:auto;padding:4px 12px;border-radius:100px;" +
-        "border:1px solid " + (isFollowed ? "rgba(111,232,64,0.5)" : "rgba(111,232,64,0.4)") + ";" +
-        "background:" + (isFollowed ? "rgba(111,232,64,0.15)" : "rgba(111,232,64,0.1)") + ";" +
-        "color:" + (isFollowed ? "#6FE840" : "#6FE840") + ";" +
-        "font-size:0.65rem;font-weight:800;cursor:pointer;font-family:inherit;" +
-        "letter-spacing:0.5px;text-transform:uppercase;transition:all 0.2s;white-space:nowrap;" +
-      "\">" +
-      (isFollowed ? "✓ Joined" : "+ Join") +
-      "</button>";
+    const isCompleted = l.status === 'COMPLETED';
+
+    const followBtn = isCompleted
+      ? "<span " +
+        "  style=\"" +
+          "flex-shrink:0;margin-left:auto;padding:4px 12px;border-radius:100px;" +
+          "border:1px solid rgba(255,255,255,0.12);" +
+          "background:rgba(255,255,255,0.05);" +
+          "color:rgba(255,255,255,0.4);" +
+          "font-size:0.6rem;font-weight:800;font-family:inherit;" +
+          "letter-spacing:0.5px;text-transform:uppercase;white-space:nowrap;" +
+        "\">" +
+        "✓ Completed" +
+        "</span>"
+      : "<button " +
+        "  id=\"follow-btn-" + safeId + "\" " +
+        "  onclick=\"event.stopPropagation();toggleFollow('" + safeId + "','" + safeName + "','" + canonicalName.replace(/'/g,"\\'") + "')\" " +
+        "  style=\"" +
+          "flex-shrink:0;margin-left:auto;padding:4px 12px;border-radius:100px;" +
+          "border:1px solid " + (isFollowed ? "rgba(111,232,64,0.5)" : "rgba(111,232,64,0.4)") + ";" +
+          "background:" + (isFollowed ? "rgba(111,232,64,0.15)" : "rgba(111,232,64,0.1)") + ";" +
+          "color:" + (isFollowed ? "#6FE840" : "#6FE840") + ";" +
+          "font-size:0.65rem;font-weight:800;cursor:pointer;font-family:inherit;" +
+          "letter-spacing:0.5px;text-transform:uppercase;transition:all 0.2s;white-space:nowrap;" +
+        "\">" +
+        (isFollowed ? "✓ Joined" : "+ Join") +
+        "</button>";
 
     // ── Active card ────────────────────────────────────────────────
     return "<div class=\"league-card\" onclick=\"openLeagueFixtures('" + safeId + "','" + safeName + "')\" style=\"cursor:pointer\">" +
