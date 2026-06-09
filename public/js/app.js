@@ -2383,21 +2383,20 @@ async function openMiniLeagueDetail(leagueId) {
         </div>
       </div>` : ''}
 
-      <!-- Two-column layout on desktop, stacked on mobile: Rankings (left/top) | Fixtures (right/bottom) -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px;align-items:start;">
+      <!-- Tabs Navigation -->
+      <div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:16px;">
+        <div id="ml-tab-rank" onclick="switchMlTab('rank')" style="flex:1;text-align:center;padding:12px;font-size:0.85rem;font-weight:800;color:var(--cyan);border-bottom:2px solid var(--cyan);cursor:pointer;text-transform:uppercase;letter-spacing:1px;">🏆 Rankings</div>
+        <div id="ml-tab-fix" onclick="switchMlTab('fix')" style="flex:1;text-align:center;padding:12px;font-size:0.85rem;font-weight:800;color:rgba(255,255,255,0.4);border-bottom:2px solid transparent;cursor:pointer;text-transform:uppercase;letter-spacing:1px;">📅 Fixtures</div>
+      </div>
 
-        <!-- LEFT: Rankings with podium -->
-        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;">
-          <div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;">🏆 Rankings</div>
-          ${rankingContent}
-        </div>
+      <!-- Tab Content: Rankings -->
+      <div id="ml-tab-content-rank" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;">
+        ${rankingContent}
+      </div>
 
-        <!-- RIGHT: Fixtures -->
-        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;">
-          <div style="font-size:0.65rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">📅 Fixtures</div>
-          ${fixtureHtml}
-        </div>
-
+      <!-- Tab Content: Fixtures -->
+      <div id="ml-tab-content-fix" class="hidden" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;">
+        ${fixtureHtml}
       </div>
     `;
   } catch(e) {
