@@ -1643,7 +1643,7 @@ body[data-page="home"][data-logged-in="true"] #lang-select-mobile {
 }
 
 body[data-page="home"][data-logged-in="true"] .mobile-logo img {
-  height: 82px !important;
+  height: 110px !important;
   transition: height 0.3s ease;
 }
 
