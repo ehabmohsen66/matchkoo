@@ -774,7 +774,69 @@
       .footer { grid-template-columns: 1fr; }
       .hero-stats { gap: 24px; }
       .hero-stat-divider { display: none; }
+      .section { padding: 60px 20px; }
+      .section-header.center { margin-bottom: 40px; }
     }
+    @media (max-width: 480px) {
+      /* Nav */
+      .nav { padding: 0 16px; }
+      .nav-cta { gap: 8px; }
+      .nav-cta .btn-outline { display: none; }
+
+      /* Hero */
+      .hero-title    { font-size: 1.85rem; line-height: 1.2; }
+      .hero-sub      { font-size: 0.95rem; }
+      .hero-cta      { flex-direction: column; align-items: stretch; gap: 12px; }
+      .btn-primary, .btn-outline-lg { width: 100%; justify-content: center; text-align: center; }
+      .hero-stats    { flex-wrap: wrap; gap: 16px; justify-content: center; }
+      .hero-stat-divider { display: none; }
+
+      /* Section */
+      .section       { padding: 40px 16px; }
+      .section-header { margin-bottom: 28px; }
+      .section-header.center { margin-bottom: 32px; }
+      .section-title { font-size: 1.6rem; }
+
+      /* Stats bar */
+      .stats-bar     { grid-template-columns: 1fr 1fr; gap: 20px; padding: 28px 20px; }
+      .stat-number   { font-size: 2rem; }
+
+      /* How it works */
+      .steps-grid    { grid-template-columns: 1fr; gap: 16px; }
+
+      /* Features cards */
+      .features-grid { grid-template-columns: 1fr; }
+
+      /* Testimonials */
+      .testimonials-grid { grid-template-columns: 1fr; }
+
+      /* CTA section */
+      .cta-buttons   { flex-direction: column; align-items: stretch; gap: 12px; }
+      .cta-title     { font-size: 2rem; }
+
+      /* Footer */
+      .footer        { grid-template-columns: 1fr; gap: 28px; }
+      .footer-brand-desc { max-width: 100%; }
+
+      /* FAQ */
+      .faq-q         { font-size: 0.88rem; }
+      .faq-a         { font-size: 0.82rem; }
+    }
+    @media (max-width: 375px) {
+      .hero-title    { font-size: 1.6rem; }
+      .hero-kicker   { font-size: 0.7rem; }
+      .section-title { font-size: 1.4rem; }
+      .stats-bar     { grid-template-columns: 1fr; }
+      .nav           { padding: 0 12px; }
+      .logo-text     { font-size: 1.1rem; }
+      .cta-title     { font-size: 1.6rem; }
+    }
+    @media (max-width: 320px) {
+      .hero-title    { font-size: 1.4rem; }
+      .section-title { font-size: 1.25rem; }
+      .section       { padding: 32px 12px; }
+    }
+
 
     /* ─── RTL / ARABIC OVERRIDES ─────────────────────────── */
     [dir="rtl"] {

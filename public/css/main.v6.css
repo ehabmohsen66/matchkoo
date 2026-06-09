@@ -1513,23 +1513,129 @@ input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
   .home-two-col { grid-template-columns: 1fr; }
   .home-sidebar { display: none; }
 }
+
+/* ─── TABLET (768px) ────────────────────────────────────────── */
 @media (max-width: 768px) {
   .sidebar { transform: translateX(calc(-1 * var(--sidebar-w))); }
   .sidebar.mobile-open { transform: translateX(0); box-shadow: 8px 0 40px rgba(0,0,0,0.15); }
   .mobile-header { display: flex; }
   .mobile-nav    { display: flex; }
-  .main-content  { margin-left: 0; padding: 80px 16px 80px; max-width: 100vw; }
+  .main-content  { margin-left: 0; padding: 76px 16px 76px; max-width: 100%; overflow-x: hidden; }
   .challenges-grid { grid-template-columns: 1fr; }
   .leagues-create-section { grid-template-columns: 1fr; }
   .stat-cards-row { grid-template-columns: repeat(2, 1fr); }
-  .trophies-grid { grid-template-columns: repeat(3, 1fr); }
-  .boosts-grid { grid-template-columns: repeat(2, 1fr); }
-  .page-title { font-size: 1.5rem; }
+  .trophies-grid  { grid-template-columns: repeat(3, 1fr); }
+  .boosts-grid    { grid-template-columns: repeat(2, 1fr); }
+  .page-title     { font-size: 1.4rem; }
+  .podium-section { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .podium-row     { min-width: 360px; }
+  .your-rank-banner { flex-wrap: wrap; gap: 10px; padding: 12px 14px; }
+  .yrb-center { flex: 1; min-width: 0; }
+  .lb-name { font-size: 0.82rem; }
+  .lb-xp   { font-size: 0.82rem; }
+  .modal-overlay { padding: 12px; align-items: flex-end; }
+  .modal-sheet   { border-radius: var(--radius-xl) var(--radius-xl) 0 0; max-height: 92vh; }
+  .pred-insights-grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ─── MOBILE (480px) ────────────────────────────────────────── */
 @media (max-width: 480px) {
-  .continent-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
-  .match-card { min-width: 270px; }
+  .continent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .match-card { min-width: 240px; }
+  .match-cards-scroll { gap: 10px; }
+  .podium-card         { max-width: 115px; gap: 5px; }
+  .podium-avatar img   { width: 54px; height: 54px; }
+  .podium-card.rank1 .podium-avatar img { width: 64px; height: 64px; }
+  .podium-name         { font-size: 0.72rem; }
+  .podium-xp           { font-size: 0.75rem; }
+  .rank1-block         { height: 58px; font-size: 1.1rem; }
+  .rank2-block         { height: 42px; font-size: 1.1rem; }
+  .rank3-block         { height: 30px; font-size: 1.1rem; }
+  .level-badge         { font-size: 0.55rem; padding: 1px 6px; }
+  .your-rank-banner    { padding: 10px 12px; }
+  .yrb-rank            { font-size: 1.4rem; }
+  .yrb-name            { font-size: 0.82rem; }
+  .trophies-grid       { grid-template-columns: repeat(2, 1fr); }
+  .modal-sheet         { width: 100%; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+  .modal-overlay       { padding: 0; align-items: flex-end; }
+  .modal-body          { padding: 16px; }
+  .modal-header        { padding: 16px; }
+  .modal-match-header  { gap: 8px; }
+  .modal-home-name, .modal-away-name { max-width: 70px; font-size: 0.78rem; }
+  .modal-score         { font-size: 1.6rem; }
+  .modal-team-name     { max-width: 70px; font-size: 0.78rem; }
+  .toggle-group button { min-height: 44px; font-size: 0.82rem; }
+  .toggle-btn          { min-height: 44px; padding: 10px 6px; }
+  .time-tab            { padding: 10px 14px; min-height: 40px; }
+  .lb-tab              { padding: 10px 14px; min-height: 40px; }
+  .filter-tab          { padding: 10px 16px; min-height: 40px; }
+  .fix-pill            { padding: 8px 12px; min-height: 40px; }
+  .acc-league-name     { min-width: 80px; font-size: 0.78rem; }
+  .acc-pct             { min-width: 32px; font-size: 0.82rem; }
+  .lb-rank             { font-size: 0.88rem; min-width: 24px; }
+  .lb-name             { font-size: 0.8rem; gap: 5px; }
+  .lb-sub              { font-size: 0.65rem; }
+  .lb-xp               { font-size: 0.8rem; }
+  .mini-lb-row         { padding: 8px 10px; gap: 8px; }
+  .page-header-block   { gap: 8px; }
+  .page-title          { font-size: 1.25rem; letter-spacing: 0.5px; }
+  .page-sub            { font-size: 0.78rem; }
+  .pred-insights-grid  { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .pred-insight-card   { padding: 12px; }
+  .pic-value           { font-size: 1.4rem; }
+  .fixtures-league-filters { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; }
+  .fixtures-league-filters::-webkit-scrollbar { display: none; }
+  .stats-grid          { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card           { padding: 14px; }
+  .join-input-row      { flex-direction: column; }
+  .join-input          { width: 100%; }
+  .join-btn            { width: 100%; justify-content: center; }
+  .boosts-grid         { grid-template-columns: repeat(2, 1fr); }
+  .sidebar-overlay     { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 99; display: none; }
+  .sidebar-overlay.active { display: block; }
 }
+
+/* ─── SMALL PHONES (375px) ──────────────────────────────────── */
+@media (max-width: 375px) {
+  .main-content        { padding: 72px 12px 72px; }
+  .podium-card         { max-width: 100px; gap: 4px; }
+  .podium-avatar img   { width: 48px; height: 48px; }
+  .podium-card.rank1 .podium-avatar img { width: 58px; height: 58px; }
+  .podium-name         { font-size: 0.65rem; }
+  .crown-icon svg      { width: 22px; height: 22px; }
+  .rank1-block         { height: 52px; }
+  .rank2-block         { height: 38px; }
+  .rank3-block         { height: 26px; }
+  .page-title          { font-size: 1.1rem; }
+  .match-card          { min-width: 220px; }
+  .continent-grid      { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .continent-card      { padding: 8px 10px; font-size: 0.72rem; }
+  .stat-card-num       { font-size: 1.4rem; }
+  .stat-card-lbl       { font-size: 0.6rem; }
+  .trophies-grid       { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .pic-value           { font-size: 1.25rem; }
+  .pic-label           { font-size: 0.68rem; }
+  .lb-name             { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .yrb-right           { display: none; }
+  .yrb-rank            { font-size: 1.2rem; }
+  .lb-time-tabs, .lb-scope-tabs { gap: 4px; }
+  .time-tab, .lb-tab   { padding: 8px 10px; font-size: 0.72rem; }
+  .modal-home-name, .modal-away-name { max-width: 60px; font-size: 0.72rem; }
+  .modal-team-name     { max-width: 60px; font-size: 0.72rem; }
+}
+
+/* ─── EXTRA SMALL (320px) ───────────────────────────────────── */
+@media (max-width: 320px) {
+  .main-content        { padding: 68px 10px 68px; }
+  .page-title          { font-size: 1rem; }
+  .podium-name         { font-size: 0.6rem; }
+  .podium-card         { max-width: 90px; }
+  .match-card          { min-width: 200px; }
+  .pred-insights-grid  { grid-template-columns: 1fr; }
+  .boosts-grid         { grid-template-columns: 1fr; }
+}
+
 
 /* ─── ADMIN ──────────────────────────────────────────────────── */
 .admin-only { display: none !important; }
