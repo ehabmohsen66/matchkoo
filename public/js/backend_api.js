@@ -179,8 +179,8 @@ const Backend = {
           const cfg = ACTIVE_EXACT[cleanName];
           if (!cfg) return; // not one of our 5 active leagues
 
-          // Skip completed tournaments — only show active/ongoing ones
-          if (t.status === 'COMPLETED') return;
+          // Note: we no longer skip COMPLETED tournaments here — they still
+          // show on the Discover page so users can view historical data.
 
           const bucket = DATA.continents[cfg.continent];
           if (!bucket) return;
