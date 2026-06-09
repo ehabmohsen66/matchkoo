@@ -226,12 +226,12 @@ const Backend = {
       }
 
       // Re-render current page with new data
-      const cur = window.state?.currentPage || 'home';
+      const cur = (typeof state !== 'undefined') ? state.currentPage : 'home';
       if (cur === 'home') { renderFixturesList(); renderMiniLeaderboard(); }
-      if (cur === 'predictions') renderPredictions(window.state?.predFilter || 'pending');
+      if (cur === 'predictions') renderPredictions((typeof state !== 'undefined') ? state.predFilter : 'pending');
       if (cur === 'leaderboard') renderLeaderboardTable(DATA.leaderboard);
       if (cur === 'leagues') {
-        const activeContinent = window.state?.currentContinent || 'europe';
+        const activeContinent = (typeof state !== 'undefined') ? state.currentContinent : 'europe';
         if (typeof renderLeagues === 'function') renderLeagues(activeContinent);
       }
 
