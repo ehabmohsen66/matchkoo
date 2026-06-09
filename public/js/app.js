@@ -873,7 +873,15 @@ function renderLeagues(continentId) {
     return;
   }
 
-  grid.innerHTML = data.leagues.map(l => {
+  const sortedLeagues = [...data.leagues].sort((a, b) => {
+    const aActive = _isLeagueActive(a);
+    const bActive = _isLeagueActive(b);
+    if (aActive && !bActive) return -1;
+    if (!aActive && bActive) return 1;
+    return 0;
+  });
+
+  grid.innerHTML = sortedLeagues.map(l => {
     const isInviteOnly = l.registrationMode === "INVITE_ONLY";
     const isActive = _isLeagueActive(l);
     const safeName = l.name.replace(/'/g, "\'");
