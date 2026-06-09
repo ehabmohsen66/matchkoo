@@ -1721,30 +1721,44 @@ async function loadMyLeagueRanks() {
     // ── Official league rankings (prediction-based, no registration needed) ──
     const officialTournaments = tournamentsRes.filter(t => t.registrationMode !== 'INVITE_ONLY');
 
-    if (!officialTournaments.length) {
-      listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px">No active leagues yet.</div>';
-    } else {
-      listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;font-size:0.8rem;">Loading rankings...</div>';
+    // ── My Mini Leagues — INVITE_ONLY tournaments the user has joined ──
+    const rawMiniLeagues = tournamentsRes.filter(t => t.registrationMode === 'INVITE_ONLY' && t.userRegistered === true);
+    const statusWeight = { 'ONGOING': 0, 'UPCOMING': 1, 'COMPLETED': 2 };
+    const myMiniLeagues = rawMiniLeagues.sort((a, b) => (statusWeight[a.status] ?? 3) - (statusWeight[b.status] ?? 3));
 
-      // Fetch leaderboard for each official tournament in parallel
-      const rankResults = await Promise.all(
-        officialTournaments.map(t =>
-          fetch('/api/leaderboard?tournamentId=' + t.id)
-            .then(r => r.ok ? r.json() : [])
-            .then(rows => ({ tournament: t, rows }))
-        )
-      );
+    const allTournamentsToFetch = [...officialTournaments, ...myMiniLeagues];
 
-      // Find my entry in each
-      const myEntries = rankResults
-        .map(({ tournament: t, rows }) => {
-          const me = rows.find(r => r.isMe);
-          if (!me) return null;
-          const comp = _compFromTournament(t);
-          return { t, me, comp, total: rows.length, allRows: rows };
-        })
-        .filter(Boolean);
+    if (!allTournamentsToFetch.length) {
+      if (listEl) listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px">No active leagues yet.</div>';
+      if (miniListEl) miniListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:24px">No mini leagues joined yet</div>';
+      return;
+    }
 
+    if (listEl) listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;font-size:0.8rem;">Loading rankings...</div>';
+
+    // Fetch leaderboard for each tournament in parallel
+    const rankResults = await Promise.all(
+      allTournamentsToFetch.map(t =>
+        fetch('/api/leaderboard?tournamentId=' + t.id)
+          .then(r => r.ok ? r.json() : [])
+          .then(rows => ({ tournament: t, rows }))
+      )
+    );
+
+    const officialRankResults = rankResults.filter(r => r.tournament.registrationMode !== 'INVITE_ONLY');
+    const miniRankResults = rankResults.filter(r => r.tournament.registrationMode === 'INVITE_ONLY');
+
+    // Find my entry in official leagues
+    const myEntries = officialRankResults
+      .map(({ tournament: t, rows }) => {
+        const me = rows.find(r => r.isMe);
+        if (!me) return null;
+        const comp = _compFromTournament(t);
+        return { t, me, comp, total: rows.length, allRows: rows };
+      })
+      .filter(Boolean);
+
+    if (listEl) {
       if (!myEntries.length) {
         listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;font-size:0.85rem;">Make predictions on league matches to appear here!</div>';
       } else {
@@ -1752,7 +1766,6 @@ async function loadMyLeagueRanks() {
           const logoHtml = comp
             ? `<img src="${comp.logo}" width="30" height="30" style="object-fit:contain;">`
             : `<span style="font-size:1.3rem">⚽</span>`;
-          // Format name with season year e.g. "English Premier League 2025 [39]" → "English Premier League 2025/2026"
           const rawName = (t.name || '');
           const seasonMatch = rawName.match(/(\d{4})\s*\[\d+\]$/);
           let name;
@@ -1781,24 +1794,36 @@ async function loadMyLeagueRanks() {
       }
     }
 
-    // ── My Mini Leagues — INVITE_ONLY tournaments the user has joined ──
-    const myMiniLeagues = tournamentsRes.filter(t => t.registrationMode === 'INVITE_ONLY' && t.userRegistered === true);
-
-    if (!myMiniLeagues.length) {
-      if (miniListEl) miniListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:24px">No mini leagues joined yet</div>';
-    } else {
-      if (miniListEl) miniListEl.innerHTML = myMiniLeagues.map(t => {
-        const comp = COMP_META[t.competition] || COMP_META['premier_league'];
-        const logoHtml = `<img src="${comp.logo}" width="30" height="30" style="object-fit:contain;">`;
-        return '<div style="display:flex;align-items:center;gap:14px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05);cursor:pointer" onclick="navigateToMiniLeague(\'' + t.id + '\')">' +
-          '<div style="width:34px;height:34px;display:flex;align-items:center;justify-content:center">' + logoHtml + '</div>' +
-          '<div style="flex:1">' +
-            '<div style="font-weight:700;color:#fff;font-size:0.88rem">' + t.name + '</div>' +
-            '<div style="font-size:0.7rem;color:rgba(255,255,255,0.4)">' + comp.label + ' · ' + (t._count?.registrations || 0) + ' members</div>' +
-          '</div>' +
-          '<div style="color:rgba(255,255,255,0.3);font-size:0.75rem">View →</div>' +
-        '</div>';
-      }).join('');
+    if (miniListEl) {
+      if (!myMiniLeagues.length) {
+        miniListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:24px">No mini leagues joined yet</div>';
+      } else {
+        miniListEl.innerHTML = myMiniLeagues.map(t => {
+          const lr = miniRankResults.find(r => r.tournament.id === t.id);
+          const rows = lr ? lr.rows : [];
+          let me = rows.find(r => r.isMe);
+          if (!me) me = { rank: '-', accuracy: 0 };
+          
+          const comp = COMP_META[t.competition] || COMP_META['premier_league'];
+          const logoHtml = `<img src="${comp.logo}" width="30" height="30" style="object-fit:contain;">`;
+          const rankColor = me.rank === 1 ? '#ffd700' : me.rank === 2 ? '#c0c0c0' : me.rank === 3 ? '#cd7f32' : '#fff';
+          
+          return '<div style="display:flex;align-items:center;gap:14px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.2s" ' +
+            'onclick="navigateToMiniLeague(\'' + t.id + '\')" ' +
+            'onmouseenter="this.style.background=\'rgba(255,255,255,0.06)\'" onmouseleave="this.style.background=\'rgba(255,255,255,0.03)\'">' +
+            '<div style="width:34px;height:34px;display:flex;align-items:center;justify-content:center">' + logoHtml + '</div>' +
+            '<div style="flex:1">' +
+              '<div style="font-weight:700;color:#fff;font-size:0.88rem">' + t.name + '</div>' +
+              '<div style="font-size:0.7rem;color:rgba(255,255,255,0.4)">' + comp.label + ' · ' + (t._count?.registrations || 0) + ' members</div>' +
+            '</div>' +
+            '<div style="text-align:right">' +
+              '<div style="font-weight:800;font-size:1.1rem;color:' + rankColor + '">#' + me.rank + '</div>' +
+              '<div style="font-size:0.65rem;color:rgba(255,255,255,0.3)">' + Math.round((me.accuracy || 0)) + '% acc</div>' +
+            '</div>' +
+            '<div style="color:rgba(255,255,255,0.25);font-size:0.75rem;margin-left:4px">›</div>' +
+          '</div>';
+        }).join('');
+      }
     }
   } catch(e) {
     if (listEl) listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px">Could not load league ranks</div>';
