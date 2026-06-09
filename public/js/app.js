@@ -1723,8 +1723,21 @@ async function loadMyLeagueRanks() {
 
     // ── My Mini Leagues — INVITE_ONLY tournaments the user has joined ──
     const rawMiniLeagues = tournamentsRes.filter(t => t.registrationMode === 'INVITE_ONLY' && t.userRegistered === true);
+    
+    // Sort mini leagues by the status of their underlying official competition
+    const getCompStatus = (comp) => {
+      const off = officialTournaments.find(t => t.competition === comp);
+      return off ? off.status : 'UPCOMING';
+    };
     const statusWeight = { 'ONGOING': 0, 'UPCOMING': 1, 'COMPLETED': 2 };
-    const myMiniLeagues = rawMiniLeagues.sort((a, b) => (statusWeight[a.status] ?? 3) - (statusWeight[b.status] ?? 3));
+    
+    const myMiniLeagues = rawMiniLeagues.sort((a, b) => {
+      const wA = statusWeight[getCompStatus(a.competition)] ?? 3;
+      const wB = statusWeight[getCompStatus(b.competition)] ?? 3;
+      if (wA !== wB) return wA - wB;
+      // If same status, sort newer created mini-leagues first
+      return new Date(b.createdAt || b.startDate) - new Date(a.createdAt || a.startDate);
+    });
 
     const allTournamentsToFetch = [...officialTournaments, ...myMiniLeagues];
 
