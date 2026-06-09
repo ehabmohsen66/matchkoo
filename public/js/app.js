@@ -1805,16 +1805,6 @@ async function loadMyLeagueRanks() {
   }
 }
 
-// ─── Tab Switcher for Official League Detail Page ─────────────────────────────
-function switchLeagueTab(tab) {
-  document.getElementById('ol-tab-content-rank').classList.toggle('hidden', tab !== 'rank');
-  document.getElementById('ol-tab-content-fix').classList.toggle('hidden', tab !== 'fix');
-  document.getElementById('ol-tab-rank').style.borderBottomColor = tab === 'rank' ? 'var(--cyan)' : 'transparent';
-  document.getElementById('ol-tab-rank').style.color = tab === 'rank' ? 'var(--cyan)' : 'rgba(255,255,255,0.4)';
-  document.getElementById('ol-tab-fix').style.borderBottomColor = tab === 'fix' ? 'var(--cyan)' : 'transparent';
-  document.getElementById('ol-tab-fix').style.color = tab === 'fix' ? 'var(--cyan)' : 'rgba(255,255,255,0.4)';
-}
-
 // ─── Open a specific official league as a full page ───────────────────────────
 function openLeagueDetail(tournamentId) {
   state.leagueDetailId = tournamentId;
@@ -2042,28 +2032,20 @@ async function initLeagueDetail() {
         </div>
       </div>` : ''}
 
-      <!-- Tabs Navigation -->
-      <div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:16px;margin-top:16px;">
-        <div id="ol-tab-rank" onclick="switchLeagueTab('rank')" style="flex:1;text-align:center;padding:12px;font-size:0.85rem;font-weight:800;color:var(--cyan);border-bottom:2px solid var(--cyan);cursor:pointer;text-transform:uppercase;letter-spacing:1px;">🏆 Rankings</div>
-        <div id="ol-tab-fix" onclick="switchLeagueTab('fix')" style="flex:1;text-align:center;padding:12px;font-size:0.85rem;font-weight:800;color:rgba(255,255,255,0.4);border-bottom:2px solid transparent;cursor:pointer;text-transform:uppercase;letter-spacing:1px;">📅 Fixtures</div>
-      </div>
+      <!-- Main Leaderboard Layout -->
+      ${podiumHtml}
+      ${myRankBannerHtml}
+      ${rankingContent.includes('leaderboard-table') ? rankingContent.split('</div`>')[0].replace(podiumHtml, '') : ''}
 
-      <!-- Tab Content: Rankings -->
-      <div id="ol-tab-content-rank">
-        ${podiumHtml}
-        ${myRankBannerHtml}
-        ${rankingContent.includes('leaderboard-table') ? rankingContent.split('</div`>')[0].replace(podiumHtml, '') : ''}
-      </div>
-
-      <!-- Tab Content: Fixtures -->
-      <div id="ol-tab-content-fix" class="hidden">
-        <h2 style="font-size:1rem;font-weight:900;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;margin-top:8px;">
+      <!-- Fixtures Section at Bottom -->
+      <div style="margin-top:40px;border-top:1px solid rgba(255,255,255,0.06);padding-top:24px;">
+        <h2 style="font-size:1rem;font-weight:900;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;">
           ${isCompletedLeague ? '📋 Past Fixtures' : '📅 Upcoming Fixtures'}
         </h2>
         <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;scrollbar-width:thin;">
           ${isCompletedLeague
             ? (matchesRes.length
-                ? '<div style="color:rgba(255,255,255,0.35);font-size:0.85rem;padding:16px 0;">This season\\'s matches have all been played. Check your predictions in the <strong style="color:rgba(255,255,255,0.6);">Predictions</strong> tab.</div>'
+                ? '<div style="color:rgba(255,255,255,0.35);font-size:0.85rem;padding:16px 0;">This season\'s matches have all been played. Check your predictions in the <strong style="color:rgba(255,255,255,0.6);">Predictions</strong> tab.</div>'
                 : '<div style="color:var(--text-muted);font-size:0.85rem;">No match data available.</div>')
             : fixtureHtml}
         </div>
