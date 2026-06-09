@@ -131,18 +131,59 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // ── Auto-join the league when a user predicts a match ──────────────
+    // Runs for both new predictions and updates — idempotent everywhere.
     if (!isBoostUpdate) {
-      // Check if this is the user's first prediction
+      // Auto-join league
+      try {
+        const fullMatch = await prisma.match.findUnique({
+          where: { id: matchId },
+          select: { tournamentId: true, tournament: { select: { name: true, registrationMode: true } } },
+        });
+
+        if (fullMatch?.tournamentId && fullMatch.tournament) {
+          const { tournamentId, tournament } = fullMatch;
+
+          // 1. Ensure a Registration row exists (skip INVITE_ONLY — those need a code)
+          if (tournament.registrationMode !== "INVITE_ONLY") {
+            await prisma.registration.create({
+              data: { userId: session.user.id, tournamentId },
+            }).catch((e: any) => {
+              // P2002 = unique violation → already registered, that's fine
+              if (e?.code !== "P2002") throw e;
+            });
+          }
+
+          // 2. Ensure tournament name is in preferredLeagues
+          const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { preferredLeagues: true },
+          });
+          const current = user?.preferredLeagues ?? [];
+          const alreadyIn = current.some(
+            (l) => l.toLowerCase() === tournament.name.toLowerCase()
+          );
+          if (!alreadyIn) {
+            await prisma.user.update({
+              where: { id: session.user.id },
+              data: { preferredLeagues: [...current, tournament.name] },
+            });
+          }
+        }
+      } catch (autoJoinError) {
+        // Non-fatal — don't fail the prediction if auto-join has an issue
+        console.error("[predictions] auto-join failed:", autoJoinError);
+      }
+
+      // ── Referral XP — first prediction bonus ──────────────────────
       const count = await prisma.prediction.count({
         where: { userId: session.user.id },
       });
       if (count === 1) {
-        // Find referral record
         const referral = await prisma.referral.findUnique({
           where: { referredId: session.user.id },
         });
         if (referral && !referral.xpAwarded) {
-          // Award +200 XP to the referrer
           const [_, referrer] = await prisma.$transaction([
             prisma.referral.update({
               where: { referredId: session.user.id },
@@ -155,7 +196,6 @@ export async function POST(req: NextRequest) {
             }),
           ]);
 
-          // Notify referrer
           if (referrer.email) {
             void sendEmail({
               to: referrer.email,
@@ -171,6 +211,7 @@ export async function POST(req: NextRequest) {
         }
       }
     }
+
 
     return NextResponse.json(prediction, { status: 201 });
   } catch (error) {
