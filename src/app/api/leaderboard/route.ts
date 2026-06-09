@@ -104,23 +104,41 @@ export async function GET(req: NextRequest) {
       const userIds = rows.map((r) => r.userId);
       const users   = await prisma.user.findMany({
         where: { id: { in: userIds } },
-        select: { id: true, name: true, image: true, streak: true, correctCount: true, predictionCount: true, country: true },
+        select: { id: true, name: true, image: true, streak: true, country: true },
       });
       const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
+
+      // Get per-league accuracy stats
+      const totalPreds = await prisma.prediction.groupBy({
+        by: ["userId"],
+        where: { userId: { in: userIds }, match: { tournamentId, status: "COMPLETED" } },
+        _count: { id: true },
+      });
+      const correctPreds = await prisma.prediction.groupBy({
+        by: ["userId"],
+        where: { userId: { in: userIds }, match: { tournamentId, status: "COMPLETED" }, xpEarned: { gt: 0 } },
+        _count: { id: true },
+      });
+      const totalMap = Object.fromEntries(totalPreds.map((r) => [r.userId, r._count.id]));
+      const correctMap = Object.fromEntries(correctPreds.map((r) => [r.userId, r._count.id]));
+
       return NextResponse.json(
-        rows.map((r, i) => ({
-          rank: i + 1,
-          userId: r.userId,
-          name:   userMap[r.userId]?.name ?? "Unknown",
-          image:  userMap[r.userId]?.image ?? null,
-          country: userMap[r.userId]?.country ?? "EG",
-          xp:     r._sum.xpEarned ?? 0,
-          streak: userMap[r.userId]?.streak ?? 0,
-          accuracy: userMap[r.userId]?.predictionCount
-            ? Math.round((userMap[r.userId].correctCount / userMap[r.userId].predictionCount) * 100)
-            : 0,
-          isMe: r.userId === userId,
-        }))
+        rows.map((r, i) => {
+          const total = totalMap[r.userId] || 0;
+          const correct = correctMap[r.userId] || 0;
+          const acc = total > 0 ? Math.round((correct / total) * 100) : 0;
+          return {
+            rank: i + 1,
+            userId: r.userId,
+            name:   userMap[r.userId]?.name ?? "Unknown",
+            image:  userMap[r.userId]?.image ?? null,
+            country: userMap[r.userId]?.country ?? "EG",
+            xp:     r._sum.xpEarned ?? 0,
+            streak: userMap[r.userId]?.streak ?? 0,
+            accuracy: acc,
+            isMe: r.userId === userId,
+          };
+        })
       );
     }
 
