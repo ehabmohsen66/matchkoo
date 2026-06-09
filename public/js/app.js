@@ -2758,7 +2758,7 @@ function renderTrophies(user, stats, globalRank) {
       '<div class="trophy-icon">' + t.icon + '</div>' +
       '<div class="trophy-name">' + t.name + '</div>' +
       '<div class="trophy-desc">' + t.desc + '</div>' +
-      (t.unlocked ? '<button onclick="shareTrophy(this)" data-name="' + t.name.replace(/"/g,"&quot;") + '" data-icon="' + t.icon + '" style="margin-top:8px;font-size:0.65rem;font-weight:700;padding:4px 10px;border-radius:100px;background:rgba(29,161,242,0.12);border:1px solid rgba(29,161,242,0.3);color:#1DA1F2;cursor:pointer">Share</button>' : '') +
+      (t.unlocked ? '<button onclick="shareTrophy(this)" data-userid="' + (user?.id || '') + '" data-name="' + t.name.replace(/"/g,"&quot;") + '" data-icon="' + t.icon + '" style="margin-top:8px;font-size:0.65rem;font-weight:700;padding:4px 10px;border-radius:100px;background:rgba(29,161,242,0.12);border:1px solid rgba(29,161,242,0.3);color:#1DA1F2;cursor:pointer">Share</button>' : '') +
     '</div>'
   ).join('');
 }
@@ -3887,8 +3887,13 @@ document.querySelectorAll('.score-option input[type=radio]').forEach(radio => {
 function shareTrophy(el) {
   const trophyName = el.getAttribute ? el.getAttribute('data-name') : el;
   const trophyIcon = el.getAttribute ? el.getAttribute('data-icon') : arguments[1];
-  const text = encodeURIComponent('I just unlocked the "' + trophyName + '" trophy on Matchkoo! ' + trophyIcon + ' Come join me and predict football matches for XP prizes!\n\n');
-  const url = encodeURIComponent(window.location.origin);
+  const userId = el.getAttribute ? el.getAttribute('data-userid') : '';
+  
+  const refText = userId ? '\n\nSign up with my invite link:' : '';
+  const refUrl = userId ? `${window.location.origin}/register?ref=${userId}` : window.location.origin;
+  
+  const text = encodeURIComponent('I just unlocked the "' + trophyName + '" trophy on Matchkoo! ' + trophyIcon + ' Come join me and predict football matches for XP prizes!' + refText);
+  const url = encodeURIComponent(refUrl);
   const twitterUrl = 'https://twitter.com/intent/tweet?text=' + text + '&url=' + url;
   const facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + url;
   const share = document.createElement('div');
