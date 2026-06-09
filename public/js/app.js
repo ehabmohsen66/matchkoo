@@ -1632,18 +1632,25 @@ async function initLeaderboard(period) {
     podiumCards.forEach((card, i) => {
       const u = podiumOrder[i];
       if (!u) return;
-      const nameEl = card.querySelector('.podium-name');
-      const flagEl = card.querySelector('.podium-flag');
-      const xpEl   = card.querySelector('.podium-xp');
-      const imgEl  = card.querySelector('img');
-      const rnkEl  = card.querySelector('.rank-num');
-      const rank   = i === 0 ? 2 : i === 1 ? 1 : 3;
-      if (nameEl) nameEl.textContent = u.name || 'Player';
-      if (flagEl) flagEl.textContent = _getFlagEmoji(u.country);
-      if (xpEl)   xpEl.textContent   = (u.xp || 0).toLocaleString() + ' XP';
-      if (imgEl)  imgEl.src = u.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name || 'user');
-      if (rnkEl)  rnkEl.textContent  = '#' + rank;
+      const nameEl  = card.querySelector('.podium-name');
+      const flagEl  = card.querySelector('.podium-flag');
+      const xpEl    = card.querySelector('.podium-xp');
+      const imgEl   = card.querySelector('img');
+      const rnkEl   = card.querySelector('.rank-num');
+      const badgeEl = card.querySelector('.level-badge');
+      const rank    = i === 0 ? 2 : i === 1 ? 1 : 3;
+      const lvl     = _xpToLevel(u.xp || 0);
+      if (nameEl)  nameEl.textContent  = u.name || 'Player';
+      if (flagEl)  flagEl.textContent  = _getFlagEmoji(u.country);
+      if (xpEl)    xpEl.textContent    = (u.xp || 0).toLocaleString() + ' XP';
+      if (imgEl)   imgEl.src = u.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name || 'user');
+      if (rnkEl)   rnkEl.textContent   = '#' + rank;
+      if (badgeEl) {
+        badgeEl.textContent = lvl.badge;
+        badgeEl.className   = 'level-badge ' + lvl.cls;
+      }
     });
+
 
     // ── Update Your Rank Banner ──
     const me = data.find(u => u.isMe);
