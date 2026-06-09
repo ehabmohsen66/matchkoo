@@ -314,6 +314,8 @@ const Backend = {
 
   // ─── AUTH ────────────────────────────────────────────────────────
   _updateAuthState() {
+    document.body.setAttribute('data-logged-in', 'true');
+
     // Admin role → show admin nav link
     if (this.user.role === 'admin') {
       document.body.setAttribute('data-role', 'admin');

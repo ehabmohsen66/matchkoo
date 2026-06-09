@@ -1637,6 +1637,16 @@ input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
 }
 
 
+/* ─── MOBILE HOME AUTH OVERRIDES ─────────────────────────────── */
+body[data-page="home"][data-logged-in="true"] #lang-select-mobile {
+  display: none !important;
+}
+
+body[data-page="home"][data-logged-in="true"] .mobile-logo img {
+  height: 52px !important;
+  transition: height 0.3s ease;
+}
+
 /* ─── ADMIN ──────────────────────────────────────────────────── */
 .admin-only { display: none !important; }
 body[data-role="admin"] .admin-only { display: block !important; }
