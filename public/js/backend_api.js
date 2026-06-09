@@ -344,13 +344,23 @@ const Backend = {
 
     // ── Avatar — gender-aware ─────────────────────────────────────────
     const avatarImg = document.querySelector('.sidebar-user .user-avatar-sm img');
+    const mobileHeaderAvatar = document.getElementById('mobile-header-avatar');
+    const mobileHeaderContainer = document.getElementById('mobile-header-avatar-container');
+    
+    const seed = encodeURIComponent(this.user.name);
+    const isFemale = this.user.gender === 'female';
+    const avatarUrl = isFemale
+      ? `https://api.dicebear.com/7.x/lorelei/svg?seed=${seed}&backgroundColor=1e1e2e`
+      : `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+    const finalAvatar = this.user.image || avatarUrl;
+
     if (avatarImg) {
-      const seed     = encodeURIComponent(this.user.name);
-      const isFemale = this.user.gender === 'female';
-      const avatarUrl = isFemale
-        ? `https://api.dicebear.com/7.x/lorelei/svg?seed=${seed}&backgroundColor=1e1e2e`
-        : `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
-      avatarImg.src = this.user.image || avatarUrl;
+      avatarImg.src = finalAvatar;
+    }
+    
+    if (mobileHeaderAvatar && mobileHeaderContainer) {
+      mobileHeaderAvatar.src = finalAvatar;
+      mobileHeaderContainer.style.display = 'flex';
     }
 
     // ── Profile page fields ───────────────────────────────────────────
@@ -727,7 +737,7 @@ async function saveProfileChanges() {
 
     // Update avatar everywhere
     if (_epSelectedAvatarUrl) {
-      const ids = ['profile-avatar-img'];
+      const ids = ['profile-avatar-img', 'mobile-header-avatar'];
       ids.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.src = _epSelectedAvatarUrl;
