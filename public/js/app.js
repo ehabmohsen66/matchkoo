@@ -2383,8 +2383,8 @@ async function openMiniLeagueDetail(leagueId) {
         </div>
       </div>` : ''}
 
-      <!-- Two-column layout: Rankings (left, with podium) | Fixtures (right) -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+      <!-- Two-column layout on desktop, stacked on mobile: Rankings (left/top) | Fixtures (right/bottom) -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px;align-items:start;">
 
         <!-- LEFT: Rankings with podium -->
         <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;">
