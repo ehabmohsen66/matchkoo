@@ -2199,6 +2199,21 @@ async function initMiniLeagues() {
     // Only show INVITE_ONLY mini leagues the user has actually joined
     const myLeagues = data.filter(t => t.registrationMode === 'INVITE_ONLY' && t.userRegistered === true);
 
+    // Official tournaments for status lookup
+    const officialTournaments = data.filter(t => t.registrationMode !== 'INVITE_ONLY');
+    const getCompStatus = (comp) => {
+      const off = officialTournaments.find(t => t.competition === comp);
+      return off ? off.status : 'UPCOMING';
+    };
+    const statusWeight = { 'UPCOMING': 0, 'ONGOING': 1, 'COMPLETED': 2 };
+    
+    myLeagues.sort((a, b) => {
+      const wA = statusWeight[getCompStatus(a.competition)] ?? 3;
+      const wB = statusWeight[getCompStatus(b.competition)] ?? 3;
+      if (wA !== wB) return wA - wB;
+      return new Date(b.createdAt || b.startDate) - new Date(a.createdAt || a.startDate);
+    });
+
     if (!myLeagues.length) {
       container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:48px;font-size:0.9rem;">You haven\'t joined any mini leagues yet.<br><span style="font-size:0.8rem;margin-top:4px;display:block;">Create one or join with an invite code below!</span></div>';
       return;
