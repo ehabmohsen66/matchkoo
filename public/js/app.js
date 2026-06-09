@@ -899,19 +899,16 @@ function renderLeagues(continentId) {
     }
 
     // ── Determine follow state ─────────────────────────────────────
-    // Canonical name = the l.name as returned by backend after normalisation
-    // e.g. "English Premier League", "La Liga"
-    const canonicalName = l.canonicalName || l.name; // backend_api sets canonicalName on injected leagues
+    const canonicalName = l.canonicalName || l.name;
     const isFollowed = Backend.preferredLeagues.some(p =>
       p.toLowerCase() === canonicalName.toLowerCase() ||
       canonicalName.toLowerCase().includes(p.toLowerCase())
     );
 
-    const isCompleted = !!(l.status && l.status.toUpperCase() === 'COMPLETED');
-
     // Real DB tournament ID — null for static placeholder leagues
     const realTournamentId = l._realId || null;
     const safeTournamentId = realTournamentId ? String(realTournamentId).replace(/'/g, "\\'") : '';
+    const isCompleted = !!(l.status && l.status.toUpperCase() === 'COMPLETED');
 
     const followBtn = isCompleted
       ? ""
@@ -935,8 +932,9 @@ function renderLeagues(continentId) {
       "<div class=\"league-card-info\">" +
         "<div class=\"league-card-name\">" + l.country + " " + l.name + "</div>" +
         "<div class=\"league-card-meta\">" + l.matches + " matches" +
-          (isInviteOnly ? " &nbsp;<span style=\"font-size:0.6rem;font-weight:800;padding:2px 6px;border-radius:100px;background:rgba(255,153,20,0.15);color:#ff9914\">🔒 Invite Only</span>" : "") +
-          (l.prizes ? " &nbsp;<span style=\"font-size:0.6rem;font-weight:800;padding:2px 6px;border-radius:100px;background:rgba(255,153,20,0.08);color:rgba(255,153,20,0.8)\">🏆 Prizes</span>" : "") +
+          (isCompleted ? " &nbsp;<span style=\"font-size:0.6rem;font-weight:800;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);letter-spacing:0.5px;text-transform:uppercase\">✓ Season Ended</span>" : "") +
+          (!isCompleted && isInviteOnly ? " &nbsp;<span style=\"font-size:0.6rem;font-weight:800;padding:2px 6px;border-radius:100px;background:rgba(255,153,20,0.15);color:#ff9914\">🔒 Invite Only</span>" : "") +
+          (!isCompleted && l.prizes ? " &nbsp;<span style=\"font-size:0.6rem;font-weight:800;padding:2px 6px;border-radius:100px;background:rgba(255,153,20,0.08);color:rgba(255,153,20,0.8)\">🏆 Prizes</span>" : "") +
         "</div>" +
       "</div>" +
       followBtn +
@@ -1980,6 +1978,8 @@ async function initLeagueDetail() {
         </div>`;
     }).join('') : '<div style="color:var(--text-muted);font-size:0.85rem;">No upcoming fixtures in the next 14 days.</div>';
 
+    const isCompletedLeague = !!(tour.status && tour.status.toUpperCase() === 'COMPLETED');
+
     // ── Build final page HTML ─────────────────────────────────────────────────
     content.innerHTML = `
       <div class="page-header-block" style="display:flex;align-items:center;justify-content:space-between;border-bottom:none;padding-bottom:0;">
@@ -1988,8 +1988,15 @@ async function initLeagueDetail() {
             <img src="${comp.logo}" width="36" height="36" style="object-fit:contain;">
           </div>
           <div>
-            <h1 class="page-title" style="margin:0;font-size:1.6rem;text-transform:uppercase;letter-spacing:1px;">${name}</h1>
-            <div style="font-size:0.8rem;color:rgba(255,255,255,0.4);margin-top:2px;">${lbRows.length} predictor${lbRows.length===1?'':'s'} · Official League</div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <h1 class="page-title" style="margin:0;font-size:1.6rem;text-transform:uppercase;letter-spacing:1px;">${name}</h1>
+              ${isCompletedLeague ? `<span style="font-size:0.6rem;font-weight:800;padding:3px 10px;border-radius:100px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.55);letter-spacing:0.8px;text-transform:uppercase;white-space:nowrap;">✓ Season Ended</span>` : ''}
+            </div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.4);margin-top:2px;">
+              ${isCompletedLeague
+                ? `${lbRows.length} predictor${lbRows.length===1?'':'s'} · Final Standings`
+                : `${lbRows.length} predictor${lbRows.length===1?'':'s'} · Official League`}
+            </div>
           </div>
         </div>
         <button onclick="navigate('leaderboard');"
@@ -2000,6 +2007,15 @@ async function initLeagueDetail() {
         </button>
       </div>
 
+      ${isCompletedLeague ? `
+      <div style="margin-top:16px;padding:14px 18px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:12px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;">🏁</div>
+        <div>
+          <div style="font-size:0.85rem;font-weight:800;color:rgba(255,255,255,0.8);margin-bottom:2px;">This season has ended</div>
+          <div style="font-size:0.78rem;color:rgba(255,255,255,0.4);line-height:1.4;">Predictions for this league are now closed. The rankings below reflect the final standings.</div>
+        </div>
+      </div>` : ''}
+
       <!-- Main Leaderboard Layout -->
       ${podiumHtml}
       ${myRankBannerHtml}
@@ -2008,10 +2024,14 @@ async function initLeagueDetail() {
       <!-- Fixtures Section at Bottom -->
       <div style="margin-top:40px;border-top:1px solid rgba(255,255,255,0.06);padding-top:24px;">
         <h2 style="font-size:1rem;font-weight:900;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;">
-          📅 Upcoming Fixtures
+          ${isCompletedLeague ? '📋 Past Fixtures' : '📅 Upcoming Fixtures'}
         </h2>
         <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;scrollbar-width:thin;">
-          ${fixtureHtml}
+          ${isCompletedLeague
+            ? (matchesRes.length
+                ? '<div style="color:rgba(255,255,255,0.35);font-size:0.85rem;padding:16px 0;">This season\'s matches have all been played. Check your predictions in the <strong style="color:rgba(255,255,255,0.6);">Predictions</strong> tab.</div>'
+                : '<div style="color:var(--text-muted);font-size:0.85rem;">No match data available.</div>')
+            : fixtureHtml}
         </div>
       </div>
     `;
