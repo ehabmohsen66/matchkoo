@@ -221,6 +221,7 @@ a { text-decoration: none; color: inherit; }
 }
 .level-badge-sm.gold     { background: var(--orange); color: #000; }
 .level-badge-sm.silver   { background: #909090; color: #fff; }
+.level-badge-sm.bronze   { background: #cd7f32; color: #fff; }
 .level-badge-sm.platinum { background: linear-gradient(135deg, #e0e0e0, #a0a0a0); color: #000; }
 .level-badge-sm.diamond  { background: linear-gradient(135deg, var(--cyan), var(--green)); color: #fff; }
 .level-badge-sm.legend   { background: linear-gradient(135deg, var(--orange), var(--red)); color: #fff; }
@@ -634,7 +635,8 @@ a { text-decoration: none; color: inherit; }
   text-transform: uppercase;
 }
 .level-badge.gold     { background: rgba(255,153,20,0.15); color: var(--orange); border: 1px solid rgba(255,153,20,0.3); }
-.level-badge.silver   { background: rgba(144,144,144,0.1); color: #606060; border: 1px solid rgba(144,144,144,0.3); }
+.level-badge.silver   { background: rgba(144,144,144,0.1); color: #909090; border: 1px solid rgba(144,144,144,0.3); }
+.level-badge.bronze   { background: rgba(205,127,50,0.15); color: #cd7f32; border: 1px solid rgba(205,127,50,0.35); }
 .level-badge.platinum { background: rgba(200,200,200,0.1); color: #707070; border: 1px solid rgba(200,200,200,0.3); }
 .level-badge.diamond  { background: rgba(8,189,189,0.1); color: var(--cyan); border: 1px solid rgba(8,189,189,0.3); }
 .level-badge.legend   { background: linear-gradient(90deg, rgba(255,153,20,0.15), rgba(242,27,63,0.1)); color: var(--red); border: 1px solid rgba(242,27,63,0.3); }
