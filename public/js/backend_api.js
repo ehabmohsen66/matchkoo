@@ -230,6 +230,10 @@ const Backend = {
       if (cur === 'home') { renderFixturesList(); renderMiniLeaderboard(); }
       if (cur === 'predictions') renderPredictions(window.state?.predFilter || 'pending');
       if (cur === 'leaderboard') renderLeaderboardTable(DATA.leaderboard);
+      if (cur === 'leagues') {
+        const activeContinent = window.state?.currentContinent || 'europe';
+        if (typeof renderLeagues === 'function') renderLeagues(activeContinent);
+      }
 
     } catch (e) {
       console.warn('[Backend] Data hydration failed, using mock data:', e);
