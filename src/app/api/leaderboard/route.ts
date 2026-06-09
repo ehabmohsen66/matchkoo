@@ -94,12 +94,13 @@ export async function GET(req: NextRequest) {
     // ── Per-tournament leaderboard ────────────────────────────────────
     if (tournamentId) {
       const dateFilter = since ? { matchDate: { gte: since } } : {};
-      const rows = await prisma.prediction.groupBy({
+      let rows = await prisma.prediction.groupBy({
         by: ["userId"],
-        where: { match: { tournamentId, ...dateFilter }, xpEarned: { not: null } },
+        where: { match: { tournamentId, ...dateFilter } },
         _sum: { xpEarned: true },
-        orderBy: { _sum: { xpEarned: "desc" } },
       });
+      // Sort in JS to handle nulls correctly (b._sum - a._sum) instead of DB NULLS FIRST
+      rows.sort((a, b) => (b._sum.xpEarned ?? 0) - (a._sum.xpEarned ?? 0));
       const userIds = rows.map((r) => r.userId);
       const users   = await prisma.user.findMany({
         where: { id: { in: userIds } },
