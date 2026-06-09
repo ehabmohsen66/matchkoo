@@ -1729,7 +1729,8 @@ async function loadMyLeagueRanks() {
       const off = officialTournaments.find(t => t.competition === comp);
       return off ? off.status : 'UPCOMING';
     };
-    const statusWeight = { 'ONGOING': 0, 'UPCOMING': 1, 'COMPLETED': 2 };
+    // Match the backend sorting: UPCOMING (0) -> ONGOING (1) -> COMPLETED (2)
+    const statusWeight = { 'UPCOMING': 0, 'ONGOING': 1, 'COMPLETED': 2 };
     
     const myMiniLeagues = rawMiniLeagues.sort((a, b) => {
       const wA = statusWeight[getCompStatus(a.competition)] ?? 3;
