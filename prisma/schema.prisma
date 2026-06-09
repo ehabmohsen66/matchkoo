@@ -71,6 +71,7 @@ model Tournament {
   inviteCode       String?  // required when INVITE_ONLY
   competition      String?  @default("premier_league") // mini league competition key
   scoringMode      String?  @default("global")         // "global" | "simple"
+  season           String?                             // API-Football season year e.g. "2025"
 
   createdByUserId String
   createdByUser   User     @relation("AdminTournaments", fields: [createdByUserId], references: [id])
@@ -95,6 +96,7 @@ model Match {
   awayLogo          String?
   matchDate         DateTime
   round             String   @default("Round 1")
+  season            String?                              // API-Football season year e.g. "2025"
   status            String   @default("UPCOMING") // UPCOMING, LIVE, COMPLETED
 
   // Actual results (set by admin or auto-sync after match)

@@ -1729,7 +1729,16 @@ async function loadMyLeagueRanks() {
           const logoHtml = comp
             ? `<img src="${comp.logo}" width="30" height="30" style="object-fit:contain;">`
             : `<span style="font-size:1.3rem">⚽</span>`;
-          const name = (t.name || '').replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '').trim();
+          // Format name with season year e.g. "English Premier League 2025 [39]" → "English Premier League 2025/2026"
+          const rawName = (t.name || '');
+          const seasonMatch = rawName.match(/(\d{4})\s*\[\d+\]$/);
+          let name;
+          if (seasonMatch) {
+            const yr = parseInt(seasonMatch[1]);
+            name = rawName.replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '').trim() + ' ' + yr + '/' + (yr + 1);
+          } else {
+            name = rawName.replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '').trim();
+          }
           const rankColor = me.rank === 1 ? '#ffd700' : me.rank === 2 ? '#c0c0c0' : me.rank === 3 ? '#cd7f32' : '#fff';
           return '<div style="display:flex;align-items:center;gap:14px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.2s" ' +
             'onclick="openLeagueDetail(\'' + t.id + '\')" ' +
@@ -1800,7 +1809,16 @@ async function initLeagueDetail() {
 
     const tour = tourRes.find(t => t.id === tournamentId) || {};
     const comp = _compFromTournament(tour) || COMP_META['premier_league'];
-    const name = (tour.name || '').replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '').trim();
+    // Format name with season year e.g. "English Premier League 2025 [39]" → "English Premier League 2025/2026"
+    const rawDetailName = (tour.name || '');
+    const detailSeasonMatch = rawDetailName.match(/(\d{4})\s*\[\d+\]$/);
+    let name;
+    if (detailSeasonMatch) {
+      const yr = parseInt(detailSeasonMatch[1]);
+      name = rawDetailName.replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '').trim() + ' ' + yr + '/' + (yr + 1);
+    } else {
+      name = rawDetailName.replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '').trim();
+    }
     const accentColor = comp.color || '#3CB82E';
 
     const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -2128,6 +2146,12 @@ function _compBadge(comp, size = 32) {
   return `<img src="${comp.logo}" width="${size}" height="${size}" style="object-fit:contain;filter:drop-shadow(0 0 4px rgba(0,0,0,0.4))">`;
 }
 
+// Current football season year: Jan–Jul = previous year, Aug–Dec = current year
+function _getCurrentSeason() {
+  const now = new Date();
+  return (now.getMonth() < 7 ? now.getFullYear() - 1 : now.getFullYear()).toString();
+}
+
 // Derive COMP_META key from a tournament name (works for DB names like "La Liga 2025 [140]")
 function _compKeyFromName(name) {
   const n = (name || '').toLowerCase()
@@ -2375,6 +2399,7 @@ async function createLeague() {
         prizePool: 'TBD', maxPlayers: 100, startDate: new Date().toISOString(),
         type: 'League', registrationMode: 'INVITE_ONLY', inviteCode: code,
         competition, scoringMode,
+        season: _getCurrentSeason(),
       }),
     });
     const data = await res.json();

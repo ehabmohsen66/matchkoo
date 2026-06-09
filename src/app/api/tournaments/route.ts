@@ -44,7 +44,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "You must be logged in to create a league" }, { status: 401 });
     }
 
-    const { name, game, description, prizePool, prizes, maxPlayers, startDate, type, registrationMode, inviteCode, competition, scoringMode } = await req.json();
+    const { name, game, description, prizePool, prizes, maxPlayers, startDate, type, registrationMode, inviteCode, competition, scoringMode, season } = await req.json();
+
+    // Default season: Jan–Jul = previous year’s season, Aug–Dec = current year
+    const now = new Date();
+    const defaultSeason = (now.getMonth() < 7 ? now.getFullYear() - 1 : now.getFullYear()).toString();
+    const effectiveSeason = season || defaultSeason;
 
     if (!name || !game || !startDate) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
@@ -72,6 +77,7 @@ export async function POST(req: NextRequest) {
         inviteCode: effectiveMode === "INVITE_ONLY" ? (inviteCode || null) : null,
         competition: competition || "premier_league",
         scoringMode: scoringMode || "global",
+        season: effectiveSeason,
         createdByUserId: (session.user as any).id,
       },
     });

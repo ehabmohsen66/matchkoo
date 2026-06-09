@@ -179,22 +179,32 @@ const Backend = {
           const cfg = ACTIVE_EXACT[cleanName];
           if (!cfg) return; // not one of our 5 active leagues
 
+          // Skip completed tournaments — only show active/ongoing ones
+          if (t.status === 'COMPLETED') return;
+
           const bucket = DATA.continents[cfg.continent];
           if (!bucket) return;
+
+          // Extract season year from DB name e.g. "English Premier League 2025 [39]" → "2025"
+          const seasonMatch = (t.name || '').match(/\s(\d{4})\s*(\[\d+\])?$/);
+          const seasonYear = seasonMatch ? parseInt(seasonMatch[1]) : null;
+          const seasonLabel = seasonYear ? `${seasonYear}/${seasonYear + 1}` : '';
+          const displayName = seasonLabel ? `${cfg.canonicalName} ${seasonLabel}` : cfg.canonicalName;
 
           // Find by staticId — guaranteed unique, no ambiguity
           const idx = bucket.leagues.findIndex(l => l.id === cfg.staticId);
 
           const realLeague = {
             id: t.id,
-            name: cfg.canonicalName,          // clean display name, no year/[id]
+            name: displayName,               // e.g. "Premier League 2025/2026"
             country: cfg.country,
             emoji: cfg.emoji,
             logo: cfg.logo,
             matches: t._count?.matches ?? 0,  // real count from DB
             color: '#3CB82E',
             _realId: t.id,
-            canonicalName: cfg.canonicalName, // used by toggleFollow
+            canonicalName: cfg.canonicalName, // used by toggleFollow (no year)
+            season: t.season || (seasonYear ? seasonYear.toString() : null),
             comingSoon: false,
           };
 

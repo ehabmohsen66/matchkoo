@@ -388,6 +388,7 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
       // Use pre-fetched admin
       if (!admin) { skipped++; continue; }
 
+      const seasonStr = f.league.season.toString();
       tournament = await prisma.tournament.create({
         data: {
           name: tournamentName,
@@ -399,9 +400,35 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
           startDate: matchDate,
           status: "ONGOING",
           registrationMode: "OPEN",
+          season: seasonStr,
           createdByUserId: admin.id,
         },
       });
+
+      // ── Auto-register returning users from previous season ──────────
+      const prevSeason = (f.league.season - 1).toString();
+      const prevTournament = await prisma.tournament.findFirst({
+        where: {
+          name: { contains: `[${f.league.id}]` },
+          season: prevSeason,
+          registrationMode: "OPEN",
+        },
+        select: { id: true },
+      });
+      if (prevTournament) {
+        const prevRegs = await prisma.registration.findMany({
+          where: { tournamentId: prevTournament.id },
+          select: { userId: true },
+        });
+        if (prevRegs.length > 0) {
+          const newRegs = prevRegs.map(r => ({
+            userId: r.userId,
+            tournamentId: tournament!.id,
+          }));
+          await prisma.registration.createMany({ data: newRegs, skipDuplicates: true });
+          console.log(`[sync] Auto-registered ${prevRegs.length} users from season ${prevSeason} → ${seasonStr} for league ${f.league.id}`);
+        }
+      }
     }
 
     // Upsert match by externalId
@@ -416,6 +443,7 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
       matchDate,
       status,
       round,
+      season: f.league.season.toString(),
       homeScore: status !== "UPCOMING" ? homeScore : null,
       awayScore: status !== "UPCOMING" ? awayScore : null,
       tournamentId: tournament.id,
@@ -582,6 +610,38 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
     } else {
       await prisma.match.create({ data: matchData });
       created++;
+    }
+  }
+
+  // ── Auto-mark completed seasons ─────────────────────────────────────────
+  // If all matches in an ONGOING official tournament are COMPLETED and the
+  // most recent match was >7 days ago, mark the tournament as COMPLETED.
+  const ongoingTournaments = await prisma.tournament.findMany({
+    where: { status: "ONGOING", registrationMode: "OPEN" },
+    select: { id: true, name: true },
+  });
+  for (const t of ongoingTournaments) {
+    const matchStats = await prisma.match.aggregate({
+      where: { tournamentId: t.id },
+      _count: { id: true },
+      _max: { matchDate: true },
+    });
+    if (!matchStats._count.id || matchStats._count.id === 0) continue; // no matches yet
+
+    const nonCompletedCount = await prisma.match.count({
+      where: { tournamentId: t.id, status: { not: "COMPLETED" } },
+    });
+
+    const lastMatchDate = matchStats._max.matchDate;
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    if (nonCompletedCount === 0 && lastMatchDate && lastMatchDate < sevenDaysAgo) {
+      await prisma.tournament.update({
+        where: { id: t.id },
+        data: { status: "COMPLETED" },
+      });
+      console.log(`[sync] Auto-completed tournament: ${t.name}`);
     }
   }
 
