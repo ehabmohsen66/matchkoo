@@ -331,6 +331,7 @@ const Backend = {
 
     // ── Level badge letter based on XP ───────────────────────────────
     const levelBadge = document.getElementById('sidebar-level-badge');
+    let tierColor = 'var(--green)';
     if (levelBadge) {
       const xp = this.user.xp || 0;
       const { letter, cls } = xp >= 50000 ? { letter:'L', cls:'legend'   }
@@ -340,6 +341,18 @@ const Backend = {
                             :               { letter:'B', cls:'bronze'   };
       levelBadge.textContent = letter;
       levelBadge.className   = `level-badge-sm ${cls}`;
+      
+      const tierColors = {
+        bronze: '#cd7f32',
+        silver: '#909090',
+        gold: '#ff9914',
+        platinum: '#e0e0e0',
+        legend: '#f21b3f'
+      };
+      tierColor = tierColors[cls] || 'var(--green)';
+      if (xpEl) {
+        xpEl.style.color = tierColor;
+      }
     }
 
     // ── Avatar — gender-aware ─────────────────────────────────────────
@@ -356,10 +369,13 @@ const Backend = {
 
     if (avatarImg) {
       avatarImg.src = finalAvatar;
+      avatarImg.style.borderColor = tierColor;
+      avatarImg.style.boxShadow = `0 0 0 3px ${tierColor}33`;
     }
     
     if (mobileHeaderAvatar && mobileHeaderContainer) {
       mobileHeaderAvatar.src = finalAvatar;
+      mobileHeaderAvatar.style.borderColor = tierColor;
       mobileHeaderContainer.style.display = 'flex';
     }
 

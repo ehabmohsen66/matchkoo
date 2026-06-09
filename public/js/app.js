@@ -2081,7 +2081,7 @@ function _xpToLevel(xp) {
   if (xp >= 50000) return { label: 'Legend',   cls: 'legend',   badge: 'L' };
   if (xp >= 20000) return { label: 'Platinum', cls: 'platinum', badge: 'P' };
   if (xp >= 10000) return { label: 'Gold',     cls: 'gold',     badge: 'G' };
-  if (xp >= 1000)  return { label: 'Silver',   cls: 'silver',   badge: 'S' };
+  if (xp >= 3000)  return { label: 'Silver',   cls: 'silver',   badge: 'S' };
   return                  { label: 'Bronze',   cls: 'bronze',   badge: 'B' };
 }
 
