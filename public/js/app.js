@@ -2040,7 +2040,7 @@ async function initLeagueDetail() {
         <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;scrollbar-width:thin;">
           ${isCompletedLeague
             ? (matchesRes.length
-                ? '<div style="color:rgba(255,255,255,0.35);font-size:0.85rem;padding:16px 0;">This season\\'s matches have all been played. Check your predictions in the <strong style="color:rgba(255,255,255,0.6);">Predictions</strong> tab.</div>'
+                ? '<div style="color:rgba(255,255,255,0.35);font-size:0.85rem;padding:16px 0;">This season\'s matches have all been played. Check your predictions in the <strong style="color:rgba(255,255,255,0.6);">Predictions</strong> tab.</div>'
                 : '<div style="color:var(--text-muted);font-size:0.85rem;">No match data available.</div>')
             : fixtureHtml}
         </div>
