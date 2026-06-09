@@ -336,7 +336,7 @@ const Backend = {
       const { letter, cls } = xp >= 50000 ? { letter:'L', cls:'legend'   }
                             : xp >= 20000 ? { letter:'P', cls:'platinum' }
                             : xp >= 10000 ? { letter:'G', cls:'gold'     }
-                            : xp >= 3000  ? { letter:'S', cls:'silver'   }
+                            : xp >= 1000  ? { letter:'S', cls:'silver'   }
                             :               { letter:'B', cls:'bronze'   };
       levelBadge.textContent = letter;
       levelBadge.className   = `level-badge-sm ${cls}`;

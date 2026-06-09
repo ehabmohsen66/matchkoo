@@ -1657,14 +1657,23 @@ async function initLeaderboard(period) {
     if (me) {
       const yrb = document.querySelector('.your-rank-banner');
       if (yrb) {
-        const rankEl = yrb.querySelector('.yrb-rank');
-        const nameEl = yrb.querySelector('.yrb-name');
-        const xpEl   = yrb.querySelector('.yrb-xp');
-        const imgEl  = yrb.querySelector('img');
+        const rankEl  = yrb.querySelector('.yrb-rank');
+        const nameEl  = yrb.querySelector('.yrb-name');
+        const xpEl    = yrb.querySelector('.yrb-xp');
+        const imgEl   = yrb.querySelector('img');
+        const badgeEl = yrb.querySelector('.level-badge-sm');
+
         if (rankEl) rankEl.textContent = '#' + me.rank;
         if (nameEl) nameEl.textContent = (me.name || 'You') + ' (You)';
         if (xpEl)   xpEl.textContent   = (me.xp || 0).toLocaleString() + ' XP';
         if (imgEl)  imgEl.src = me.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=me';
+        
+        if (badgeEl) {
+          const lvl = _xpToLevel(me.xp || 0);
+          badgeEl.textContent = lvl.badge;
+          badgeEl.className   = 'level-badge-sm ' + lvl.cls;
+        }
+
         if (yrb) yrb.style.display = '';
       }
     } else {
