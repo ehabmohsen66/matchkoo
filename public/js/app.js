@@ -3645,8 +3645,7 @@ async function _checkDailySpinStatus() {
       state.spinDone = true;
       const btn = document.getElementById('spin-btn');
       if (btn) { btn.disabled = true; btn.textContent = 'Come back tomorrow!'; }
-      const bannerBtn = document.querySelector('#daily-bonus-banner button');
-      if (bannerBtn) bannerBtn.textContent = '🎡 Spin Again Tomorrow';
+      // Banner text remains 'Spin Now' as requested
     }
   } catch(e) {}
 }
