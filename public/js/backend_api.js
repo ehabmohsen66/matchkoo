@@ -57,22 +57,23 @@ const Backend = {
       // Store preferred leagues so Discover can use them
       this.preferredLeagues = prefsRes.preferredLeagues || [];
 
-      // ── Today's Fixtures from real matches ──────────────────────
+      // ── Today's Fixtures from real matches ─────────────────────────
       if (matchesRes.length > 0) {
-        const today = new Date();
-        const todayStr    = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-        const tomorrow    = new Date(today); tomorrow.setDate(today.getDate() + 1);
-        const tomorrowStr = tomorrow.getFullYear() + '-' + String(tomorrow.getMonth()+1).padStart(2,'0') + '-' + String(tomorrow.getDate()).padStart(2,'0');
-        
-        // helper: get local YYYY-MM-DD from a match date
         const localDateStr = (dt) => { const d = new Date(dt); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+        const todayStr = localDateStr(new Date());
+        const prefs = this.preferredLeagues; // joined leagues
 
         const todayMatches = matchesRes.filter(m => {
-          const tName = (m.tournament?.name || '').toLowerCase()
-            .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
-            .replace(/\s+\[\d+\]$/, '').trim();
-          const isTargetLeague = ACTIVE_LEAGUES.includes(tName);
-          return isTargetLeague && localDateStr(m.matchDate) === todayStr;
+          if (localDateStr(m.matchDate) !== todayStr) return false;
+          if (m.status && m.status !== 'UPCOMING') return false;
+          // If user has joined leagues, only show those
+          if (prefs.length > 0) {
+            const tName = (m.tournament?.name || '').toLowerCase()
+              .replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '').trim();
+            const matched = prefs.some(p => tName.includes(p.toLowerCase()) || p.toLowerCase().includes(tName));
+            if (!matched) return false;
+          }
+          return true;
         }).slice(0, 8);
 
         if (todayMatches.length > 0) {
@@ -91,6 +92,7 @@ const Backend = {
           }));
         }
       }
+
 
       // ── Real Predictions ─────────────────────────────────────────
       if (predsRes.length > 0) {
@@ -158,69 +160,139 @@ const Backend = {
         }
       }
 
-      // ── Tournaments → Discover page leagues ─────────────────────
-      // ONLY inject the 5 agreed active leagues. Each real DB tournament
-      // replaces its matching static placeholder by exact staticId.
+      // ── Tournaments → Discover page leagues ─────────────────────────
+      // Fully dynamic: every tournament from the API is placed under the
+      // correct continent using its football-api league ID (the [N] suffix
+      // in the DB name, e.g. "UEFA Champions League 2025 [2]" → ID 2).
+      // No hardcoded names — add new leagues in the DB and they just appear.
       if (tournamentsRes.length > 0) {
-        // Maps cleaned canonical name → { continent, staticId, country, canonicalName, logo }
-        const ACTIVE_EXACT = {
-          'english premier league': { continent: 'europe', staticId: 'epl',     country: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', emoji: '⚽', logo: 'https://media.api-sports.io/football/leagues/39.png', canonicalName: 'English Premier League' },
-          'la liga':                { continent: 'europe', staticId: 'laliga',  country: '🇪🇸', emoji: '🇪🇸', logo: 'https://media.api-sports.io/football/leagues/140.png', canonicalName: 'La Liga' },
-          'uefa champions league':  { continent: 'europe', staticId: 'ucl',     country: '🇪🇺', emoji: '⭐', logo: 'https://media.api-sports.io/football/leagues/2.png', canonicalName: 'UEFA Champions League' },
-          'egyptian premier league':{ continent: 'africa', staticId: 'egipt',   country: '🇪🇬', emoji: '🇪🇬', logo: 'https://tmssl.akamaized.net//images/logo/header/egy1.png?lm=1741338264', canonicalName: 'Egyptian Premier League' },
-          'fifa world cup':         { continent: 'world',  staticId: 'wc2026',  country: '🌍', emoji: '🏆', logo: '/images/wc2026-logo.png', canonicalName: 'FIFA World Cup' },
+
+        // ── Master league metadata keyed by football-api league ID ──────
+        // Format: apiId → { continent, staticId, cleanName, country, emoji, logo }
+        // Logo URL pattern: https://media.api-sports.io/football/leagues/{id}.png
+        const _cdnLogo = id => 'https://media.api-sports.io/football/leagues/' + id + '.png';
+        const LEAGUE_META = {
+          // ── EUROPE ─────────────────────────────────────────────────────
+          39:  { continent:'europe',   staticId:'epl',         cleanName:'Premier League',          country:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', emoji:'⚽', logo:_cdnLogo(39)  },
+          140: { continent:'europe',   staticId:'laliga',      cleanName:'La Liga',                 country:'🇪🇸', emoji:'🇪🇸', logo:_cdnLogo(140) },
+          78:  { continent:'europe',   staticId:'bundesliga',  cleanName:'Bundesliga',              country:'🇩🇪', emoji:'🇩🇪', logo:_cdnLogo(78)  },
+          135: { continent:'europe',   staticId:'seriea',      cleanName:'Serie A',                 country:'🇮🇹', emoji:'🇮🇹', logo:_cdnLogo(135) },
+          61:  { continent:'europe',   staticId:'ligue1',      cleanName:'Ligue 1',                 country:'🇫🇷', emoji:'🇫🇷', logo:_cdnLogo(61)  },
+          2:   { continent:'europe',   staticId:'ucl',         cleanName:'UEFA Champions League',   country:'🇪🇺', emoji:'⭐', logo:_cdnLogo(2)   },
+          3:   { continent:'europe',   staticId:'uel',         cleanName:'UEFA Europa League',      country:'🇪🇺', emoji:'🟠', logo:_cdnLogo(3)   },
+          848: { continent:'europe',   staticId:'uecl',        cleanName:'UEFA Conference League',  country:'🇪🇺', emoji:'🟢', logo:_cdnLogo(848) },
+          88:  { continent:'europe',   staticId:'eredivisie',  cleanName:'Eredivisie',              country:'🇳🇱', emoji:'🇳🇱', logo:_cdnLogo(88)  },
+          94:  { continent:'europe',   staticId:'primeirliga', cleanName:'Primeira Liga',           country:'🇵🇹', emoji:'🇵🇹', logo:_cdnLogo(94)  },
+          203: { continent:'europe',   staticId:'superlig',    cleanName:'Süper Lig',               country:'🇹🇷', emoji:'🇹🇷', logo:_cdnLogo(203) },
+          119: { continent:'europe',   staticId:'superliga',   cleanName:'Superliga (Denmark)',     country:'🇩🇰', emoji:'🇩🇰', logo:_cdnLogo(119) },
+          113: { continent:'europe',   staticId:'allsvenskan', cleanName:'Allsvenskan',             country:'🇸🇪', emoji:'🇸🇪', logo:_cdnLogo(113) },
+          103: { continent:'europe',   staticId:'eliteserien', cleanName:'Eliteserien',             country:'🇳🇴', emoji:'🇳🇴', logo:_cdnLogo(103) },
+          // ── AFRICA ─────────────────────────────────────────────────────
+          233: { continent:'africa',   staticId:'egipt',       cleanName:'Egyptian Premier League', country:'🇪🇬', emoji:'🇪🇬', logo:'https://tmssl.akamaized.net//images/logo/header/egy1.png?lm=1741338264' },
+          12:  { continent:'africa',   staticId:'caf-cl',      cleanName:'CAF Champions League',    country:'🌍', emoji:'🏆', logo:_cdnLogo(12)  },
+          6:   { continent:'africa',   staticId:'afcon',       cleanName:'AFCON 2026',              country:'🌍', emoji:'🇲🇦', logo:_cdnLogo(6)   },
+          20:  { continent:'africa',   staticId:'npfl',        cleanName:'NPFL (Nigeria)',           country:'🇳🇬', emoji:'🇳🇬', logo:_cdnLogo(20)  },
+          289: { continent:'africa',   staticId:'psl',         cleanName:'PSL (South Africa)',      country:'🇿🇦', emoji:'🇿🇦', logo:_cdnLogo(289) },
+          31:  { continent:'africa',   staticId:'caf-cc',      cleanName:'CAF Confederation Cup',   country:'🌍', emoji:'🥈', logo:_cdnLogo(31)  },
+          // ── AMERICAS ───────────────────────────────────────────────────
+          253: { continent:'americas', staticId:'mls',         cleanName:'MLS',                     country:'🇺🇸', emoji:'🇺🇸', logo:_cdnLogo(253) },
+          71:  { continent:'americas', staticId:'brasileirao', cleanName:'Brasileirão',             country:'🇧🇷', emoji:'🇧🇷', logo:_cdnLogo(71)  },
+          262: { continent:'americas', staticId:'liga-mx',     cleanName:'Liga MX',                 country:'🇲🇽', emoji:'🇲🇽', logo:_cdnLogo(262) },
+          13:  { continent:'americas', staticId:'libertadores',cleanName:'Copa Libertadores',       country:'🌎', emoji:'🏆', logo:_cdnLogo(13)  },
+          9:   { continent:'americas', staticId:'copa-america',cleanName:'Copa América 2026',       country:'🌎', emoji:'🌎', logo:_cdnLogo(9)   },
+          128: { continent:'americas', staticId:'arg-primera', cleanName:'Primera División (ARG)',  country:'🇦🇷', emoji:'🇦🇷', logo:_cdnLogo(128) },
+          // ── ASIA ───────────────────────────────────────────────────────
+          98:  { continent:'asia',     staticId:'jleague',     cleanName:'J-League',                country:'🇯🇵', emoji:'🇯🇵', logo:_cdnLogo(98)  },
+          292: { continent:'asia',     staticId:'kleague',     cleanName:'K League 1',              country:'🇰🇷', emoji:'🇰🇷', logo:_cdnLogo(292) },
+          307: { continent:'asia',     staticId:'saudi',       cleanName:'Saudi Pro League',        country:'🇸🇦', emoji:'🇸🇦', logo:_cdnLogo(307) },
+          169: { continent:'asia',     staticId:'chinese-sl',  cleanName:'Chinese Super League',    country:'🇨🇳', emoji:'🇨🇳', logo:_cdnLogo(169) },
+          17:  { continent:'asia',     staticId:'afc-cl',      cleanName:'AFC Champions League',    country:'🌏', emoji:'⭐', logo:_cdnLogo(17)  },
+          323: { continent:'asia',     staticId:'isl',         cleanName:'Indian Super League',     country:'🇮🇳', emoji:'🇮🇳', logo:_cdnLogo(323) },
+          // ── OCEANIA ────────────────────────────────────────────────────
+          188: { continent:'oceania',  staticId:'a-league',    cleanName:'A-League (Australia)',    country:'🇦🇺', emoji:'🇦🇺', logo:_cdnLogo(188) },
+          710: { continent:'oceania',  staticId:'nzfl',        cleanName:'NZFL (New Zealand)',      country:'🇳🇿', emoji:'🇳🇿', logo:_cdnLogo(710) },
+          36:  { continent:'oceania',  staticId:'ofc-cl',      cleanName:'OFC Champions League',    country:'🌏', emoji:'🏆', logo:_cdnLogo(36)  },
+          // ── WORLD / INTERNATIONAL ──────────────────────────────────────
+          1:   { continent:'world',    staticId:'wc2026',      cleanName:'FIFA World Cup',          country:'🌍', emoji:'🏆', logo:'/images/wc2026-logo.png' },
+          5:   { continent:'world',    staticId:'nations',     cleanName:'UEFA Nations League',     country:'🇪🇺', emoji:'🇪🇺', logo:_cdnLogo(5)   },
+          890: { continent:'world',    staticId:'friendly',    cleanName:'Internationals/Friendlies',country:'🌍', emoji:'⚽', logo:null },
+        };
+
+        // Helper: extract football-api league ID from DB name, e.g. "UCL 2025 [2]" → 2
+        const _extractApiId = name => {
+          const m = (name || '').match(/\[(\d+)\]$/);
+          return m ? parseInt(m[1]) : null;
+        };
+
+        // Helper: strip year + bracket suffix → clean canonical name
+        const _cleanDbName = name => (name || '')
+          .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
+          .replace(/\s+\[\d+\]$/, '')
+          .trim();
+
+        // Helper: extract season year from DB name, e.g. "EPL 2025 [39]" → "2025/2026"
+        const _seasonLabel = name => {
+          const m = (name || '').match(/\s(\d{4})\s*(\[\d+\])?$/);
+          if (!m) return '';
+          const yr = parseInt(m[1]);
+          return yr + '/' + (yr + 1);
         };
 
         tournamentsRes.forEach(t => {
-          const cleanName = (t.name || '').toLowerCase()
-            .replace(/\s+\d{4}(\s+\[\d+\])?$/, '')
-            .replace(/\s+\[\d+\]$/, '').trim();
+          // ── 1. Identify league via football-api ID in the name ─────────
+          const apiId = _extractApiId(t.name);
+          let meta = apiId ? LEAGUE_META[apiId] : null;
 
-          const cfg = ACTIVE_EXACT[cleanName];
-          if (!cfg) return; // not one of our 5 active leagues
+          // ── 2. Fallback: match by clean name against LEAGUE_META ────────
+          if (!meta) {
+            const cleaned = _cleanDbName(t.name).toLowerCase();
+            meta = Object.values(LEAGUE_META).find(m =>
+              m.cleanName.toLowerCase() === cleaned
+            ) || null;
+          }
 
-          // Note: we no longer skip COMPLETED tournaments here — they still
-          // show on the Discover page so users can view historical data.
+          // ── 3. No match → skip (not a recognised public league) ─────────
+          if (!meta) return;
 
-          const bucket = DATA.continents[cfg.continent];
+          const bucket = DATA.continents[meta.continent];
           if (!bucket) return;
 
-          // Extract season year from DB name e.g. "English Premier League 2025 [39]" → "2025"
-          const seasonMatch = (t.name || '').match(/\s(\d{4})\s*(\[\d+\])?$/);
-          const seasonYear = seasonMatch ? parseInt(seasonMatch[1]) : null;
-          const seasonLabel = seasonYear ? `${seasonYear}/${seasonYear + 1}` : '';
-          const displayName = seasonLabel ? `${cfg.canonicalName} ${seasonLabel}` : cfg.canonicalName;
-
-          // Find by staticId — guaranteed unique, no ambiguity
-          const idx = bucket.leagues.findIndex(l => l.id === cfg.staticId);
+          const seasonLbl = _seasonLabel(t.name);
+          const displayName = seasonLbl
+            ? meta.cleanName + ' ' + seasonLbl
+            : meta.cleanName;
 
           const realLeague = {
-            id: t.id,
-            name: displayName,               // e.g. "Premier League 2025/2026"
-            country: cfg.country,
-            emoji: cfg.emoji,
-            logo: cfg.logo,
-            matches: t._count?.matches ?? 0,  // real count from DB
-            color: '#3CB82E',
-            _realId: t.id,
-            canonicalName: cfg.canonicalName, // used by toggleFollow (no year)
-            season: t.season || (seasonYear ? seasonYear.toString() : null),
-            status: t.status || 'ONGOING',
-            comingSoon: false,
+            id:            t.id,
+            name:          displayName,
+            country:       meta.country,
+            emoji:         meta.emoji,
+            logo:          meta.logo,
+            matches:       t._count?.matches ?? 0,
+            color:         '#3CB82E',
+            _realId:       t.id,
+            canonicalName: meta.cleanName,   // used by toggleFollow (no year suffix)
+            season:        t.season || null,
+            status:        t.status || 'ONGOING',
+            comingSoon:    false,
+            registrationMode: t.registrationMode || 'OPEN',
+            prizes:        t.prizes || null,
           };
 
+          // Replace matching static placeholder (match by staticId), or prepend
+          const idx = bucket.leagues.findIndex(l => l.id === meta.staticId);
           if (idx >= 0) {
-            bucket.leagues[idx] = realLeague; // replace static placeholder
+            bucket.leagues[idx] = realLeague;
           } else {
-            bucket.leagues.unshift(realLeague); // first time — prepend
+            bucket.leagues.unshift(realLeague);
           }
         });
 
-        // Dynamically update continent count pills from actual data
+        // ── Update continent tab count pills ──────────────────────────────
         Object.entries(DATA.continents).forEach(([key, val]) => {
           const el = document.getElementById('count-' + key);
           if (!el) return;
-          if (key === 'world') return; // keep "Special"
+          if (key === 'world') return; // keep "Special" label
           el.textContent = val.leagues.length + ' leagues';
         });
       }
@@ -469,20 +541,21 @@ const Backend = {
       const now = new Date();
       const todayStr = localDateStr(now);
       const prefs = this.preferredLeagues;
-      const ACTIVE_LEAGUES = ['english premier league', 'premier league', 'la liga',
-        'uefa champions league', 'egyptian premier league', 'fifa world cup'];
 
       const todayMatches = matchesRes.filter(m => {
-        const tName = (m.tournament?.name || '').toLowerCase()
-          .replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '').trim();
-        const inActive = ACTIVE_LEAGUES.includes(tName);
-        if (!inActive) return false;
+        // Only upcoming matches for today
+        if (localDateStr(m.matchDate) !== todayStr) return false;
+        if (m.status && m.status !== 'UPCOMING') return false;
+        // If user has joined specific leagues, filter to those only
         if (prefs.length > 0) {
-          const matchesPref = prefs.some(p => tName.includes(p.toLowerCase()));
+          const tName = (m.tournament?.name || '').toLowerCase()
+            .replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '').trim();
+          const matchesPref = prefs.some(p => tName.includes(p.toLowerCase()) || p.toLowerCase().includes(tName));
           if (!matchesPref) return false;
         }
-        return localDateStr(m.matchDate) === todayStr;
+        return true;
       }).slice(0, 8);
+
 
       if (todayMatches.length > 0) {
         DATA.todayFixtures = todayMatches.map(m => ({
