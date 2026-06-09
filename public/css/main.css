@@ -1490,6 +1490,30 @@ input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
 }
 
 
+/* ─── MOBILE BANNER ENHANCEMENTS ─────────────────────────────── */
+@media (max-width: 768px) {
+  .daily-bonus-banner {
+    padding: 10px 14px !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+    border-radius: var(--radius-lg) !important;
+  }
+  .bonus-icon svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  .bonus-title {
+    font-size: 0.85rem !important;
+  }
+  .bonus-sub {
+    font-size: 0.72rem !important;
+  }
+  .bonus-cta {
+    padding: 8px 14px !important;
+    font-size: 0.78rem !important;
+  }
+}
+
 /* ─── MOBILE HOME AUTH OVERRIDES ─────────────────────────────── */
 body[data-page="home"][data-logged-in="true"] #lang-select-mobile {
   display: none !important;
