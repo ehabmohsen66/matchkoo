@@ -907,7 +907,7 @@ function renderLeagues(continentId) {
       canonicalName.toLowerCase().includes(p.toLowerCase())
     );
 
-    const isCompleted = !!(l._realId && l.status === 'COMPLETED');
+    const isCompleted = !!(l.status && l.status.toUpperCase() === 'COMPLETED');
 
     const followBtn = isCompleted
       ? ""
