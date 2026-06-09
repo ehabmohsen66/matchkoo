@@ -108,6 +108,17 @@ export async function GET(req: NextRequest) {
       });
       const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
 
+      // Get past leaderboard for trend (7 days ago)
+      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const pastDateFilter = since ? { matchDate: { gte: since, lt: oneWeekAgo } } : { matchDate: { lt: oneWeekAgo } };
+      let pastRows = await prisma.prediction.groupBy({
+        by: ["userId"],
+        where: { match: { tournamentId, ...pastDateFilter } },
+        _sum: { xpEarned: true },
+      });
+      pastRows.sort((a, b) => (b._sum.xpEarned ?? 0) - (a._sum.xpEarned ?? 0));
+      const pastRankMap = new Map(pastRows.map((r, i) => [r.userId, i + 1]));
+
       // Get per-league accuracy stats
       const totalPreds = await prisma.prediction.groupBy({
         by: ["userId"],
@@ -127,8 +138,20 @@ export async function GET(req: NextRequest) {
           const total = totalMap[r.userId] || 0;
           const correct = correctMap[r.userId] || 0;
           const acc = total > 0 ? Math.round((correct / total) * 100) : 0;
+          
+          const currentRank = i + 1;
+          const pastRank = pastRankMap.get(r.userId);
+          let trend = "same";
+          if (pastRank) {
+            if (currentRank < pastRank) trend = "up";
+            else if (currentRank > pastRank) trend = "down";
+          } else {
+            // New entry
+            trend = "same";
+          }
+
           return {
-            rank: i + 1,
+            rank: currentRank,
             userId: r.userId,
             name:   userMap[r.userId]?.name ?? "Unknown",
             image:  userMap[r.userId]?.image ?? null,
@@ -136,6 +159,7 @@ export async function GET(req: NextRequest) {
             xp:     r._sum.xpEarned ?? 0,
             streak: userMap[r.userId]?.streak ?? 0,
             accuracy: acc,
+            trend:  trend,
             isMe: r.userId === userId,
           };
         })
