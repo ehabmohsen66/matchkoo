@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import * as React from "react";
+import { sendEmail } from "@/lib/email";
+import ReferralConvertedEmail from "@/emails/ReferralConvertedEmail";
 
 // POST /api/referrals — log a referral when a new user registers via an invite link
 // Body: { referralCode: string } — the referrer's userId
@@ -48,7 +51,7 @@ export async function PATCH(req: Request) {
   }
 
   // Award 200 XP to referrer
-  await prisma.$transaction([
+  const [_, referrer] = await prisma.$transaction([
     prisma.referral.update({
       where: { referredId },
       data: { xpAwarded: true },
@@ -56,8 +59,22 @@ export async function PATCH(req: Request) {
     prisma.user.update({
       where: { id: referral.referrerId },
       data: { xp: { increment: 200 } },
+      select: { name: true, email: true, xp: true },
     }),
   ]);
+
+  if (referrer.email) {
+    void sendEmail({
+      to: referrer.email,
+      subject: `🎉 ${session.user.name ?? "Your friend"} just made their first prediction — +200 XP earned!`,
+      react: React.createElement(ReferralConvertedEmail, {
+        name: referrer.name ?? "there",
+        friendName: session.user.name ?? "Your friend",
+        xpAwarded: 200,
+        newTotalXp: referrer.xp,
+      }),
+    }).catch((err) => console.error("[email] Referral converted email failed:", err));
+  }
 
   return NextResponse.json({ success: true, xpAwarded: 200 });
 }

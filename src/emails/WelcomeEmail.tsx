@@ -69,7 +69,7 @@ export default function WelcomeEmail({ name, email }: WelcomeEmailProps) {
           </Column>
           <Column style={statColCenter}>
             <div style={statCard}>
-              <div style={statValue}>+500</div>
+              <div style={statValue}>+200</div>
               <div style={statLabel}>Exact-score XP</div>
             </div>
           </Column>

@@ -7,7 +7,6 @@ import * as React from "react";
 import { sendEmail, sendAdminAlert } from "@/lib/email";
 import VerifyEmailEmail from "@/emails/VerifyEmailEmail";
 import AdminAlertEmail from "@/emails/AdminAlertEmail";
-import ReferralConvertedEmail from "@/emails/ReferralConvertedEmail";
 import ReferralWelcomeBonusEmail from "@/emails/ReferralWelcomeBonusEmail";
 
 export async function POST(req: NextRequest) {
@@ -69,45 +68,30 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // ── Referral XP — fires on registration (not first prediction) ───────────
+    // ── Referral Record Creation ─────────────────────────────────────────────
     if (referrerId) {
       try {
-        // Create referral record and mark as already awarded
+        // Create referral record (XP is NOT awarded yet, will be on first prediction)
         await prisma.referral.create({
-          data: { referrerId, referredId: newUser.id, xpAwarded: true },
+          data: { referrerId, referredId: newUser.id, xpAwarded: false },
         });
       } catch {
         // Ignore duplicate — referral already exists
       }
 
-      // Award +200 XP to the referrer
-      const referrer = await prisma.user.update({
+      // Fetch referrer name for welcome bonus email
+      const referrer = await prisma.user.findUnique({
         where: { id: referrerId },
-        data: { xp: { increment: 200 } },
-        select: { name: true, email: true, xp: true },
+        select: { name: true },
       });
-
-      // Notify referrer (fire-and-forget)
-      if (referrer.email) {
-        sendEmail({
-          to: referrer.email,
-          subject: `🎉 ${name} just joined Matchkoo using your invite link — +200 XP earned!`,
-          react: React.createElement(ReferralConvertedEmail, {
-            name: referrer.name ?? "there",
-            friendName: name,
-            xpAwarded: 200,
-            newTotalXp: referrer.xp,
-          }),
-        }).catch((err) => console.error("[email] Referral converted email failed:", err));
-      }
 
       // Notify new user of their welcome bonus (fire-and-forget)
       sendEmail({
         to: email,
-        subject: `🎁 Welcome bonus! ${referrer.name ?? "A friend"}'s invite earned you +200 XP`,
+        subject: `🎁 Welcome bonus! ${referrer?.name ?? "A friend"}'s invite earned you +200 XP`,
         react: React.createElement(ReferralWelcomeBonusEmail, {
           name,
-          referrerName: referrer.name ?? "Your friend",
+          referrerName: referrer?.name ?? "Your friend",
           xpAwarded: 200,
           newTotalXp: 200,
         }),

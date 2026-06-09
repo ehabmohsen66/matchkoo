@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import * as React from "react";
 import { sendEmail } from "@/lib/email";
+import ReferralConvertedEmail from "@/emails/ReferralConvertedEmail";
 
 
 // GET /api/predictions — user's own predictions, grouped data included
@@ -128,6 +129,47 @@ export async function POST(req: NextRequest) {
           btts: btts ?? null, totalGoals: totalGoals ?? null 
         },
       });
+    }
+
+    if (!isBoostUpdate) {
+      // Check if this is the user's first prediction
+      const count = await prisma.prediction.count({
+        where: { userId: session.user.id },
+      });
+      if (count === 1) {
+        // Find referral record
+        const referral = await prisma.referral.findUnique({
+          where: { referredId: session.user.id },
+        });
+        if (referral && !referral.xpAwarded) {
+          // Award +200 XP to the referrer
+          const [_, referrer] = await prisma.$transaction([
+            prisma.referral.update({
+              where: { referredId: session.user.id },
+              data: { xpAwarded: true },
+            }),
+            prisma.user.update({
+              where: { id: referral.referrerId },
+              data: { xp: { increment: 200 } },
+              select: { name: true, email: true, xp: true },
+            }),
+          ]);
+
+          // Notify referrer
+          if (referrer.email) {
+            void sendEmail({
+              to: referrer.email,
+              subject: `🎉 ${session.user.name ?? "Your friend"} just made their first prediction — +200 XP earned!`,
+              react: React.createElement(ReferralConvertedEmail, {
+                name: referrer.name ?? "there",
+                friendName: session.user.name ?? "Your friend",
+                xpAwarded: 200,
+                newTotalXp: referrer.xp,
+              }),
+            }).catch((err) => console.error("[email] Referral converted email failed:", err));
+          }
+        }
+      }
     }
 
     return NextResponse.json(prediction, { status: 201 });
