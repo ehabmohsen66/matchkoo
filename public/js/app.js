@@ -910,17 +910,7 @@ function renderLeagues(continentId) {
     const isCompleted = !!(l._realId && l.status === 'COMPLETED');
 
     const followBtn = isCompleted
-      ? "<span " +
-        "  style=\"" +
-          "flex-shrink:0;margin-left:auto;padding:4px 12px;border-radius:100px;" +
-          "border:1px solid rgba(255,255,255,0.12);" +
-          "background:rgba(255,255,255,0.05);" +
-          "color:rgba(255,255,255,0.4);" +
-          "font-size:0.6rem;font-weight:800;font-family:inherit;" +
-          "letter-spacing:0.5px;text-transform:uppercase;white-space:nowrap;" +
-        "\">" +
-        "✓ Completed" +
-        "</span>"
+      ? ""
       : "<button " +
         "  id=\"follow-btn-" + safeId + "\" " +
         "  onclick=\"event.stopPropagation();toggleFollow('" + safeId + "','" + safeName + "','" + canonicalName.replace(/'/g,"\\'") + "')\" " +
