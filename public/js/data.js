@@ -9,68 +9,76 @@ const DATA = {
     europe: {
       label: 'Europe',
       leagues: [
-        { id: 'epl', name: 'Premier League', country: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', emoji: '⚽', logo: 'https://media.api-sports.io/football/leagues/39.png', matches: 48, color: '#38003C' },
-        { id: 'laliga', name: 'La Liga', country: '🇪🇸', emoji: '🇪🇸', logo: 'https://media.api-sports.io/football/leagues/140.png', matches: 42, color: '#EE1C25' },
-        { id: 'bundesliga', name: 'Bundesliga', country: '🇩🇪', emoji: '🇩🇪', matches: 38, color: '#D3010C', comingSoon: true },
-        { id: 'seriea', name: 'Serie A', country: '🇮🇹', emoji: '🇮🇹', matches: 44, color: '#024494', comingSoon: true },
-        { id: 'ligue1', name: 'Ligue 1', country: '🇫🇷', emoji: '🇫🇷', matches: 36, color: '#182A4E', comingSoon: true },
-        { id: 'ucl', name: 'UEFA Champions League', country: '🇪🇺', emoji: '⭐', logo: 'https://media.api-sports.io/football/leagues/2.png', matches: 22, color: '#1B0E60' },
-        { id: 'uel', name: 'Europa League', country: '🇪🇺', emoji: '🟠', matches: 18, color: '#FF6900', comingSoon: true },
-        { id: 'eredivisie', name: 'Eredivisie', country: '🇳🇱', emoji: '🇳🇱', matches: 30, color: '#EF7D00', comingSoon: true },
-        { id: 'primeirliga', name: 'Primeira Liga', country: '🇵🇹', emoji: '🇵🇹', matches: 34, color: '#009B3A', comingSoon: true },
-        { id: 'superlig', name: 'Süper Lig', country: '🇹🇷', emoji: '🇹🇷', matches: 38, color: '#E30A17', comingSoon: true },
+        // These 3 are replaced at runtime by DB records via LEAGUE_META — kept as fallback placeholders
+        { id: 'epl',         name: 'Premier League',        country: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', emoji: '⚽', logo: 'https://media.api-sports.io/football/leagues/39.png',  matches: 380, color: '#38003C' },
+        { id: 'laliga',      name: 'La Liga',               country: '🇪🇸', emoji: '🇪🇸', logo: 'https://media.api-sports.io/football/leagues/140.png', matches: 380, color: '#EE1C25' },
+        { id: 'ucl',         name: 'UEFA Champions League', country: '🇪🇺', emoji: '⭐', logo: 'https://media.api-sports.io/football/leagues/2.png',   matches: 125, color: '#1B0E60' },
+        // 2024/25 seasons that have ended — show as Completed (clickable with season-ended badge)
+        { id: 'bundesliga',  name: 'Bundesliga 2024/25',    country: '🇩🇪', emoji: '🇩🇪', logo: 'https://media.api-sports.io/football/leagues/78.png',  matches: 306, color: '#D3010C', status: 'COMPLETED' },
+        { id: 'seriea',      name: 'Serie A 2024/25',       country: '🇮🇹', emoji: '🇮🇹', logo: 'https://media.api-sports.io/football/leagues/135.png', matches: 380, color: '#024494', status: 'COMPLETED' },
+        { id: 'ligue1',      name: 'Ligue 1 2024/25',       country: '🇫🇷', emoji: '🇫🇷', logo: 'https://media.api-sports.io/football/leagues/61.png',  matches: 306, color: '#182A4E', status: 'COMPLETED' },
+        { id: 'uel',         name: 'UEFA Europa League 2024/25', country: '🇪🇺', emoji: '🟠', logo: 'https://media.api-sports.io/football/leagues/3.png', matches: 189, color: '#FF6900', status: 'COMPLETED' },
+        { id: 'eredivisie',  name: 'Eredivisie 2024/25',    country: '🇳🇱', emoji: '🇳🇱', logo: 'https://media.api-sports.io/football/leagues/88.png',  matches: 306, color: '#EF7D00', status: 'COMPLETED' },
+        { id: 'primeirliga', name: 'Primeira Liga 2024/25', country: '🇵🇹', emoji: '🇵🇹', logo: 'https://media.api-sports.io/football/leagues/94.png',  matches: 306, color: '#009B3A', status: 'COMPLETED' },
+        { id: 'superlig',    name: 'Süper Lig 2024/25',     country: '🇹🇷', emoji: '🇹🇷', logo: 'https://media.api-sports.io/football/leagues/203.png', matches: 380, color: '#E30A17', status: 'COMPLETED' },
       ]
     },
     africa: {
       label: 'Africa',
       leagues: [
-        { id: 'egipt', name: 'Egyptian Premier League', country: '🇪🇬', emoji: '🇪🇬', logo: 'https://tmssl.akamaized.net//images/logo/header/egy1.png?lm=1741338264', matches: 30, color: '#C09300' },
-        { id: 'caf-cl', name: 'CAF Champions League', country: '🌍', emoji: '🏆', matches: 24, color: '#009A44', comingSoon: true },
-        { id: 'afcon', name: 'AFCON 2026', country: '🌍', emoji: '🇲🇦', matches: 32, color: '#C1272D', comingSoon: true },
-        { id: 'npfl', name: 'NPFL (Nigeria)', country: '🇳🇬', emoji: '🇳🇬', matches: 28, color: '#008751', comingSoon: true },
-        { id: 'psl', name: 'PSL (South Africa)', country: '🇿🇦', emoji: '🇿🇦', matches: 32, color: '#007A4D', comingSoon: true },
-        { id: 'caf-cc', name: 'CAF Confederation Cup', country: '🌍', emoji: '🥈', matches: 20, color: '#F77F00', comingSoon: true },
+        // Replaced at runtime by DB record
+        { id: 'egipt',   name: 'Egyptian Premier League', country: '🇪🇬', emoji: '🇪🇬', logo: 'https://tmssl.akamaized.net//images/logo/header/egy1.png?lm=1741338264', matches: 240, color: '#C09300' },
+        // 2024/25 season ended
+        { id: 'caf-cl',  name: 'CAF Champions League 2024/25', country: '🌍', emoji: '🏆', logo: 'https://media.api-sports.io/football/leagues/12.png', matches: 62, color: '#009A44', status: 'COMPLETED' },
+        // Upcoming 2026 tournaments
+        { id: 'afcon',   name: 'AFCON 2025',              country: '🌍', emoji: '🇲🇦', logo: 'https://media.api-sports.io/football/leagues/6.png',  matches: 52, color: '#C1272D', comingSoon: true },
+        { id: 'npfl',    name: 'NPFL (Nigeria)',           country: '🇳🇬', emoji: '🇳🇬', matches: 28, color: '#008751', comingSoon: true },
+        { id: 'psl',     name: 'PSL (South Africa)',       country: '🇿🇦', emoji: '🇿🇦', matches: 32, color: '#007A4D', comingSoon: true },
+        { id: 'caf-cc',  name: 'CAF Confederation Cup',   country: '🌍', emoji: '🥈', matches: 20, color: '#F77F00', comingSoon: true },
       ]
     },
     americas: {
       label: 'Americas',
       leagues: [
-        { id: 'mls', name: 'MLS', country: '🇺🇸', emoji: '🇺🇸', matches: 36, color: '#1A3657', comingSoon: true },
-        { id: 'brasileirao', name: 'Brasileirão', country: '🇧🇷', emoji: '🇧🇷', matches: 38, color: '#009C3B', comingSoon: true },
-        { id: 'liga-mx', name: 'Liga MX', country: '🇲🇽', emoji: '🇲🇽', matches: 34, color: '#006847', comingSoon: true },
-        { id: 'libertadores', name: 'Copa Libertadores', country: '🌎', emoji: '🏆', matches: 26, color: '#F5C518', comingSoon: true },
-        { id: 'copa-america', name: 'Copa América 2026', country: '🌎', emoji: '🌎', matches: 28, color: '#003087', comingSoon: true },
-        { id: 'arg-primera', name: 'Primera División (ARG)', country: '🇦🇷', emoji: '🇦🇷', matches: 30, color: '#74ACDF', comingSoon: true },
+        // Currently ongoing / upcoming 2025 seasons
+        { id: 'mls',          name: 'MLS 2025',                  country: '🇺🇸', emoji: '🇺🇸', logo: 'https://media.api-sports.io/football/leagues/253.png', matches: 34,  color: '#1A3657', comingSoon: true },
+        { id: 'brasileirao',  name: 'Brasileirão 2025',          country: '🇧🇷', emoji: '🇧🇷', logo: 'https://media.api-sports.io/football/leagues/71.png',  matches: 380, color: '#009C3B', comingSoon: true },
+        { id: 'liga-mx',      name: 'Liga MX',                   country: '🇲🇽', emoji: '🇲🇽', logo: 'https://media.api-sports.io/football/leagues/262.png', matches: 34,  color: '#006847', comingSoon: true },
+        { id: 'libertadores', name: 'Copa Libertadores 2025',    country: '🌎', emoji: '🏆', logo: 'https://media.api-sports.io/football/leagues/13.png',  matches: 26,  color: '#F5C518', comingSoon: true },
+        { id: 'copa-america', name: 'Copa América 2026',         country: '🌎', emoji: '🌎', logo: 'https://media.api-sports.io/football/leagues/9.png',   matches: 28,  color: '#003087', comingSoon: true },
+        { id: 'arg-primera',  name: 'Primera División (ARG)',    country: '🇦🇷', emoji: '🇦🇷', logo: 'https://media.api-sports.io/football/leagues/128.png', matches: 30,  color: '#74ACDF', comingSoon: true },
       ]
     },
     asia: {
       label: 'Asia',
       leagues: [
-        { id: 'jleague', name: 'J-League', country: '🇯🇵', emoji: '🇯🇵', matches: 34, color: '#00559A', comingSoon: true },
-        { id: 'kleague', name: 'K League 1', country: '🇰🇷', emoji: '🇰🇷', matches: 32, color: '#C60C30', comingSoon: true },
-        { id: 'saudi', name: 'Saudi Pro League', country: '🇸🇦', emoji: '🇸🇦', matches: 30, color: '#007A3D', comingSoon: true },
-        { id: 'chinese-sl', name: 'Chinese Super League', country: '🇨🇳', emoji: '🇨🇳', matches: 30, color: '#DE2910', comingSoon: true },
-        { id: 'afc-cl', name: 'AFC Champions League', country: '🌏', emoji: '⭐', matches: 22, color: '#F77F00', comingSoon: true },
-        { id: 'isl', name: 'Indian Super League', country: '🇮🇳', emoji: '🇮🇳', matches: 34, color: '#FF7722', comingSoon: true },
+        { id: 'jleague',    name: 'J-League 2025',          country: '🇯🇵', emoji: '🇯🇵', logo: 'https://media.api-sports.io/football/leagues/98.png',  matches: 306, color: '#00559A', comingSoon: true },
+        { id: 'kleague',    name: 'K League 1 2025',         country: '🇰🇷', emoji: '🇰🇷', logo: 'https://media.api-sports.io/football/leagues/292.png', matches: 228, color: '#C60C30', comingSoon: true },
+        { id: 'saudi',      name: 'Saudi Pro League 2024/25',country: '🇸🇦', emoji: '🇸🇦', logo: 'https://media.api-sports.io/football/leagues/307.png', matches: 240, color: '#007A3D', status: 'COMPLETED' },
+        { id: 'chinese-sl', name: 'Chinese Super League',    country: '🇨🇳', emoji: '🇨🇳', logo: 'https://media.api-sports.io/football/leagues/169.png', matches: 30,  color: '#DE2910', comingSoon: true },
+        { id: 'afc-cl',     name: 'AFC Champions League',    country: '🌏', emoji: '⭐', logo: 'https://media.api-sports.io/football/leagues/17.png',  matches: 22,  color: '#F77F00', comingSoon: true },
+        { id: 'isl',        name: 'Indian Super League',     country: '🇮🇳', emoji: '🇮🇳', logo: 'https://media.api-sports.io/football/leagues/323.png', matches: 34,  color: '#FF7722', comingSoon: true },
       ]
     },
     oceania: {
       label: 'Oceania',
       leagues: [
-        { id: 'a-league', name: 'A-League (Australia)', country: '🇦🇺', emoji: '🇦🇺', matches: 28, color: '#003087', comingSoon: true },
-        { id: 'nzfl', name: 'NZFL (New Zealand)', country: '🇳🇿', emoji: '🇳🇿', matches: 16, color: '#000000', comingSoon: true },
-        { id: 'ofc-cl', name: 'OFC Champions League', country: '🌏', emoji: '🏆', matches: 12, color: '#2E5F96', comingSoon: true },
+        { id: 'a-league', name: 'A-League 2024/25', country: '🇦🇺', emoji: '🇦🇺', logo: 'https://media.api-sports.io/football/leagues/188.png', matches: 27, color: '#003087', status: 'COMPLETED' },
+        { id: 'nzfl',     name: 'NZFL (New Zealand)',       country: '🇳🇿', emoji: '🇳🇿', matches: 16, color: '#000000', comingSoon: true },
+        { id: 'ofc-cl',   name: 'OFC Champions League',     country: '🌏', emoji: '🏆', matches: 12, color: '#2E5F96', comingSoon: true },
       ]
     },
     world: {
       label: 'World Cup / Intl',
       leagues: [
-        { id: 'wc2026', name: 'FIFA World Cup 2026', country: '🌍', emoji: '🏆', logo: '/images/wc2026-logo.png', matches: 64, color: '#17458F' },
-        { id: 'nations', name: 'UEFA Nations League', country: '🇪🇺', emoji: '🇪🇺', matches: 48, color: '#003087', comingSoon: true },
-        { id: 'friendly', name: 'Internationals/Friendlies', country: '🌍', emoji: '⚽', matches: '∞', color: '#444', comingSoon: true },
+        // FIFA World Cup 2026 — tournament starts June 2026, upcoming
+        { id: 'wc2026',  name: 'FIFA World Cup 2026', country: '🌍', emoji: '🏆', logo: 'https://media.api-sports.io/football/leagues/1.png', matches: 64, color: '#17458F' },
+        { id: 'nations', name: 'UEFA Nations League 2024/25', country: '🇪🇺', emoji: '🇪🇺', logo: 'https://media.api-sports.io/football/leagues/5.png', matches: 48, color: '#003087', status: 'COMPLETED' },
+        { id: 'friendly', name: 'Internationals/Friendlies', country: '🌍', emoji: '⚽', matches: 0, color: '#444', comingSoon: true },
       ]
     }
   },
+
 
   todayFixtures: [
     { id: 'f1', league: 'Premier League', leagueFlag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', home: 'Man United', away: 'Arsenal', time: '17:30', predicted: true, homeColor: '#C8102E', awayColor: '#EF0107' },

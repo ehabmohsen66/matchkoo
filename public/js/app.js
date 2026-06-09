@@ -852,13 +852,14 @@ function _normaliseTournamentName(raw) {
 }
 
 function _isLeagueActive(l) {
+  // comingSoon = locked placeholder, never active
   if (l.comingSoon === true) return false;
-  // Real DB tournaments injected by backend_api: check name against exact whitelist
-  if (l._realId || (l.id && l.id.length > 10 && !/^(epl|liga|ucl|egy|wc|caf|mls|bun|ser|l1)/.test(l.id))) {
-    const cleanName = _normaliseTournamentName(l.name);
-    return ACTIVE_LEAGUE_NAMES.includes(cleanName);
-  }
-  return true; // static leagues gated by comingSoon flag in data.js
+  // DB leagues (have _realId) are always active — they were validated by LEAGUE_META in backend_api
+  if (l._realId) return true;
+  // Static-only leagues with a COMPLETED status should render as active (clickable completed card)
+  if (l.status && l.status.toUpperCase() === 'COMPLETED') return true;
+  // All other static entries without comingSoon are active
+  return true;
 }
 
 function renderLeagues(continentId) {
