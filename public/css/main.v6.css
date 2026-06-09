@@ -1676,6 +1676,15 @@ input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
     font-size: 0.78rem !important;
     margin-top: 4px;
   }
+
+  /* Match prediction confidence wrap */
+  .confidence-wrap {
+    flex-wrap: wrap !important;
+  }
+  #conf-risk-reward {
+    width: 100% !important;
+    margin-top: 4px !important;
+  }
 }
 
 /* ─── MOBILE HOME AUTH OVERRIDES ─────────────────────────────── */
