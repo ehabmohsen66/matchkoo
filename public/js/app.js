@@ -4147,7 +4147,6 @@ const STATIC_LOGO_MAP = {
   'Deportivo La Coruña':'/images/clubs/deportivo_la_coruna.png',
   'Zaragoza':           '/images/clubs/zaragoza.png',
   'Sporting Gijón':    'https://media.api-sports.io/football/teams/733.png',
-  'Eibar':              'https://media.api-sports.io/football/teams/544.png',
   'Tenerife':           'https://media.api-sports.io/football/teams/745.png',
   // ── Serie A ─────────────────────────────────────────────────────
   'AC Milan':           'https://media.api-sports.io/football/teams/489.png',
@@ -4531,8 +4530,7 @@ const CLUBS_DB = {
     'Las Palmas','Mallorca','Osasuna','Rayo Vallecano','Real Madrid',
     'Real Sociedad','Sevilla','Valencia','Valladolid','Villarreal',
     'Espanyol','Cádiz','Málaga','Levante',
-    'Elche','Deportivo La Coruña','Zaragoza',
-    'Eibar'
+    'Elche','Deportivo La Coruña','Zaragoza'
   ]},
   'Serie A': { country: 'Italy', flag: '🇮🇹', continent: 'europe', clubs: [
     'AC Milan','Atalanta','Bologna','Cagliari','Como',
