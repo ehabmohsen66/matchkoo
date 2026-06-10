@@ -100,8 +100,8 @@ export default function Home() {
               <div className="step-icon orange">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#FF9914" strokeWidth="2" width="22" height="22"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
               </div>
-              <div className="step-title">Make Predictions</div>
-              <div className="step-desc">Predict results, exact scores, and first goalscorers. Set your confidence level to multiply your XP.</div>
+              <div className="step-title">Make Predictions or Voting</div>
+              <div className="step-desc">Predict results, exact scores, and first goalscorers. Set your confidence level to multiply your XP. Vote your teams</div>
             </div>
             <div className="step-card reveal reveal-delay-4">
               <div className="step-num">04</div>
