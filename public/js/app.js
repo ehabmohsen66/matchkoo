@@ -1255,6 +1255,20 @@ const TEAM_DISPLAY_MAP = {
   'Al-Tai':             { name: 'Al Tai', logo: '/images/clubs/al_tai.png' },
   'Al Tai FC':          { name: 'Al Tai', logo: '/images/clubs/al_tai.png' },
 
+  // UAE
+  'Al Ain':             { logo: '/images/clubs/al_ain.png' },
+  'Al Ain FC':          { name: 'Al Ain', logo: '/images/clubs/al_ain.png' },
+  'Al-Ain':             { name: 'Al Ain', logo: '/images/clubs/al_ain.png' },
+  'Al Wasl':            { logo: '/images/clubs/al_wasl.png' },
+  'Al Wasl FC':         { name: 'Al Wasl', logo: '/images/clubs/al_wasl.png' },
+  'Al-Wasl':            { name: 'Al Wasl', logo: '/images/clubs/al_wasl.png' },
+  'Al Jazira':          { logo: '/images/clubs/al_jazira.png' },
+  'Al Jazira FC':       { name: 'Al Jazira', logo: '/images/clubs/al_jazira.png' },
+  'Al-Jazira':          { name: 'Al Jazira', logo: '/images/clubs/al_jazira.png' },
+  'Al Wahda':           { logo: '/images/clubs/al_wahda.png' },
+  'Al Wahda FC':        { name: 'Al Wahda', logo: '/images/clubs/al_wahda.png' },
+  'Al-Wahda':           { name: 'Al Wahda', logo: '/images/clubs/al_wahda.png' },
+
   // Spain
   'Zaragoza':           { logo: '/images/clubs/zaragoza.png' },
   'Real Zaragoza':      { name: 'Zaragoza', logo: '/images/clubs/zaragoza.png' },
@@ -4433,11 +4447,11 @@ const STATIC_LOGO_MAP = {
   'Vissel Kobe':                'https://media.api-sports.io/football/teams/289.png',
   'Yokohama F. Marinos':        'https://media.api-sports.io/football/teams/296.png',
   // ── UAE Pro League ───────────────────────────────────────────────────
-  'Al Ain':               'https://media.api-sports.io/football/teams/2948.png',
-  'Al Wasl':              'https://media.api-sports.io/football/teams/2949.png',
+  'Al Ain':               '/images/clubs/al_ain.png',
+  'Al Wasl':              '/images/clubs/al_wasl.png',
   'Sharjah FC':           'https://media.api-sports.io/football/teams/2950.png',
-  'Al Jazira':            'https://media.api-sports.io/football/teams/2951.png',
-  'Al Wahda':             'https://media.api-sports.io/football/teams/2952.png',
+  'Al Jazira':            '/images/clubs/al_jazira.png',
+  'Al Wahda':             '/images/clubs/al_wahda.png',
   'Shabab Al Ahli':       'https://media.api-sports.io/football/teams/2953.png',
   'Baniyas':              'https://media.api-sports.io/football/teams/2954.png',
   'Al Dhafra':            'https://media.api-sports.io/football/teams/10358.png',
