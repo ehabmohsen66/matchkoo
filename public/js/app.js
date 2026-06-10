@@ -1192,6 +1192,7 @@ const TEAM_DISPLAY_MAP = {
   'NA Hussein Dey':       { logo: '/images/clubs/na_hussein_dey.png' },
   'USM Bel Abbès':        { logo: '/images/clubs/usm_bel_abbes.png' },
   "AS Aïn M'lila":       { logo: '/images/clubs/as_ain_mlila.png' },
+  'Paradou AC':           { logo: '/images/clubs/paradou_ac.png' },
   'Moghreb Tetouan':     { name: 'Moghreb Tétouan' },
 
   // Algeria Ligue 1
@@ -4302,7 +4303,7 @@ const STATIC_LOGO_MAP = {
   'ASO Chlef':           'https://media.api-sports.io/football/teams/8358.png',
   'CS Constantine':      'https://media.api-sports.io/football/teams/8359.png',
   "AS Aïn M'lila":      '/images/clubs/as_ain_mlila.png',
-  'Paradou AC':          'https://media.api-sports.io/football/teams/8362.png',
+  'Paradou AC':          '/images/clubs/paradou_ac.png',
   'DRB Tadjenanet':      'https://media.api-sports.io/football/teams/8363.png',
   'RC Relizane':         'https://media.api-sports.io/football/teams/8364.png',
   'NC Magra':            'https://media.api-sports.io/football/teams/8365.png',
