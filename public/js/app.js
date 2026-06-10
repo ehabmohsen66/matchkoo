@@ -4058,7 +4058,7 @@ const STATIC_LOGO_MAP = {
   'Stoke City':         '/images/clubs/stoke_city.png',
   // ── La Liga ─────────────────────────────────────────────────────
   'Alaves':             'https://media.api-sports.io/football/teams/542.png',
-  'Almeria':            'https://media.api-sports.io/football/teams/727.png',
+  'Almeria':            'https://media.api-sports.io/football/teams/723.png',
   'Athletic Bilbao':    'https://media.api-sports.io/football/teams/531.png',
   'Atletico Madrid':    '/images/clubs/atletico_madrid.png',
   'Barcelona':          'https://media.api-sports.io/football/teams/529.png',
@@ -4350,7 +4350,7 @@ const CLUBS_DB = {
     'Betis','Celta Vigo','Getafe','Girona','Granada',
     'Las Palmas','Mallorca','Osasuna','Rayo Vallecano','Real Madrid',
     'Real Sociedad','Sevilla','Valencia','Valladolid','Villarreal',
-    'Espanyol','Cádiz','Leganés','Málaga','Levante',
+    'Espanyol','Cádiz','Málaga','Levante',
     'Elche','Deportivo La Coruña','Zaragoza','Sporting Gijón',
     'Eibar'
   ]},
