@@ -1150,6 +1150,10 @@ const TEAM_DISPLAY_MAP = {
   'Schalke 04':        { logo: '/images/clubs/schalke_04.png' },
   'Hannover 96':       { logo: '/images/clubs/hannover_96.png' },
 
+  // Italy
+  'Genoa':             { logo: '/images/clubs/genoa.png' },
+  'Parma':             { logo: '/images/clubs/parma.png' },
+
   // Morocco Botola Pro
   'Wydad Casablanca':    { name: 'Wydad AC' },
   'Raja Casablanca':     { name: 'Raja CA' },
@@ -4098,16 +4102,16 @@ const STATIC_LOGO_MAP = {
   'Como':               'https://media.api-sports.io/football/teams/859.png',
   'Empoli':             'https://media.api-sports.io/football/teams/511.png',
   'Fiorentina':         'https://media.api-sports.io/football/teams/502.png',
-  'Genoa':              'https://media.api-sports.io/football/teams/508.png',
+  'Genoa':              '/images/clubs/genoa.png',
   'Inter Milan':        'https://media.api-sports.io/football/teams/505.png',
   'Juventus':           'https://media.api-sports.io/football/teams/496.png',
   'Lazio':              'https://media.api-sports.io/football/teams/487.png',
   'Lecce':              'https://media.api-sports.io/football/teams/867.png',
   'Monza':              'https://media.api-sports.io/football/teams/1579.png',
   'Napoli':             'https://media.api-sports.io/football/teams/492.png',
-  'Parma':              'https://media.api-sports.io/football/teams/503.png',
+  'Parma':              '/images/clubs/parma.png',
   'Roma':               'https://media.api-sports.io/football/teams/497.png',
-  'Torino':             'https://media.api-sports.io/football/teams/506.png',
+  'Torino':             'https://media.api-sports.io/football/teams/503.png',
   'Udinese':            'https://media.api-sports.io/football/teams/494.png',
   'Venezia':            'https://media.api-sports.io/football/teams/517.png',
   'Verona':             'https://media.api-sports.io/football/teams/504.png',
