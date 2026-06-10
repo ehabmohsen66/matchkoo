@@ -1178,6 +1178,7 @@ const TEAM_DISPLAY_MAP = {
   'Ittihad Tanger':       { logo: '/images/clubs/ittihad_tanger.png' },
   'MAS Fès':              { logo: '/images/clubs/mas_fes.png' },
   'Raja CA':              { logo: '/images/clubs/raja_ca.png' },
+  'Youssoufia Berrechid': { logo: '/images/clubs/youssoufia_berrechid.png' },
   'Moghreb Tetouan':     { name: 'Moghreb Tétouan' },
 
   // Algeria Ligue 1
@@ -4273,7 +4274,7 @@ const STATIC_LOGO_MAP = {
   'Renaissance Berkane': '/images/clubs/rs_berkane.png',
   'Rapide Oued Zem':     'https://media.api-sports.io/football/teams/8159.png',
   'Chabab Rif':          'https://media.api-sports.io/football/teams/8160.png',
-  'Youssoufia Berrechid':'https://media.api-sports.io/football/teams/8161.png',
+  'Youssoufia Berrechid': '/images/clubs/youssoufia_berrechid.png',
   'Maghreb Fès':         'https://media.api-sports.io/football/teams/8162.png',
   // ── Algeria Ligue 1 ───────────────────────────────────────────────────
   'USM Alger':           'https://media.api-sports.io/football/teams/8350.png',
