@@ -4352,7 +4352,53 @@ const STATIC_LOGO_MAP = {
   'Al Masry':           '/images/clubs/al_masry.png',
   'ZED FC':             '/images/clubs/zed_fc.png',
   'Petrojet FC':        '/images/clubs/petrojet_fc.png',
+  // ── Saudi Pro League ─────────────────────────────────────────────────
+  'Al Hilal':             'https://media.api-sports.io/football/teams/2932.png',
+  'Al Nassr':             'https://media.api-sports.io/football/teams/2931.png',
+  'Al Ittihad':           'https://media.api-sports.io/football/teams/2934.png',
+  'Al Ahli':              'https://media.api-sports.io/football/teams/2937.png',
+  'Al Ettifaq':           'https://media.api-sports.io/football/teams/2938.png',
+  'Al Fateh':             'https://media.api-sports.io/football/teams/2935.png',
+  'Al Shabab':            'https://media.api-sports.io/football/teams/2940.png',
+  'Al Qadsiah':           'https://media.api-sports.io/football/teams/5377.png',
+  'Al Taawoun':           'https://media.api-sports.io/football/teams/10029.png',
+  'Al Khaleej':           'https://media.api-sports.io/football/teams/10163.png',
+  'Damac':                'https://media.api-sports.io/football/teams/10032.png',
+  'Al Wehda':             'https://media.api-sports.io/football/teams/2942.png',
+  'Al Fayha':             'https://media.api-sports.io/football/teams/10030.png',
+  'Al Hazem':             'https://media.api-sports.io/football/teams/10162.png',
+  'Al Tai':               'https://media.api-sports.io/football/teams/10031.png',
+  // ── J1 League Japan ──────────────────────────────────────────────────
+  'Gamba Osaka':          'https://media.api-sports.io/football/teams/695.png',
+  'Urawa Red Diamonds':   'https://media.api-sports.io/football/teams/696.png',
+  'Kashima Antlers':      'https://media.api-sports.io/football/teams/697.png',
+  'Yokohama F. Marinos':  'https://media.api-sports.io/football/teams/698.png',
+  'Vissel Kobe':          'https://media.api-sports.io/football/teams/699.png',
+  'Cerezo Osaka':         'https://media.api-sports.io/football/teams/700.png',
+  'FC Tokyo':             'https://media.api-sports.io/football/teams/701.png',
+  'Nagoya Grampus':       'https://media.api-sports.io/football/teams/703.png',
+  'Sanfrecce Hiroshima':  'https://media.api-sports.io/football/teams/704.png',
+  'Kawasaki Frontale':    'https://media.api-sports.io/football/teams/705.png',
+  'Sagan Tosu':           'https://media.api-sports.io/football/teams/706.png',
+  'Avispa Fukuoka':       'https://media.api-sports.io/football/teams/2629.png',
+  'Albirex Niigata':      'https://media.api-sports.io/football/teams/709.png',
+  'Shonan Bellmare':      'https://media.api-sports.io/football/teams/710.png',
+  'Machida Zelvia':       'https://media.api-sports.io/football/teams/2635.png',
+  // ── UAE Pro League ───────────────────────────────────────────────────
+  'Al Ain':               'https://media.api-sports.io/football/teams/2948.png',
+  'Al Wasl':              'https://media.api-sports.io/football/teams/2949.png',
+  'Sharjah FC':           'https://media.api-sports.io/football/teams/2950.png',
+  'Al Jazira':            'https://media.api-sports.io/football/teams/2951.png',
+  'Al Wahda':             'https://media.api-sports.io/football/teams/2952.png',
+  'Shabab Al Ahli':       'https://media.api-sports.io/football/teams/2953.png',
+  'Baniyas':              'https://media.api-sports.io/football/teams/2954.png',
+  'Al Dhafra':            'https://media.api-sports.io/football/teams/10358.png',
+  'Ajman':                'https://media.api-sports.io/football/teams/10359.png',
+  'Emirates Club':        'https://media.api-sports.io/football/teams/10360.png',
+  'Al Nasr':              'https://media.api-sports.io/football/teams/2955.png',
+  'Ittihad Kalba':        'https://media.api-sports.io/football/teams/10361.png',
   // ── MLS ──────────────────────────────────────────────────────────────
+
   'Inter Miami':              'https://media.api-sports.io/football/teams/1546.png',
   'LA Galaxy':                'https://media.api-sports.io/football/teams/1600.png',
   'LAFC':                     'https://media.api-sports.io/football/teams/1594.png',
@@ -4530,10 +4576,20 @@ const CLUBS_DB = {
     'AS Gabès','Stade Tunisien','Olympique Béja'
   ]},
   'Saudi Pro League': { country: 'Saudi Arabia', flag: '🇸🇦', continent: 'asia', clubs: [
-    'Al Ahli','Al Ettifaq','Al Fateh','Al Fayha','Al Hazem',
-    'Al Hilal','Al Ittihad','Al Nassr','Al Okhdood','Al Qadsiah',
-    'Al Raed','Al Riyadh','Al Shabab','Al Tai','Al Wehda',
-    'Al Khaleej','Damac','Nassaji','Al Qadisiyah','Al Taawoun'
+    'Al Hilal','Al Nassr','Al Ittihad','Al Ahli','Al Ettifaq',
+    'Al Fateh','Al Shabab','Al Qadsiah','Al Taawoun','Al Khaleej',
+    'Damac','Al Wehda','Al Fayha','Al Hazem','Al Tai'
+  ]},
+  'J1 League (Japan)': { country: 'Japan', flag: '🇯🇵', continent: 'asia', clubs: [
+    'Gamba Osaka','Urawa Red Diamonds','Kashima Antlers','Yokohama F. Marinos',
+    'Vissel Kobe','Cerezo Osaka','FC Tokyo','Nagoya Grampus',
+    'Sanfrecce Hiroshima','Kawasaki Frontale','Sagan Tosu','Avispa Fukuoka',
+    'Albirex Niigata','Shonan Bellmare','Machida Zelvia'
+  ]},
+  'UAE Pro League': { country: 'UAE', flag: '🇦🇪', continent: 'asia', clubs: [
+    'Al Ain','Al Wasl','Sharjah FC','Al Jazira','Al Wahda',
+    'Shabab Al Ahli','Baniyas','Al Dhafra','Ajman','Emirates Club',
+    'Al Nasr','Ittihad Kalba'
   ]},
   // ── AMERICAS ───────────────────────────────────────────────────
   'MLS': { country: 'USA', flag: '🇺🇸', continent: 'americas', clubs: [
@@ -4574,6 +4630,7 @@ const ACTIVE_VOTE_LEAGUES = new Set([
   'Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1',
   'Egyptian Premier League', 'South African PSL', 'Botola Pro (Morocco)', 'Ligue 1 (Algeria)', 'Ligue 1 (Tunisia)',
   'MLS', 'Brasileirão Série A', 'Liga Profesional (Argentina)',
+  'Saudi Pro League', 'J1 League (Japan)', 'UAE Pro League',
   'FIFA World Cup'
 ]);
 
