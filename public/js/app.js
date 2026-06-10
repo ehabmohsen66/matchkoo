@@ -1268,6 +1268,20 @@ const TEAM_DISPLAY_MAP = {
   'Al Wahda':           { logo: '/images/clubs/al_wahda.png' },
   'Al Wahda FC':        { name: 'Al Wahda', logo: '/images/clubs/al_wahda.png' },
   'Al-Wahda':           { name: 'Al Wahda', logo: '/images/clubs/al_wahda.png' },
+  'Shabab Al Ahli':     { logo: '/images/clubs/shabab_al_ahli.png' },
+  'Shabab Al Ahli Dubai': { name: 'Shabab Al Ahli', logo: '/images/clubs/shabab_al_ahli.png' },
+  'Shabab Al-Ahli':     { name: 'Shabab Al Ahli', logo: '/images/clubs/shabab_al_ahli.png' },
+  'Baniyas':            { logo: '/images/clubs/baniyas.png' },
+  'Baniyas Club':       { name: 'Baniyas', logo: '/images/clubs/baniyas.png' },
+  'Al Dhafra':          { logo: '/images/clubs/al_dhafra.png' },
+  'Al-Dhafra':          { name: 'Al Dhafra', logo: '/images/clubs/al_dhafra.png' },
+  'Ajman':              { logo: '/images/clubs/ajman.png' },
+  'Ajman Club':         { name: 'Ajman', logo: '/images/clubs/ajman.png' },
+  'Emirates Club':      { logo: '/images/clubs/emirates_club.png' },
+  'Emirates':           { name: 'Emirates Club', logo: '/images/clubs/emirates_club.png' },
+  'Al Nasr':            { logo: '/images/clubs/al_nasr.png' },
+  'Al-Nasr':            { name: 'Al Nasr', logo: '/images/clubs/al_nasr.png' },
+  'Al Nasr SC':         { name: 'Al Nasr', logo: '/images/clubs/al_nasr.png' },
 
   // Spain
   'Zaragoza':           { logo: '/images/clubs/zaragoza.png' },
@@ -4452,13 +4466,12 @@ const STATIC_LOGO_MAP = {
   'Sharjah FC':           'https://media.api-sports.io/football/teams/2950.png',
   'Al Jazira':            '/images/clubs/al_jazira.png',
   'Al Wahda':             '/images/clubs/al_wahda.png',
-  'Shabab Al Ahli':       'https://media.api-sports.io/football/teams/2953.png',
-  'Baniyas':              'https://media.api-sports.io/football/teams/2954.png',
-  'Al Dhafra':            'https://media.api-sports.io/football/teams/10358.png',
-  'Ajman':                'https://media.api-sports.io/football/teams/10359.png',
-  'Emirates Club':        'https://media.api-sports.io/football/teams/10360.png',
-  'Al Nasr':              'https://media.api-sports.io/football/teams/2955.png',
-  'Ittihad Kalba':        'https://media.api-sports.io/football/teams/10361.png',
+  'Shabab Al Ahli':       '/images/clubs/shabab_al_ahli.png',
+  'Baniyas':              '/images/clubs/baniyas.png',
+  'Al Dhafra':            '/images/clubs/al_dhafra.png',
+  'Ajman':                '/images/clubs/ajman.png',
+  'Emirates Club':        '/images/clubs/emirates_club.png',
+  'Al Nasr':              '/images/clubs/al_nasr.png',
   // ── MLS ──────────────────────────────────────────────────────────────
 
   'Inter Miami':              'https://media.api-sports.io/football/teams/1546.png',
@@ -4644,7 +4657,7 @@ const CLUBS_DB = {
   'UAE Pro League': { country: 'UAE', flag: '🇦🇪', continent: 'asia', clubs: [
     'Al Ain','Al Wasl','Sharjah FC','Al Jazira','Al Wahda',
     'Shabab Al Ahli','Baniyas','Al Dhafra','Ajman','Emirates Club',
-    'Al Nasr','Ittihad Kalba'
+    'Al Nasr'
   ]},
   // ── AMERICAS ───────────────────────────────────────────────────
   'MLS': { country: 'USA', flag: '🇺🇸', continent: 'americas', clubs: [
