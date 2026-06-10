@@ -1181,6 +1181,11 @@ const TEAM_DISPLAY_MAP = {
   'Youssoufia Berrechid': { logo: '/images/clubs/youssoufia_berrechid.png' },
   'AS FAR':               { logo: '/images/clubs/as_far.png' },
   'AS FAR Rabat':         { logo: '/images/clubs/as_far.png' },
+
+  // Algeria
+  'USM Alger':            { logo: '/images/clubs/usm_alger.png' },
+  'MC Alger':             { logo: '/images/clubs/mc_alger.png' },
+  'ES Sétif':            { logo: '/images/clubs/es_setif.png' },
   'Moghreb Tetouan':     { name: 'Moghreb Tétouan' },
 
   // Algeria Ligue 1
@@ -4280,11 +4285,11 @@ const STATIC_LOGO_MAP = {
   'Youssoufia Berrechid': '/images/clubs/youssoufia_berrechid.png',
   'Maghreb Fès':         'https://media.api-sports.io/football/teams/8162.png',
   // ── Algeria Ligue 1 ───────────────────────────────────────────────────
-  'USM Alger':           'https://media.api-sports.io/football/teams/8350.png',
-  'MC Alger':            'https://media.api-sports.io/football/teams/8351.png',
+  'USM Alger':           '/images/clubs/usm_alger.png',
+  'MC Alger':            '/images/clubs/mc_alger.png',
   'CR Belouizdad':       'https://media.api-sports.io/football/teams/8352.png',
   'JS Kabylie':          'https://media.api-sports.io/football/teams/8353.png',
-  'ES Sétif':            'https://media.api-sports.io/football/teams/8354.png',
+  'ES Sétif':            '/images/clubs/es_setif.png',
   'MC Oran':             'https://media.api-sports.io/football/teams/8355.png',
   'NA Hussein Dey':      'https://media.api-sports.io/football/teams/8356.png',
   'ASO Chlef':           'https://media.api-sports.io/football/teams/8358.png',
