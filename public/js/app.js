@@ -1283,6 +1283,14 @@ const TEAM_DISPLAY_MAP = {
   'Al-Nasr':            { name: 'Al Nasr', logo: '/images/clubs/al_nasr.png' },
   'Al Nasr SC':         { name: 'Al Nasr', logo: '/images/clubs/al_nasr.png' },
 
+  // Brazil
+  'Fluminense':         { logo: '/images/clubs/fluminense.png' },
+  'Grêmio':             { logo: '/images/clubs/gremio.png' },
+  'Gremio':             { name: 'Grêmio', logo: '/images/clubs/gremio.png' },
+  'Santos':             { logo: '/images/clubs/santos.png' },
+  'Botafogo':           { logo: '/images/clubs/botafogo.png' },
+  'Cruzeiro':           { logo: '/images/clubs/cruzeiro.png' },
+
   // Spain
   'Zaragoza':           { logo: '/images/clubs/zaragoza.png' },
   'Real Zaragoza':      { name: 'Zaragoza', logo: '/images/clubs/zaragoza.png' },
@@ -4484,15 +4492,15 @@ const STATIC_LOGO_MAP = {
   'Flamengo':                 'https://media.api-sports.io/football/teams/127.png',
   'Palmeiras':                'https://media.api-sports.io/football/teams/121.png',
   'Atlético Mineiro':         'https://media.api-sports.io/football/teams/1062.png',
-  'Fluminense':               'https://media.api-sports.io/football/teams/130.png',
+  'Fluminense':               '/images/clubs/fluminense.png',
   'São Paulo':                'https://media.api-sports.io/football/teams/126.png',
   'Corinthians':              'https://media.api-sports.io/football/teams/131.png',
-  'Grêmio':                   'https://media.api-sports.io/football/teams/128.png',
+  'Grêmio':                   '/images/clubs/gremio.png',
   'Internacional':            'https://media.api-sports.io/football/teams/119.png',
-  'Santos':                   'https://media.api-sports.io/football/teams/120.png',
+  'Santos':                   '/images/clubs/santos.png',
   'Vasco da Gama':            'https://media.api-sports.io/football/teams/133.png',
-  'Botafogo':                 'https://media.api-sports.io/football/teams/134.png',
-  'Cruzeiro':                 'https://media.api-sports.io/football/teams/140.png',
+  'Botafogo':                 '/images/clubs/botafogo.png',
+  'Cruzeiro':                 '/images/clubs/cruzeiro.png',
   // ── Liga Profesional Argentina ────────────────────────────────────────
   'Boca Juniors':             'https://media.api-sports.io/football/teams/405.png',
   'River Plate':              'https://media.api-sports.io/football/teams/406.png',
