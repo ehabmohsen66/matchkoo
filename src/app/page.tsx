@@ -46,11 +46,12 @@ export default function Home() {
             2.5k Predictors Active Now
           </div>
           <h1 className="hero-title">
-            Predict Football.<br />
+            Predict &amp; Vote Football.<br />
             <span className="accent">Compete. Win.</span>
           </h1>
           <p className="hero-sub">
-            Matchkoo — the world's most intelligent football prediction platform. Stake your XP across 188 leagues, climb global leaderboards, and prove you know the beautiful game better than anyone.
+            Matchkoo, the first esports &amp; gamification network.<br />
+            Aims to bring together all sports fans and world-class gamers from across the globe in one place.
           </p>
           <div className="hero-actions">
             <a href="/register" className="btn-primary btn-primary-lg">
