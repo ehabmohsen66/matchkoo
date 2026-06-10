@@ -1148,6 +1148,7 @@ const TEAM_DISPLAY_MAP = {
   'SC Paderborn 07':   { logo: '/images/clubs/paderborn.png' },
   'Fortuna Düsseldorf':{ logo: '/images/clubs/fortuna_dusseldorf.png' },
   'Schalke 04':        { logo: '/images/clubs/schalke_04.png' },
+  'Hannover 96':       { logo: '/images/clubs/hannover_96.png' },
 
   // Morocco Botola Pro
   'Wydad Casablanca':    { name: 'Wydad AC' },
@@ -4146,7 +4147,7 @@ const STATIC_LOGO_MAP = {
   'Schalke 04':         '/images/clubs/schalke_04.png',
   'Hertha Berlin':      'https://media.api-sports.io/football/teams/159.png',
   'FC Köln':            'https://media.api-sports.io/football/teams/192.png',
-  'Hannover 96':        'https://media.api-sports.io/football/teams/183.png',
+  'Hannover 96':        '/images/clubs/hannover_96.png',
   'Fortuna Düsseldorf': '/images/clubs/fortuna_dusseldorf.png',
   'Nürnberg':           'https://media.api-sports.io/football/teams/188.png',
   'Darmstadt 98':       '/images/clubs/darmstadt_98.png',
