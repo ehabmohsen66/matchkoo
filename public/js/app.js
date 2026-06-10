@@ -1142,6 +1142,10 @@ const TEAM_DISPLAY_MAP = {
   'Karlsruher SC':     { logo: '/images/clubs/karlsruher_sc.png' },
   'Karlsruhe':         { logo: '/images/clubs/karlsruher_sc.png' },
   'Darmstadt 98':      { logo: '/images/clubs/darmstadt_98.png' },
+  'Kaiserslautern':    { logo: '/images/clubs/kaiserslautern.png' },
+  'Arminia Bielefeld': { logo: '/images/clubs/arminia_bielefeld.png' },
+  'Paderborn':         { logo: '/images/clubs/paderborn.png' },
+  'SC Paderborn 07':   { logo: '/images/clubs/paderborn.png' },
 
   // Morocco Botola Pro
   'Wydad Casablanca':    { name: 'Wydad AC' },
@@ -4144,11 +4148,11 @@ const STATIC_LOGO_MAP = {
   'Fortuna Düsseldorf': 'https://media.api-sports.io/football/teams/181.png',
   'Nürnberg':           'https://media.api-sports.io/football/teams/188.png',
   'Darmstadt 98':       '/images/clubs/darmstadt_98.png',
-  'Kaiserslautern':     'https://media.api-sports.io/football/teams/184.png',
+  'Kaiserslautern':     '/images/clubs/kaiserslautern.png',
   'Greuther Fürth':     'https://media.api-sports.io/football/teams/1049.png',
-  'Paderborn':          'https://media.api-sports.io/football/teams/1050.png',
+  'Paderborn':          '/images/clubs/paderborn.png',
   'Karlsruhe':          '/images/clubs/karlsruher_sc.png',
-  'Arminia Bielefeld':  'https://media.api-sports.io/football/teams/1051.png',
+  'Arminia Bielefeld':  '/images/clubs/arminia_bielefeld.png',
   // ── Ligue 1 ─────────────────────────────────────────────────────
   'PSG':                'https://media.api-sports.io/football/teams/85.png',
   'Marseille':          'https://media.api-sports.io/football/teams/81.png',
