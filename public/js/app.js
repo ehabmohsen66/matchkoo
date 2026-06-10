@@ -4436,8 +4436,7 @@ const CLUBS_DB = {
   'Ligue 1 (Algeria)': { country: 'Algeria', flag: '🇩🇿', continent: 'africa', clubs: [
     'USM Alger','MC Alger','CR Belouizdad','JS Kabylie',
     'ES Sétif','MC Oran','NA Hussein Dey','USM Bel Abbès',
-    'ASO Chlef','CS Constantine','RC Arbaâ','AS Aïn M\'lila',
-    'Paradou AC','DRB Tadjenanet','RC Relizane','NC Magra'
+    'AS Aïn M\'lila','Paradou AC','DRB Tadjenanet'
   ]},
   'Ligue 1 (Tunisia)': { country: 'Tunisia', flag: '🇹🇳', continent: 'africa', clubs: [
     'Espérance ST','Club Africain','Étoile Sahel','CS Sfaxien',
