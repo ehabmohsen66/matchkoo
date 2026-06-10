@@ -63,27 +63,7 @@ export default function Home() {
               See How It Works
             </a>
           </div>
-          <div className="hero-stats">
-            <div className="hero-stat-item">
-              <div className="hero-stat-num">2.5k</div>
-              <div className="hero-stat-lbl">Predictors</div>
-            </div>
-            <div className="hero-stat-divider"></div>
-            <div className="hero-stat-item">
-              <div className="hero-stat-num">188</div>
-              <div className="hero-stat-lbl">Leagues</div>
-            </div>
-            <div className="hero-stat-divider"></div>
-            <div className="hero-stat-item">
-              <div className="hero-stat-num">67.3%</div>
-              <div className="hero-stat-lbl">Avg Accuracy</div>
-            </div>
-            <div className="hero-stat-divider"></div>
-            <div className="hero-stat-item">
-              <div className="hero-stat-num">#1</div>
-              <div className="hero-stat-lbl">Africa Rank</div>
-            </div>
-          </div>
+
         </div>
       </section>
 
