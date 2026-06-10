@@ -1245,6 +1245,15 @@ const TEAM_DISPLAY_MAP = {
   'Al Wehda':           { logo: '/images/clubs/al_wehda.png' },
   'Al-Wehda':           { name: 'Al Wehda', logo: '/images/clubs/al_wehda.png' },
   'Al Wehda Mecca':     { name: 'Al Wehda', logo: '/images/clubs/al_wehda.png' },
+  'Al Fayha':           { logo: '/images/clubs/al_fayha.png' },
+  'Al-Fayha':           { name: 'Al Fayha', logo: '/images/clubs/al_fayha.png' },
+  'Al Fayha FC':        { name: 'Al Fayha', logo: '/images/clubs/al_fayha.png' },
+  'Al Hazem':           { logo: '/images/clubs/al_hazem.png' },
+  'Al-Hazem':           { name: 'Al Hazem', logo: '/images/clubs/al_hazem.png' },
+  'Al Hazem FC':        { name: 'Al Hazem', logo: '/images/clubs/al_hazem.png' },
+  'Al Tai':             { logo: '/images/clubs/al_tai.png' },
+  'Al-Tai':             { name: 'Al Tai', logo: '/images/clubs/al_tai.png' },
+  'Al Tai FC':          { name: 'Al Tai', logo: '/images/clubs/al_tai.png' },
 
   // Spain
   'Zaragoza':           { logo: '/images/clubs/zaragoza.png' },
@@ -4399,9 +4408,9 @@ const STATIC_LOGO_MAP = {
   'Al Khaleej':           '/images/clubs/al_khaleej.png',
   'Damac':                '/images/clubs/damac.png',
   'Al Wehda':             '/images/clubs/al_wehda.png',
-  'Al Fayha':             'https://media.api-sports.io/football/teams/10030.png',
-  'Al Hazem':             'https://media.api-sports.io/football/teams/10162.png',
-  'Al Tai':               'https://media.api-sports.io/football/teams/10031.png',
+  'Al Fayha':             '/images/clubs/al_fayha.png',
+  'Al Hazem':             '/images/clubs/al_hazem.png',
+  'Al Tai':               '/images/clubs/al_tai.png',
   // ── J1 League Japan ──────────────────────────────────────────────────
   'Albirex Niigata':            'https://media.api-sports.io/football/teams/311.png',
   'Avispa Fukuoka':             'https://media.api-sports.io/football/teams/316.png',
