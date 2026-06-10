@@ -1162,6 +1162,7 @@ const TEAM_DISPLAY_MAP = {
   'Brest':             { logo: '/images/clubs/brest.png' },
   'Lorient':           { logo: '/images/clubs/lorient.png' },
   'Metz':              { logo: '/images/clubs/metz.png' },
+  'Saint-Etienne':     { logo: '/images/clubs/saint_etienne.png' },
 
   // Morocco Botola Pro
   'Wydad Casablanca':    { name: 'Wydad AC' },
@@ -4187,7 +4188,7 @@ const STATIC_LOGO_MAP = {
   'Montpellier':        'https://media.api-sports.io/football/teams/82.png',
   'Angers':             'https://media.api-sports.io/football/teams/77.png',
   'Auxerre':            '/images/clubs/auxerre.png',
-  'Saint-Etienne':      'https://media.api-sports.io/football/teams/97.png',
+  'Saint-Etienne':      '/images/clubs/saint_etienne.png',
   'Lorient':            '/images/clubs/lorient.png',
   'Metz':               '/images/clubs/metz.png',
   'Bordeaux':           'https://media.api-sports.io/football/teams/78.png',
