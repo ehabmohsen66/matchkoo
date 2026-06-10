@@ -4493,9 +4493,6 @@ const STATIC_LOGO_MAP = {
   'Vasco da Gama':            'https://media.api-sports.io/football/teams/133.png',
   'Botafogo':                 'https://media.api-sports.io/football/teams/134.png',
   'Cruzeiro':                 'https://media.api-sports.io/football/teams/140.png',
-  'Bahía':                    'https://media.api-sports.io/football/teams/118.png',
-  'Fortaleza':                'https://media.api-sports.io/football/teams/1193.png',
-  'Athlético Paranaense':     'https://media.api-sports.io/football/teams/123.png',
   // ── Liga Profesional Argentina ────────────────────────────────────────
   'Boca Juniors':             'https://media.api-sports.io/football/teams/405.png',
   'River Plate':              'https://media.api-sports.io/football/teams/406.png',
@@ -4648,7 +4645,7 @@ const CLUBS_DB = {
   'Brasileirão Série A': { country: 'Brazil', flag: '🇧🇷', continent: 'americas', clubs: [
     'Flamengo','Palmeiras','Atlético Mineiro','Fluminense','São Paulo',
     'Corinthians','Grêmio','Internacional','Santos','Vasco da Gama',
-    'Botafogo','Cruzeiro','Bahía','Fortaleza','Athlético Paranaense'
+    'Botafogo','Cruzeiro'
   ]},
   'Liga Profesional (Argentina)': { country: 'Argentina', flag: '🇦🇷', continent: 'americas', clubs: [
     'Boca Juniors','River Plate','Racing Club','Independiente','San Lorenzo',
