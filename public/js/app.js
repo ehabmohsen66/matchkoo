@@ -1122,6 +1122,12 @@ const TEAM_DISPLAY_MAP = {
   'Stellenbosch FC':   { logo: '/images/clubs/stellenbosch.png' },
   'Durban City FC':    { logo: '/images/clubs/durban_city.png' },
 
+  // English Clubs
+  'Middlesbrough':     { logo: '/images/clubs/middlesbrough.png' },
+  'Derby County':      { logo: '/images/clubs/derby_county.png' },
+  'Swansea City':      { logo: '/images/clubs/swansea_city.png' },
+  'Stoke City':        { logo: '/images/clubs/stoke_city.png' },
+
   // Morocco Botola Pro
   'Wydad Casablanca':    { name: 'Wydad AC' },
   'Raja Casablanca':     { name: 'Raja CA' },
@@ -4020,15 +4026,15 @@ const STATIC_LOGO_MAP = {
   'Leeds United':       'https://media.api-sports.io/football/teams/63.png',
   'Sunderland':         'https://media.api-sports.io/football/teams/69.png',
   'Sheffield United':   'https://media.api-sports.io/football/teams/62.png',
-  'Middlesbrough':      'https://media.api-sports.io/football/teams/68.png',
+  'Middlesbrough':      '/images/clubs/middlesbrough.png',
   'West Brom':          'https://media.api-sports.io/football/teams/67.png',
   'Burnley':            'https://media.api-sports.io/football/teams/44.png',
   'Luton Town':         'https://media.api-sports.io/football/teams/1359.png',
-  'Derby County':       'https://media.api-sports.io/football/teams/64.png',
+  'Derby County':       '/images/clubs/derby_county.png',
   'Norwich City':       'https://media.api-sports.io/football/teams/71.png',
   'Watford':            'https://media.api-sports.io/football/teams/38.png',
-  'Swansea City':       'https://media.api-sports.io/football/teams/72.png',
-  'Stoke City':         'https://media.api-sports.io/football/teams/70.png',
+  'Swansea City':       '/images/clubs/swansea_city.png',
+  'Stoke City':         '/images/clubs/stoke_city.png',
   // ── La Liga ─────────────────────────────────────────────────────
   'Alaves':             'https://media.api-sports.io/football/teams/542.png',
   'Almeria':            'https://media.api-sports.io/football/teams/727.png',
