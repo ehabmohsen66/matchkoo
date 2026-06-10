@@ -1291,6 +1291,18 @@ const TEAM_DISPLAY_MAP = {
   'Botafogo':           { logo: '/images/clubs/botafogo.png' },
   'Cruzeiro':           { logo: '/images/clubs/cruzeiro.png' },
 
+  // Argentina
+  'Racing Club':        { logo: 'https://media.api-sports.io/football/teams/436.png' },
+  'Huracán':            { logo: 'https://media.api-sports.io/football/teams/445.png' },
+  'Huracan':            { name: 'Huracán', logo: 'https://media.api-sports.io/football/teams/445.png' },
+  'River Plate':        { logo: 'https://media.api-sports.io/football/teams/435.png' },
+  'Boca Juniors':       { logo: '/images/clubs/boca_juniors.png' },
+  'Independiente':      { logo: '/images/clubs/independiente.png' },
+  'San Lorenzo':        { logo: '/images/clubs/san_lorenzo.png' },
+  'Estudiantes':        { logo: '/images/clubs/estudiantes.png' },
+  'Lanus':              { logo: '/images/clubs/lanus.png' },
+
+
   // Spain
   'Zaragoza':           { logo: '/images/clubs/zaragoza.png' },
   'Real Zaragoza':      { name: 'Zaragoza', logo: '/images/clubs/zaragoza.png' },
@@ -4502,14 +4514,14 @@ const STATIC_LOGO_MAP = {
   'Botafogo':                 '/images/clubs/botafogo.png',
   'Cruzeiro':                 '/images/clubs/cruzeiro.png',
   // ── Liga Profesional Argentina ────────────────────────────────────────
-  'Boca Juniors':             'https://media.api-sports.io/football/teams/405.png',
-  'River Plate':              'https://media.api-sports.io/football/teams/406.png',
-  'Racing Club':              'https://media.api-sports.io/football/teams/435.png',
-  'Independiente':            'https://media.api-sports.io/football/teams/436.png',
-  'San Lorenzo':              'https://media.api-sports.io/football/teams/434.png',
-  'Estudiantes':              'https://media.api-sports.io/football/teams/441.png',
-  'Huracán':                  'https://media.api-sports.io/football/teams/442.png',
-  'Lanus':                    'https://media.api-sports.io/football/teams/445.png',
+  'Boca Juniors':             '/images/clubs/boca_juniors.png',
+  'River Plate':              'https://media.api-sports.io/football/teams/435.png',
+  'Racing Club':              'https://media.api-sports.io/football/teams/436.png',
+  'Independiente':            '/images/clubs/independiente.png',
+  'San Lorenzo':              '/images/clubs/san_lorenzo.png',
+  'Estudiantes':              '/images/clubs/estudiantes.png',
+  'Huracán':                  'https://media.api-sports.io/football/teams/445.png',
+  'Lanus':                    '/images/clubs/lanus.png',
   // ── FIFA World Cup — National Teams (flags via flagcdn.com) ──────
 
   'Argentina':    'https://flagcdn.com/w80/ar.png',

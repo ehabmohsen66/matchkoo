@@ -127,7 +127,7 @@ const I18N = {
 
     // ── Match Modal ──
     'Live Pulse': 'النبض المباشر',
-    'Match Chat': 'دردشة المباراة',
+    'Match Commentary': 'تعليق المباراة',
     'React to the match...': 'تفاعل مع المباراة...',
     'Make Your Predictions': 'ضع توقعاتك',
     'Match Result': 'نتيجة المباراة',

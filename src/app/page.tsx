@@ -18,7 +18,6 @@ export default function Home() {
           <li><a href="#how">How It Works</a></li>
           <li><a href="#features">Features</a></li>
           <li><a href="#scoring">Scoring</a></li>
-          <li><a href="#faq">FAQ</a></li>
         </ul>
         <div className="nav-cta">
           <a href="/ar" style={{ "padding": "7px 14px", "border": "1px solid rgba(255,255,255,0.15)", "borderRadius": "100px", "fontSize": "0.8rem", "fontWeight": "700", "color": "rgba(255,255,255,0.7)", "textDecoration": "none", "transition": "all 0.2s", "display": "inline-flex", "alignItems": "center", "gap": "5px" }}>
@@ -120,9 +119,9 @@ export default function Home() {
         <div className="section" style={{ "maxWidth": "1160px", "margin": "0 auto" }}>
           <div className="features-two-col">
             <div className="feature-list reveal">
-              <div><div className="section-tag">Live Match Pulse</div></div>
+              <div><div className="section-tag">Live Match Moments</div></div>
               <h2 className="section-title">Watch Your Predictions Unfold in Real-Time</h2>
-              <p className="section-sub" style={{ "marginBottom": "32px" }}>Our live match experience shows you community prediction splits, momentum meters, and live match chat — all while the game is happening.</p>
+              <p className="section-sub" style={{ "marginBottom": "32px" }}>Our live match experience shows you community prediction splits, momentum meters, and live match commentary — all while the game is happening.</p>
               <div className="feature-item">
                 <div className="feature-item-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="#29BF12" strokeWidth="2" width="20" height="20"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
@@ -146,8 +145,8 @@ export default function Home() {
                   <svg viewBox="0 0 24 24" fill="none" stroke="#FF9914" strokeWidth="2" width="20" height="20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                 </div>
                 <div className="feature-item-body">
-                  <div className="feature-item-title">Match Chat</div>
-                  <div className="feature-item-desc">React live with the global community. Talk tactics, celebrate goals, debate calls.</div>
+                  <div className="feature-item-title">Match Commentary</div>
+                  <div className="feature-item-desc">Providing viewers with minute-by-minute match details and events</div>
                 </div>
               </div>
             </div>
@@ -279,35 +278,15 @@ export default function Home() {
         </div>
       </div>
 
-      {/*  ─── STATS BAR ──────────────────────────────────────  */}
-      <div style={{ "padding": "0 24px 80px" }}>
-        <div className="stats-bar reveal" style={{ "maxWidth": "1000px", "margin": "0 auto" }}>
-          <div className="stat-item">
-            <div className="stat-value">2.5k+</div>
-            <div className="stat-label">Active Predictors</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-value">188</div>
-            <div className="stat-label">Leagues Worldwide</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-value">12.5M+</div>
-            <div className="stat-label">Predictions Made</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-value">67.3%</div>
-            <div className="stat-label">Avg Top Accuracy</div>
-          </div>
-        </div>
-      </div>
+
 
       {/*  ─── SCORING SYSTEM ─────────────────────────────────  */}
       <div id="scoring" style={{ "background": "rgba(255,255,255,0.015)", "borderTop": "1px solid rgba(255,255,255,0.05)", "borderBottom": "1px solid rgba(255,255,255,0.05)" }}>
         <div className="section" style={{ "maxWidth": "1160px", "margin": "0 auto" }}>
           <div className="section-header center reveal">
             <div className="section-tag">Scoring System</div>
-            <h2 className="section-title">Every Correct Prediction Earns XP</h2>
-            <p className="section-sub">A layered XP system that rewards accuracy, confidence, and consistency. The bolder your prediction, the bigger the reward.</p>
+            <h2 className="section-title">Every Correct Prediction and Vote Earns XP</h2>
+            <p className="section-sub">A layered XP system that rewards accuracy, confidence, voting, and community. The bolder your prediction, the bigger the reward.</p>
           </div>
           <div className="scoring-grid">
             <div className="scoring-card reveal reveal-delay-1">
@@ -318,31 +297,42 @@ export default function Home() {
             <div className="scoring-card reveal reveal-delay-2">
               <div className="scoring-xp" style={{ "color": "#ABFF4F" }}>+200 XP</div>
               <div className="scoring-action">Exact Scoreline</div>
-              <div className="scoring-desc">Nail the precise score for a massive XP bonus.</div>
+              <div className="scoring-desc">Nail the precise score for a massive XP bonus on top of the correct result.</div>
             </div>
             <div className="scoring-card reveal reveal-delay-3">
               <div className="scoring-xp" style={{ "color": "#08BDBD" }}>×1.4 – ×2.0</div>
               <div className="scoring-action">Confidence Multiplier</div>
-              <div className="scoring-desc">Set your confidence from 50–100% to multiply XP earned.</div>
+              <div className="scoring-desc">Set your confidence from 50–100% to multiply XP earned on every correct prediction.</div>
             </div>
             <div className="scoring-card reveal reveal-delay-4">
               <div className="scoring-xp" style={{ "color": "#FF9914" }}>+150 XP</div>
               <div className="scoring-action">First Goalscorer</div>
-              <div className="scoring-desc">Correctly predict which player scores first.</div>
+              <div className="scoring-desc">Correctly predict which player scores first in the match.</div>
             </div>
             <div className="scoring-card reveal reveal-delay-1">
               <div className="scoring-xp" style={{ "color": "#F21B3F" }}>×2 XP</div>
               <div className="scoring-action">Streak Bonus</div>
-              <div className="scoring-desc">Consecutive correct predictions double your XP gain.</div>
+              <div className="scoring-desc">Consecutive correct predictions double your XP gain — keep the streak alive!</div>
             </div>
             <div className="scoring-card reveal reveal-delay-2">
               <div className="scoring-xp" style={{ "color": "#ABFF4F" }}>+250 XP</div>
               <div className="scoring-action">Daily Spin Bonus</div>
-              <div className="scoring-desc">Spin the wheel every day for bonus XP and power-ups.</div>
+              <div className="scoring-desc">Spin the wheel every day for bonus XP and prediction power-ups.</div>
+            </div>
+            <div className="scoring-card reveal reveal-delay-3">
+              <div className="scoring-xp" style={{ "color": "#08BDBD" }}>+20 XP</div>
+              <div className="scoring-action">Vote on a Match</div>
+              <div className="scoring-desc">Cast your vote on any match outcome and earn XP just for participating — every vote counts.</div>
+            </div>
+            <div className="scoring-card reveal reveal-delay-4">
+              <div className="scoring-xp" style={{ "color": "#29BF12" }}>+200 XP</div>
+              <div className="scoring-action">Friend Invite</div>
+              <div className="scoring-desc">Invite a friend to join Matchkoo and earn 200 XP as a thank-you bonus when they sign up.</div>
             </div>
           </div>
         </div>
       </div>
+
 
       {/*  ─── TESTIMONIALS ───────────────────────────────────  */}
       <div style={{ "maxWidth": "1200px", "margin": "0 auto" }}>
@@ -361,7 +351,7 @@ export default function Home() {
                 <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1" /></svg>
                 <svg viewBox="0 0 20 20" fill="#FF9914" width="16" height="16"><polygon points="10 1 12.39 6.26 18.18 7.27 14 11.14 14.97 16.9 10 14.27 5.03 16.9 6 11.14 1.82 7.27 7.61 6.26 10 1" /></svg>
               </div>
-              <div className="testimonial-text">"I've tried every football prediction app and nothing compares to Matchkoo. The live match pulse feature makes watching games 10x more intense."</div>
+              <div className="testimonial-text">"I've tried every football prediction app and nothing compares to Matchkoo. The live match moments feature makes watching games 10x more intense."</div>
               <div className="testimonial-author">
                 <div className="testimonial-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=marcus1" alt="Marcus" /></div>
                 <div>
