@@ -1128,6 +1128,10 @@ const TEAM_DISPLAY_MAP = {
   'Swansea City':      { logo: '/images/clubs/swansea_city.png' },
   'Stoke City':        { logo: '/images/clubs/stoke_city.png' },
 
+  // Spain La Liga
+  'Atletico Madrid':   { logo: '/images/clubs/atletico_madrid.png' },
+  'Atletico':          { logo: '/images/clubs/atletico_madrid.png' },
+
   // Morocco Botola Pro
   'Wydad Casablanca':    { name: 'Wydad AC' },
   'Raja Casablanca':     { name: 'Raja CA' },
@@ -4039,7 +4043,7 @@ const STATIC_LOGO_MAP = {
   'Alaves':             'https://media.api-sports.io/football/teams/542.png',
   'Almeria':            'https://media.api-sports.io/football/teams/727.png',
   'Athletic Bilbao':    'https://media.api-sports.io/football/teams/531.png',
-  'Atletico Madrid':    'https://media.api-sports.io/football/teams/530.png',
+  'Atletico Madrid':    '/images/clubs/atletico_madrid.png',
   'Barcelona':          'https://media.api-sports.io/football/teams/529.png',
   'Betis':              'https://media.api-sports.io/football/teams/543.png',
   'Celta Vigo':         'https://media.api-sports.io/football/teams/538.png',
