@@ -4645,6 +4645,15 @@ const CLUBS_DB = {
     'Al Nasr'
   ]},
   // ── AMERICAS ───────────────────────────────────────────────────
+  'Brasileirão Série A': { country: 'Brazil', flag: '🇧🇷', continent: 'americas', clubs: [
+    'Flamengo','Palmeiras','Atlético Mineiro','Fluminense','São Paulo',
+    'Corinthians','Grêmio','Internacional','Santos','Vasco da Gama',
+    'Botafogo','Cruzeiro'
+  ]},
+  'Liga Profesional (Argentina)': { country: 'Argentina', flag: '🇦🇷', continent: 'americas', clubs: [
+    'Boca Juniors','River Plate','Racing Club','Independiente','San Lorenzo',
+    'Estudiantes','Huracán','Lanus'
+  ]},
   'MLS': { country: 'USA', flag: '🇺🇸', continent: 'americas', clubs: [
     'Atlanta United FC',
     'D.C. United',
@@ -4654,15 +4663,6 @@ const CLUBS_DB = {
     'New York City FC',
     'Portland Timbers',
     'Seattle Sounders FC'
-  ]},
-  'Brasileirão Série A': { country: 'Brazil', flag: '🇧🇷', continent: 'americas', clubs: [
-    'Flamengo','Palmeiras','Atlético Mineiro','Fluminense','São Paulo',
-    'Corinthians','Grêmio','Internacional','Santos','Vasco da Gama',
-    'Botafogo','Cruzeiro'
-  ]},
-  'Liga Profesional (Argentina)': { country: 'Argentina', flag: '🇦🇷', continent: 'americas', clubs: [
-    'Boca Juniors','River Plate','Racing Club','Independiente','San Lorenzo',
-    'Estudiantes','Huracán','Lanus'
   ]},
   // ── WORLD ───────────────────────────────────────────────────────
   'FIFA World Cup': { country: 'International', flag: '🌍', continent: 'world', clubs: [
