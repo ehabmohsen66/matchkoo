@@ -1131,6 +1131,7 @@ const TEAM_DISPLAY_MAP = {
   // Spain La Liga
   'Atletico Madrid':   { logo: '/images/clubs/atletico_madrid.png' },
   'Atletico':          { logo: '/images/clubs/atletico_madrid.png' },
+  'Girona':            { logo: '/images/clubs/girona.png' },
 
   // Morocco Botola Pro
   'Wydad Casablanca':    { name: 'Wydad AC' },
@@ -4048,7 +4049,7 @@ const STATIC_LOGO_MAP = {
   'Betis':              'https://media.api-sports.io/football/teams/543.png',
   'Celta Vigo':         'https://media.api-sports.io/football/teams/538.png',
   'Getafe':             'https://media.api-sports.io/football/teams/546.png',
-  'Girona':             'https://media.api-sports.io/football/teams/547.png',
+  'Girona':             '/images/clubs/girona.png',
   'Granada':            'https://media.api-sports.io/football/teams/715.png',
   'Las Palmas':         'https://media.api-sports.io/football/teams/534.png',
   'Mallorca':           'https://media.api-sports.io/football/teams/798.png',
