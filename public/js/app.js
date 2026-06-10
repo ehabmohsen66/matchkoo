@@ -4350,8 +4350,8 @@ const CLUBS_DB = {
     'Las Palmas','Mallorca','Osasuna','Rayo Vallecano','Real Madrid',
     'Real Sociedad','Sevilla','Valencia','Valladolid','Villarreal',
     'Espanyol','Cádiz','Leganés','Málaga','Levante',
-    'Huesca','Elche','Deportivo La Coruña','Zaragoza','Sporting Gijón',
-    'Eibar','Tenerife'
+    'Elche','Deportivo La Coruña','Zaragoza','Sporting Gijón',
+    'Eibar'
   ]},
   'Serie A': { country: 'Italy', flag: '🇮🇹', continent: 'europe', clubs: [
     'AC Milan','Atalanta','Bologna','Cagliari','Como',
