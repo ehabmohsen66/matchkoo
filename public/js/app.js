@@ -1154,6 +1154,7 @@ const TEAM_DISPLAY_MAP = {
   'Genoa':             { logo: '/images/clubs/genoa.png' },
   'Parma':             { logo: '/images/clubs/parma.png' },
   'Palermo':           { logo: '/images/clubs/palermo.png' },
+  'Como':              { logo: '/images/clubs/como.png' },
 
   // Morocco Botola Pro
   'Wydad Casablanca':    { name: 'Wydad AC' },
@@ -4100,7 +4101,7 @@ const STATIC_LOGO_MAP = {
   'Atalanta':           'https://media.api-sports.io/football/teams/499.png',
   'Bologna':            'https://media.api-sports.io/football/teams/500.png',
   'Cagliari':           'https://media.api-sports.io/football/teams/490.png',
-  'Como':               'https://media.api-sports.io/football/teams/859.png',
+  'Como':               '/images/clubs/como.png',
   'Empoli':             'https://media.api-sports.io/football/teams/511.png',
   'Fiorentina':         'https://media.api-sports.io/football/teams/502.png',
   'Genoa':              '/images/clubs/genoa.png',
