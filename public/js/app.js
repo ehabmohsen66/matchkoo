@@ -4365,8 +4365,7 @@ const CLUBS_DB = {
     'Lazio','Lecce','Monza','Napoli','Parma',
     'Roma','Torino','Udinese','Venezia','Verona',
     'Sassuolo','Sampdoria','Spezia','Salernitana','Frosinone',
-    'Cremonese','Palermo','Benevento','Brescia','Pisa',
-    'Ascoli','Cosenza'
+    'Palermo'
   ]},
   'Bundesliga': { country: 'Germany', flag: '🇩🇪', continent: 'europe', clubs: [
     'Augsburg','Bayer Leverkusen','Bayern Munich','Borussia Dortmund','Borussia Mönchengladbach',
