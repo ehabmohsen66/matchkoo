@@ -1201,7 +1201,14 @@ const TEAM_DISPLAY_MAP = {
   "Mouloudia d'Alger": { name: 'MC Alger' },
 
   // Tunisia Ligue 1
-  'Esperance Tunis':   { name: 'Espérance ST' },
+  'Esperance Tunis':   { name: 'Espérance ST', logo: '/images/clubs/esperance_st.png' },
+  'Espérance ST':     { logo: '/images/clubs/esperance_st.png' },
+
+  // Tunisia
+  'Club Africain':      { logo: '/images/clubs/club_africain.png' },
+  'Étoile Sahel':       { logo: '/images/clubs/etoile_sahel.png' },
+  'CS Sfaxien':         { logo: '/images/clubs/cs_sfaxien.png' },
+  'CA Bizertin':        { logo: '/images/clubs/ca_bizertin.png' },
   'Etoile Sahel':      { name: 'Étoile Sahel' },
   'US Monastirienne':  { name: 'US Monastir' },
 };
@@ -4309,11 +4316,11 @@ const STATIC_LOGO_MAP = {
   'RC Relizane':         'https://media.api-sports.io/football/teams/8364.png',
   'NC Magra':            'https://media.api-sports.io/football/teams/8365.png',
   // ── Tunisia Ligue 1 ───────────────────────────────────────────────────
-  'Espérance ST':        'https://media.api-sports.io/football/teams/854.png',
-  'Étoile Sahel':        'https://media.api-sports.io/football/teams/855.png',
-  'Club Africain':       'https://media.api-sports.io/football/teams/856.png',
-  'CS Sfaxien':          'https://media.api-sports.io/football/teams/857.png',
-  'CA Bizertin':         'https://media.api-sports.io/football/teams/8754.png',
+  'Espérance ST':        '/images/clubs/esperance_st.png',
+  'Étoile Sahel':        '/images/clubs/etoile_sahel.png',
+  'Club Africain':       '/images/clubs/club_africain.png',
+  'CS Sfaxien':          '/images/clubs/cs_sfaxien.png',
+  'CA Bizertin':         '/images/clubs/ca_bizertin.png',
   'AS Gabès':            'https://media.api-sports.io/football/teams/8759.png',
   'US Ben Guerdane':     'https://media.api-sports.io/football/teams/8760.png',
   'Olympique Béja':      'https://media.api-sports.io/football/teams/8763.png',
