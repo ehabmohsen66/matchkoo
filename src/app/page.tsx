@@ -51,8 +51,7 @@ export default function Home() {
             <span className="accent">Compete. Win.</span>
           </h1>
           <p className="hero-sub">
-            Matchkoo, the first esports &amp; gamification network.<br />
-            Aims to bring together all sports fans and world-class gamers from across the globe in one place.
+            Matchkoo, the first esports &amp; gamification network. Aims to bring together all sports fans and world-class gamers from across the globe in one place.
           </p>
           <div className="hero-actions">
             <a href="/register" className="btn-primary btn-primary-lg">
