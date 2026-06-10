@@ -1289,6 +1289,12 @@ const TEAM_DISPLAY_MAP = {
   'Deportivo La Coruña': { logo: '/images/clubs/deportivo_la_coruna.png' },
   'Málaga':             { logo: '/images/clubs/malaga.png' },
   'Malaga':             { name: 'Málaga', logo: '/images/clubs/malaga.png' },
+
+  // MLS
+  'Atlanta United':     { name: 'Atlanta United FC' },
+  'Inter Miami':        { name: 'Inter Miami CF' },
+  'LAFC':               { name: 'Los Angeles FC (LAFC)' },
+  'Seattle Sounders':   { name: 'Seattle Sounders FC' },
 };
 
 function _resolveTeam(name, logo) {
@@ -4440,23 +4446,11 @@ const STATIC_LOGO_MAP = {
   'Al Hazem':             '/images/clubs/al_hazem.png',
   'Al Tai':               '/images/clubs/al_tai.png',
   // ── J1 League Japan ──────────────────────────────────────────────────
-  'Albirex Niigata':            'https://media.api-sports.io/football/teams/311.png',
-  'Avispa Fukuoka':             'https://media.api-sports.io/football/teams/316.png',
-  'Cerezo Osaka':               'https://media.api-sports.io/football/teams/291.png',
   'FC Tokyo':                   'https://media.api-sports.io/football/teams/292.png',
   'Gamba Osaka':                'https://media.api-sports.io/football/teams/293.png',
-  'Hokkaido Consadole Sapporo': 'https://media.api-sports.io/football/teams/279.png',
-  'Júbilo Iwata':               'https://media.api-sports.io/football/teams/280.png',
   'Kashima Antlers':            'https://media.api-sports.io/football/teams/290.png',
-  'Kashiwa Reysol':             'https://media.api-sports.io/football/teams/281.png',
   'Kawasaki Frontale':          'https://media.api-sports.io/football/teams/294.png',
-  'Kyoto Sanga':                'https://media.api-sports.io/football/teams/302.png',
-  'Machida Zelvia':             'https://media.api-sports.io/football/teams/303.png',
-  'Nagoya Grampus':             'https://media.api-sports.io/football/teams/288.png',
-  'Sagan Tosu':                 'https://media.api-sports.io/football/teams/295.png',
   'Sanfrecce Hiroshima':        'https://media.api-sports.io/football/teams/282.png',
-  'Shonan Bellmare':            'https://media.api-sports.io/football/teams/284.png',
-  'Tokyo Verdy':                'https://media.api-sports.io/football/teams/306.png',
   'Urawa Red Diamonds':         'https://media.api-sports.io/football/teams/287.png',
   'Vissel Kobe':                'https://media.api-sports.io/football/teams/289.png',
   'Yokohama F. Marinos':        'https://media.api-sports.io/football/teams/296.png',
@@ -4474,34 +4468,18 @@ const STATIC_LOGO_MAP = {
   'Al Nasr':              '/images/clubs/al_nasr.png',
   // ── MLS ──────────────────────────────────────────────────────────────
 
+  'Atlanta United':           'https://media.api-sports.io/football/teams/1596.png',
+  'Atlanta United FC':        'https://media.api-sports.io/football/teams/1596.png',
+  'D.C. United':              'https://media.api-sports.io/football/teams/1617.png',
   'Inter Miami':              'https://media.api-sports.io/football/teams/1546.png',
+  'Inter Miami CF':           'https://media.api-sports.io/football/teams/1546.png',
   'LA Galaxy':                'https://media.api-sports.io/football/teams/1600.png',
   'LAFC':                     'https://media.api-sports.io/football/teams/1594.png',
-  'Atlanta United':           'https://media.api-sports.io/football/teams/1596.png',
+  'Los Angeles FC (LAFC)':    'https://media.api-sports.io/football/teams/1594.png',
   'New York City FC':         'https://media.api-sports.io/football/teams/1599.png',
-  'Seattle Sounders':         'https://media.api-sports.io/football/teams/1602.png',
   'Portland Timbers':         'https://media.api-sports.io/football/teams/1604.png',
-  'Columbus Crew':            'https://media.api-sports.io/football/teams/1597.png',
-  'New England Revolution':   'https://media.api-sports.io/football/teams/1601.png',
-  'Philadelphia Union':       'https://media.api-sports.io/football/teams/1603.png',
-  'New York Red Bulls':       'https://media.api-sports.io/football/teams/1598.png',
-  'Houston Dynamo':           'https://media.api-sports.io/football/teams/1608.png',
-  'FC Cincinnati':            'https://media.api-sports.io/football/teams/1934.png',
-  'Toronto FC':               'https://media.api-sports.io/football/teams/1605.png',
-  'Vancouver Whitecaps':      'https://media.api-sports.io/football/teams/1606.png',
-  'CF Montreal':              'https://media.api-sports.io/football/teams/1607.png',
-  'FC Dallas':                'https://media.api-sports.io/football/teams/1609.png',
-  'Sporting KC':              'https://media.api-sports.io/football/teams/1610.png',
-  'Real Salt Lake':           'https://media.api-sports.io/football/teams/1611.png',
-  'Colorado Rapids':          'https://media.api-sports.io/football/teams/1612.png',
-  'San Jose Earthquakes':     'https://media.api-sports.io/football/teams/1613.png',
-  'Minnesota United':         'https://media.api-sports.io/football/teams/1615.png',
-  'Austin FC':                'https://media.api-sports.io/football/teams/16040.png',
-  'Charlotte FC':             'https://media.api-sports.io/football/teams/16041.png',
-  'Nashville SC':             'https://media.api-sports.io/football/teams/16039.png',
-  'Orlando City':             'https://media.api-sports.io/football/teams/1614.png',
-  'Chicago Fire':             'https://media.api-sports.io/football/teams/1616.png',
-  'D.C. United':              'https://media.api-sports.io/football/teams/1617.png',
+  'Seattle Sounders':         'https://media.api-sports.io/football/teams/1602.png',
+  'Seattle Sounders FC':      'https://media.api-sports.io/football/teams/1602.png',
   // ── Brasileirão Série A ───────────────────────────────────────────────
   'Flamengo':                 'https://media.api-sports.io/football/teams/127.png',
   'Palmeiras':                'https://media.api-sports.io/football/teams/121.png',
@@ -4648,11 +4626,8 @@ const CLUBS_DB = {
     'Damac','Al Wehda','Al Fayha','Al Hazem','Al Tai'
   ]},
   'J1 League (Japan)': { country: 'Japan', flag: '🇯🇵', continent: 'asia', clubs: [
-    'Albirex Niigata', 'Avispa Fukuoka', 'Cerezo Osaka', 'FC Tokyo', 'Gamba Osaka',
-    'Hokkaido Consadole Sapporo', 'Júbilo Iwata', 'Kashima Antlers', 'Kashiwa Reysol',
-    'Kawasaki Frontale', 'Kyoto Sanga', 'Machida Zelvia', 'Nagoya Grampus', 'Sagan Tosu',
-    'Sanfrecce Hiroshima', 'Shonan Bellmare', 'Tokyo Verdy', 'Urawa Red Diamonds',
-    'Vissel Kobe', 'Yokohama F. Marinos'
+    'FC Tokyo', 'Gamba Osaka', 'Kashima Antlers', 'Kawasaki Frontale',
+    'Sanfrecce Hiroshima', 'Urawa Red Diamonds', 'Vissel Kobe', 'Yokohama F. Marinos'
   ]},
   'UAE Pro League': { country: 'UAE', flag: '🇦🇪', continent: 'asia', clubs: [
     'Al Ain','Al Wasl','Sharjah FC','Al Jazira','Al Wahda',
@@ -4661,12 +4636,14 @@ const CLUBS_DB = {
   ]},
   // ── AMERICAS ───────────────────────────────────────────────────
   'MLS': { country: 'USA', flag: '🇺🇸', continent: 'americas', clubs: [
-    'Atlanta United','Austin FC','Charlotte FC','Chicago Fire','Colorado Rapids',
-    'Columbus Crew','D.C. United','FC Cincinnati','FC Dallas','Houston Dynamo',
-    'Inter Miami','LA Galaxy','LAFC','Minnesota United','Nashville SC',
-    'New England Revolution','New York City FC','New York Red Bulls','Orlando City','Philadelphia Union',
-    'Portland Timbers','Real Salt Lake','San Jose Earthquakes','Seattle Sounders','Sporting KC',
-    'Toronto FC','Vancouver Whitecaps','CF Montreal'
+    'Atlanta United FC',
+    'D.C. United',
+    'Inter Miami CF',
+    'LA Galaxy',
+    'Los Angeles FC (LAFC)',
+    'New York City FC',
+    'Portland Timbers',
+    'Seattle Sounders FC'
   ]},
   'Brasileirão Série A': { country: 'Brazil', flag: '🇧🇷', continent: 'americas', clubs: [
     'Flamengo','Palmeiras','Atlético Mineiro','Fluminense','São Paulo',
