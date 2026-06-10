@@ -322,7 +322,7 @@ export default function Home() {
             <div className="scoring-card reveal reveal-delay-3">
               <div className="scoring-xp" style={{ "color": "#08BDBD" }}>+20 XP</div>
               <div className="scoring-action">Vote on a Match</div>
-              <div className="scoring-desc">Cast your vote on any match outcome and earn XP just for participating — every vote counts.</div>
+              <div className="scoring-desc">Cast your vote on any team in different leagues and earn XP just for voting — daily votes counts.</div>
             </div>
             <div className="scoring-card reveal reveal-delay-4">
               <div className="scoring-xp" style={{ "color": "#29BF12" }}>+200 XP</div>
