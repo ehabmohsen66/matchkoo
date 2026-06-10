@@ -4455,8 +4455,7 @@ const CLUBS_DB = {
   'Ligue 1 (Tunisia)': { country: 'Tunisia', flag: '🇹🇳', continent: 'africa', clubs: [
     'Espérance ST','Club Africain','Étoile Sahel','CS Sfaxien',
     'CA Bizertin','US Monastir','AS Soliman','US Tataouine',
-    'AS Kassérine','AS Gabès','US Ben Guerdane','Stade Tunisien',
-    'AS Marsa','Olympique Béja','SC Ben Arous','CO Médenine'
+    'AS Gabès','Stade Tunisien','Olympique Béja'
   ]},
   'Saudi Pro League': { country: 'Saudi Arabia', flag: '🇸🇦', continent: 'asia', clubs: [
     'Al Ahli','Al Ettifaq','Al Fateh','Al Fayha','Al Hazem',
