@@ -1153,6 +1153,7 @@ const TEAM_DISPLAY_MAP = {
   // Italy
   'Genoa':             { logo: '/images/clubs/genoa.png' },
   'Parma':             { logo: '/images/clubs/parma.png' },
+  'Palermo':           { logo: '/images/clubs/palermo.png' },
 
   // Morocco Botola Pro
   'Wydad Casablanca':    { name: 'Wydad AC' },
@@ -4121,7 +4122,7 @@ const STATIC_LOGO_MAP = {
   'Salernitana':        'https://media.api-sports.io/football/teams/514.png',
   'Frosinone':          'https://media.api-sports.io/football/teams/512.png',
   'Cremonese':          'https://media.api-sports.io/football/teams/493.png',
-  'Palermo':            'https://media.api-sports.io/football/teams/486.png',
+  'Palermo':            '/images/clubs/palermo.png',
   'Benevento':          'https://media.api-sports.io/football/teams/844.png',
   'Brescia':            'https://media.api-sports.io/football/teams/519.png',
   'Pisa':               'https://media.api-sports.io/football/teams/507.png',
