@@ -4352,7 +4352,69 @@ const STATIC_LOGO_MAP = {
   'Al Masry':           '/images/clubs/al_masry.png',
   'ZED FC':             '/images/clubs/zed_fc.png',
   'Petrojet FC':        '/images/clubs/petrojet_fc.png',
+  // ── MLS ──────────────────────────────────────────────────────────────
+  'Inter Miami':              'https://media.api-sports.io/football/teams/1546.png',
+  'LA Galaxy':                'https://media.api-sports.io/football/teams/1600.png',
+  'LAFC':                     'https://media.api-sports.io/football/teams/1594.png',
+  'Atlanta United':           'https://media.api-sports.io/football/teams/1596.png',
+  'New York City FC':         'https://media.api-sports.io/football/teams/1599.png',
+  'Seattle Sounders':         'https://media.api-sports.io/football/teams/1602.png',
+  'Portland Timbers':         'https://media.api-sports.io/football/teams/1604.png',
+  'Columbus Crew':            'https://media.api-sports.io/football/teams/1597.png',
+  'New England Revolution':   'https://media.api-sports.io/football/teams/1601.png',
+  'Philadelphia Union':       'https://media.api-sports.io/football/teams/1603.png',
+  'New York Red Bulls':       'https://media.api-sports.io/football/teams/1598.png',
+  'Houston Dynamo':           'https://media.api-sports.io/football/teams/1608.png',
+  'FC Cincinnati':            'https://media.api-sports.io/football/teams/1934.png',
+  'Toronto FC':               'https://media.api-sports.io/football/teams/1605.png',
+  'Vancouver Whitecaps':      'https://media.api-sports.io/football/teams/1606.png',
+  'CF Montreal':              'https://media.api-sports.io/football/teams/1607.png',
+  'FC Dallas':                'https://media.api-sports.io/football/teams/1609.png',
+  'Sporting KC':              'https://media.api-sports.io/football/teams/1610.png',
+  'Real Salt Lake':           'https://media.api-sports.io/football/teams/1611.png',
+  'Colorado Rapids':          'https://media.api-sports.io/football/teams/1612.png',
+  'San Jose Earthquakes':     'https://media.api-sports.io/football/teams/1613.png',
+  'Minnesota United':         'https://media.api-sports.io/football/teams/1615.png',
+  'Austin FC':                'https://media.api-sports.io/football/teams/16040.png',
+  'Charlotte FC':             'https://media.api-sports.io/football/teams/16041.png',
+  'Nashville SC':             'https://media.api-sports.io/football/teams/16039.png',
+  'Orlando City':             'https://media.api-sports.io/football/teams/1614.png',
+  'Chicago Fire':             'https://media.api-sports.io/football/teams/1616.png',
+  'D.C. United':              'https://media.api-sports.io/football/teams/1617.png',
+  // ── Brasileirão Série A ───────────────────────────────────────────────
+  'Flamengo':                 'https://media.api-sports.io/football/teams/127.png',
+  'Palmeiras':                'https://media.api-sports.io/football/teams/121.png',
+  'Atlético Mineiro':         'https://media.api-sports.io/football/teams/1062.png',
+  'Fluminense':               'https://media.api-sports.io/football/teams/130.png',
+  'São Paulo':                'https://media.api-sports.io/football/teams/126.png',
+  'Corinthians':              'https://media.api-sports.io/football/teams/131.png',
+  'Grêmio':                   'https://media.api-sports.io/football/teams/128.png',
+  'Internacional':            'https://media.api-sports.io/football/teams/119.png',
+  'Santos':                   'https://media.api-sports.io/football/teams/120.png',
+  'Vasco da Gama':            'https://media.api-sports.io/football/teams/133.png',
+  'Botafogo':                 'https://media.api-sports.io/football/teams/134.png',
+  'Cruzeiro':                 'https://media.api-sports.io/football/teams/140.png',
+  'Bahía':                    'https://media.api-sports.io/football/teams/118.png',
+  'Fortaleza':                'https://media.api-sports.io/football/teams/1193.png',
+  'Athlético Paranaense':     'https://media.api-sports.io/football/teams/123.png',
+  // ── Liga Profesional Argentina ────────────────────────────────────────
+  'Boca Juniors':             'https://media.api-sports.io/football/teams/405.png',
+  'River Plate':              'https://media.api-sports.io/football/teams/406.png',
+  'Racing Club':              'https://media.api-sports.io/football/teams/435.png',
+  'Independiente':            'https://media.api-sports.io/football/teams/436.png',
+  'San Lorenzo':              'https://media.api-sports.io/football/teams/434.png',
+  'Estudiantes':              'https://media.api-sports.io/football/teams/441.png',
+  'Vélez Sársfield':          'https://media.api-sports.io/football/teams/440.png',
+  'Huracán':                  'https://media.api-sports.io/football/teams/442.png',
+  'Banfield':                 'https://media.api-sports.io/football/teams/443.png',
+  'Lanus':                    'https://media.api-sports.io/football/teams/445.png',
+  'Talleres':                 'https://media.api-sports.io/football/teams/449.png',
+  'Defensa y Justicia':       'https://media.api-sports.io/football/teams/1081.png',
+  'Argentinos Juniors':       'https://media.api-sports.io/football/teams/448.png',
+  'Godoy Cruz':               'https://media.api-sports.io/football/teams/447.png',
+  'Club Atlético Tucumán':    'https://media.api-sports.io/football/teams/1082.png',
   // ── FIFA World Cup — National Teams (flags via flagcdn.com) ──────
+
   'Argentina':    'https://flagcdn.com/w80/ar.png',
   'Australia':    'https://flagcdn.com/w80/au.png',
   'Belgium':      'https://flagcdn.com/w80/be.png',
@@ -4480,7 +4542,17 @@ const CLUBS_DB = {
     'Inter Miami','LA Galaxy','LAFC','Minnesota United','Nashville SC',
     'New England Revolution','New York City FC','New York Red Bulls','Orlando City','Philadelphia Union',
     'Portland Timbers','Real Salt Lake','San Jose Earthquakes','Seattle Sounders','Sporting KC',
-    'St. Louis City','Toronto FC','Vancouver Whitecaps','CF Montreal','New York Red Bulls II'
+    'Toronto FC','Vancouver Whitecaps','CF Montreal'
+  ]},
+  'Brasileirão Série A': { country: 'Brazil', flag: '🇧🇷', continent: 'americas', clubs: [
+    'Flamengo','Palmeiras','Atlético Mineiro','Fluminense','São Paulo',
+    'Corinthians','Grêmio','Internacional','Santos','Vasco da Gama',
+    'Botafogo','Cruzeiro','Bahía','Fortaleza','Athlético Paranaense'
+  ]},
+  'Liga Profesional (Argentina)': { country: 'Argentina', flag: '🇦🇷', continent: 'americas', clubs: [
+    'Boca Juniors','River Plate','Racing Club','Independiente','San Lorenzo',
+    'Estudiantes','Vélez Sársfield','Huracán','Banfield','Lanus',
+    'Talleres','Defensa y Justicia','Argentinos Juniors','Godoy Cruz','Club Atlético Tucumán'
   ]},
   // ── WORLD ───────────────────────────────────────────────────────
   'FIFA World Cup': { country: 'International', flag: '🌍', continent: 'world', clubs: [
@@ -4501,6 +4573,7 @@ let clubLogosMap   = {}; // clubName -> logoUrl (from DB match data)
 const ACTIVE_VOTE_LEAGUES = new Set([
   'Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1',
   'Egyptian Premier League', 'South African PSL', 'Botola Pro (Morocco)', 'Ligue 1 (Algeria)', 'Ligue 1 (Tunisia)',
+  'MLS', 'Brasileirão Série A', 'Liga Profesional (Argentina)',
   'FIFA World Cup'
 ]);
 
