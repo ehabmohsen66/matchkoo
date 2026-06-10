@@ -1156,6 +1156,13 @@ const TEAM_DISPLAY_MAP = {
   'Palermo':           { logo: '/images/clubs/palermo.png' },
   'Como':              { logo: '/images/clubs/como.png' },
 
+  // France
+  'Le Havre':          { logo: '/images/clubs/le_havre.png' },
+  'Auxerre':           { logo: '/images/clubs/auxerre.png' },
+  'Brest':             { logo: '/images/clubs/brest.png' },
+  'Lorient':           { logo: '/images/clubs/lorient.png' },
+  'Metz':              { logo: '/images/clubs/metz.png' },
+
   // Morocco Botola Pro
   'Wydad Casablanca':    { name: 'Wydad AC' },
   'Raja Casablanca':     { name: 'Raja CA' },
