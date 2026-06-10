@@ -1179,6 +1179,8 @@ const TEAM_DISPLAY_MAP = {
   'MAS Fès':              { logo: '/images/clubs/mas_fes.png' },
   'Raja CA':              { logo: '/images/clubs/raja_ca.png' },
   'Youssoufia Berrechid': { logo: '/images/clubs/youssoufia_berrechid.png' },
+  'AS FAR':               { logo: '/images/clubs/as_far.png' },
+  'AS FAR Rabat':         { logo: '/images/clubs/as_far.png' },
   'Moghreb Tetouan':     { name: 'Moghreb Tétouan' },
 
   // Algeria Ligue 1
@@ -4263,7 +4265,7 @@ const STATIC_LOGO_MAP = {
   // ── Morocco Botola Pro ────────────────────────────────────────────
   'Wydad AC':            'https://media.api-sports.io/football/teams/968.png',
   'Raja CA':             '/images/clubs/raja_ca.png',
-  'AS FAR':              'https://media.api-sports.io/football/teams/8149.png',
+  'AS FAR':              '/images/clubs/as_far.png',
   'Moghreb Tétouan':     '/images/clubs/moghreb_tetouan.png',
   'Hassania Agadir':     '/images/clubs/hassania_agadir.png',
   'Difaa El Jadidi':     '/images/clubs/difaa_el_jadidi.png',
@@ -4272,6 +4274,7 @@ const STATIC_LOGO_MAP = {
   'FUS Rabat':           '/images/clubs/fus_rabat.png',
   'MAS Fès':             '/images/clubs/mas_fes.png',
   'Renaissance Berkane': '/images/clubs/rs_berkane.png',
+  'RS Berkane':          '/images/clubs/rs_berkane.png',
   'Rapide Oued Zem':     'https://media.api-sports.io/football/teams/8159.png',
   'Chabab Rif':          'https://media.api-sports.io/football/teams/8160.png',
   'Youssoufia Berrechid': '/images/clubs/youssoufia_berrechid.png',
