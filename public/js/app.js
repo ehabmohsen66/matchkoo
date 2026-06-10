@@ -4508,15 +4508,8 @@ const STATIC_LOGO_MAP = {
   'Independiente':            'https://media.api-sports.io/football/teams/436.png',
   'San Lorenzo':              'https://media.api-sports.io/football/teams/434.png',
   'Estudiantes':              'https://media.api-sports.io/football/teams/441.png',
-  'Vélez Sársfield':          'https://media.api-sports.io/football/teams/440.png',
   'Huracán':                  'https://media.api-sports.io/football/teams/442.png',
-  'Banfield':                 'https://media.api-sports.io/football/teams/443.png',
   'Lanus':                    'https://media.api-sports.io/football/teams/445.png',
-  'Talleres':                 'https://media.api-sports.io/football/teams/449.png',
-  'Defensa y Justicia':       'https://media.api-sports.io/football/teams/1081.png',
-  'Argentinos Juniors':       'https://media.api-sports.io/football/teams/448.png',
-  'Godoy Cruz':               'https://media.api-sports.io/football/teams/447.png',
-  'Club Atlético Tucumán':    'https://media.api-sports.io/football/teams/1082.png',
   // ── FIFA World Cup — National Teams (flags via flagcdn.com) ──────
 
   'Argentina':    'https://flagcdn.com/w80/ar.png',
@@ -4657,8 +4650,7 @@ const CLUBS_DB = {
   ]},
   'Liga Profesional (Argentina)': { country: 'Argentina', flag: '🇦🇷', continent: 'americas', clubs: [
     'Boca Juniors','River Plate','Racing Club','Independiente','San Lorenzo',
-    'Estudiantes','Vélez Sársfield','Huracán','Banfield','Lanus',
-    'Talleres','Defensa y Justicia','Argentinos Juniors','Godoy Cruz','Club Atlético Tucumán'
+    'Estudiantes','Huracán','Lanus'
   ]},
   // ── WORLD ───────────────────────────────────────────────────────
   'FIFA World Cup': { country: 'International', flag: '🌍', continent: 'world', clubs: [
