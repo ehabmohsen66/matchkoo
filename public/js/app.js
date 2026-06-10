@@ -1193,6 +1193,7 @@ const TEAM_DISPLAY_MAP = {
   'USM Bel Abbès':        { logo: '/images/clubs/usm_bel_abbes.png' },
   "AS Aïn M'lila":       { logo: '/images/clubs/as_ain_mlila.png' },
   'Paradou AC':           { logo: '/images/clubs/paradou_ac.png' },
+  'DRB Tadjenanet':       { logo: '/images/clubs/drb_tadjenanet.png' },
   'Moghreb Tetouan':     { name: 'Moghreb Tétouan' },
 
   // Algeria Ligue 1
@@ -4304,7 +4305,7 @@ const STATIC_LOGO_MAP = {
   'CS Constantine':      'https://media.api-sports.io/football/teams/8359.png',
   "AS Aïn M'lila":      '/images/clubs/as_ain_mlila.png',
   'Paradou AC':          '/images/clubs/paradou_ac.png',
-  'DRB Tadjenanet':      'https://media.api-sports.io/football/teams/8363.png',
+  'DRB Tadjenanet':      '/images/clubs/drb_tadjenanet.png',
   'RC Relizane':         'https://media.api-sports.io/football/teams/8364.png',
   'NC Magra':            'https://media.api-sports.io/football/teams/8365.png',
   // ── Tunisia Ligue 1 ───────────────────────────────────────────────────
