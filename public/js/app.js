@@ -1217,6 +1217,13 @@ const TEAM_DISPLAY_MAP = {
   'AS Gabès':          { logo: '/images/clubs/as_gabes.png' },
   'Etoile Sahel':      { name: 'Étoile Sahel' },
   'US Monastirienne':  { name: 'US Monastir' },
+
+  // Spain
+  'Zaragoza':           { logo: '/images/clubs/zaragoza.png' },
+  'Real Zaragoza':      { name: 'Zaragoza', logo: '/images/clubs/zaragoza.png' },
+  'Deportivo La Coruña': { logo: '/images/clubs/deportivo_la_coruna.png' },
+  'Málaga':             { logo: '/images/clubs/malaga.png' },
+  'Malaga':             { name: 'Málaga', logo: '/images/clubs/malaga.png' },
 };
 
 function _resolveTeam(name, logo) {
@@ -4133,12 +4140,12 @@ const STATIC_LOGO_MAP = {
   'Espanyol':           'https://media.api-sports.io/football/teams/537.png',
   'Cádiz':              'https://media.api-sports.io/football/teams/724.png',
   'Leganés':            'https://media.api-sports.io/football/teams/723.png',
-  'Málaga':             'https://media.api-sports.io/football/teams/725.png',
+  'Málaga':             '/images/clubs/malaga.png',
   'Levante':            'https://media.api-sports.io/football/teams/731.png',
   'Huesca':             'https://media.api-sports.io/football/teams/730.png',
   'Elche':              'https://media.api-sports.io/football/teams/769.png',
-  'Deportivo La Coruña':'https://media.api-sports.io/football/teams/535.png',
-  'Zaragoza':           'https://media.api-sports.io/football/teams/726.png',
+  'Deportivo La Coruña':'/images/clubs/deportivo_la_coruna.png',
+  'Zaragoza':           '/images/clubs/zaragoza.png',
   'Sporting Gijón':    'https://media.api-sports.io/football/teams/733.png',
   'Eibar':              'https://media.api-sports.io/football/teams/544.png',
   'Tenerife':           'https://media.api-sports.io/football/teams/745.png',
