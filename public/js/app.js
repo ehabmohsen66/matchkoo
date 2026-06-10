@@ -4439,9 +4439,9 @@ async function ensureClubLogosLoaded() {
     if (res.ok) {
       clubLogosMap = await res.json();
     }
-    // Merge static fallback logos — DB logos take priority, static fills the gaps
+    // Merge static fallback logos — Local overrides take priority, DB logos next, https static last
     Object.entries(STATIC_LOGO_MAP).forEach(([club, url]) => {
-      if (!clubLogosMap[club]) clubLogosMap[club] = url;
+      if (!clubLogosMap[club] || url.startsWith('/images/')) clubLogosMap[club] = url;
     });
   } catch(e) {
     // Even on fetch error, use static logos so the page isn't blank

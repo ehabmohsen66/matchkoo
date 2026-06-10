@@ -2,7 +2,7 @@
 
 > **Live URL:** https://kickoff-taupe.vercel.app  
 > **Codebase folder:** `matchkoo` (internal package name: `kickoff`)  
-> **Last updated:** 2026-06-08 (13:49 EET — 12 commits today)
+> **Last updated:** 2026-06-09 (21:30 EET — 50 commits since last update)
 
 ---
 
@@ -26,6 +26,7 @@
 16. [Environment Variables](#16-environment-variables)
 17. [Common Bugs & Gotchas](#17-common-bugs--gotchas)
 18. [Git History Summary](#18-git-history-summary)
+20. [Changelog — 2026-06-08 (Evening) & 2026-06-09](#20-changelog--2026-06-08-evening--2026-06-09)
 
 ---
 
@@ -195,6 +196,7 @@ The central model. Stores auth credentials, XP, stats, and social links.
 | `password` | String? | bcrypt hash |
 | `role` | String | `USER` or `ADMIN` |
 | `gender` | String? | `male` / `female` |
+| `country` | String? | Default 'EG', captured from IP |
 | `dateOfBirth` | DateTime? | Optional DOB |
 | `xp` | Int | Total XP points |
 | `streak` | Int | Current prediction streak |
@@ -216,6 +218,7 @@ Represents a football fixture.
 | `homeLogo` / `awayLogo` | String? | Logo URLs |
 | `matchDate` | DateTime | Kick-off time |
 | `round` | String | Round label (e.g. `Round 34`) |
+| `season` | String? | API-Football season year (e.g. `2025`) |
 | `status` | String | `UPCOMING` / `LIVE` / `COMPLETED` |
 | `homeScore` / `awayScore` | Int? | Actual full-time result |
 | `firstGoalScorer` | String? | Actual first goalscorer name |
@@ -230,7 +233,8 @@ One prediction per user per match.
 | `homeScore` / `awayScore` | Int | Predicted scoreline |
 | `firstGoalScorer` | String? | Predicted goalscorer |
 | `confidence` | Int | 50–100% confidence slider |
-| `isDouble` | Boolean | Double XP joker (one per round) |
+| `isDouble` | Boolean | Double XP joker (one every 7 days) |
+| `isShield` | Boolean | Scoreline shield marker (one every 7 days) |
 | `btts` | Boolean? | Both teams to score prediction |
 | `totalGoals` | Int? | Predicted total goals |
 | `xpEarned` | Int? | XP awarded after match (null = pending) |
@@ -248,6 +252,7 @@ A competition container grouping matches.
 | `registrationMode` | String | `OPEN` or `INVITE_ONLY` |
 | `competition` | String? | Competition key for mini-leagues |
 | `scoringMode` | String? | `global` or `simple` |
+| `season` | String? | API-Football season year (e.g. `2025`) |
 
 #### Other Models
 
@@ -264,6 +269,7 @@ A competition container grouping matches.
 | `Friendship` | Follower/following social graph |
 | `ClubRequest` | User requests to add a missing club |
 | `MatchChat` | Match-level live chat messages (280 chars max) |
+| `DemonUsage` | Tracks who cast The Demon penalty in a mini-league |
 | `Account` / `Session` / `VerificationToken` | NextAuth adapter tables |
 
 ---
@@ -307,13 +313,13 @@ XP is **refreshed from DB on every token refresh** so it stays current without r
 
 ## 7. API Routes Reference
 
-All routes are under `src/app/api/`. Total: **45 route files**.
+All routes are under `src/app/api/`. Total: **47 route files**.
 
 ### Auth
 
 | Method | Route | Description |
 |---|---|---|
-| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/register` | Register new user. Captures country flag from Vercel geo IP header and assigns gender-based avatar. |
 | POST | `/api/auth/[...nextauth]` | NextAuth handler (login, session, signout) |
 | GET | `/api/auth/verify-email` | Verify email via token |
 | POST | `/api/auth/forgot-password` | Send password reset email |
@@ -325,7 +331,7 @@ All routes are under `src/app/api/`. Total: **45 route files**.
 | Method | Route | Description |
 |---|---|---|
 | GET | `/api/predictions` | Get user's predictions (filter: `upcoming`/`past`) |
-| POST | `/api/predictions` | Create or update a prediction (locked once match starts) |
+| POST | `/api/predictions` | Create or update a prediction (locked once match starts). Enforces a 7-day cooldown on Joker and Shield boosts. Supports boost-only updates. |
 | GET | `/api/predictions/stats` | Prediction statistics for a match |
 
 ### Matches
@@ -343,7 +349,7 @@ All routes are under `src/app/api/`. Total: **45 route files**.
 
 | Method | Route | Description |
 |---|---|---|
-| GET | `/api/leaderboard` | Global/tournament/mini-league rankings |
+| GET | `/api/leaderboard` | Global/tournament/mini-league rankings (includes `country` code) |
 | GET | `/api/leaderboard/my-rank` | Current user's rank + `xpToday` (XP earned from settled predictions today, UTC) |
 
 **Query params for `/api/leaderboard`:**
@@ -372,14 +378,15 @@ All routes are under `src/app/api/`. Total: **45 route files**.
 | Method | Route | Description |
 |---|---|---|
 | GET | `/api/tournaments` | List all tournaments |
-| POST | `/api/tournaments/[id]/register` | Register for a tournament |
+| POST | `/api/tournaments/[id]/register` | Register for an OPEN tournament (or INVITE_ONLY with code). Auto-joins user. |
+| DELETE | `/api/tournaments/[id]/register` | Unregister / leave an OPEN tournament |
 
 ### Mini-Leagues
 
 | Method | Route | Description |
 |---|---|---|
 | GET/POST | `/api/mini-leagues` | List/create mini leagues |
-| GET/PUT/DELETE | `/api/mini-leagues/[id]` | Get/update/delete a mini league — returns rankings, fixtures, and live matches |
+| GET/PUT/DELETE | `/api/mini-leagues/[id]` | Get/update/delete a mini league — returns rankings, fixtures, and live matches. Rankings aggregate and subtract Demon Usage penalties. |
 
 > **Bug fix (2026-06-08):** The per-mini-league XP ranking previously used a raw DB `name IN (...)` query which failed to match canonical names like `"UEFA Champions League 2025 [2]"`. Rankings now use `normaliseName()` filtering in-memory after fetching all tournament matches, ensuring XP totals from completed matches are counted correctly.
 
@@ -407,6 +414,12 @@ All routes are under `src/app/api/`. Total: **45 route files**.
 | POST | `/api/user/preferences` | Update user preferences |
 | GET | `/api/football-news` | Latest football news |
 | POST | `/api/signout` | Sign out handler |
+
+### Boosts
+
+| Method | Route | Description |
+|---|---|---|
+| POST | `/api/boosts/demon` | Cast The Demon penalty on a rival in a mini-league (-500 XP penalty) |
 
 ### Cron (Automated)
 
@@ -448,9 +461,11 @@ The main user-facing app is served at `/app` and is a **static HTML + Vanilla JS
 | `_loadLivePulse()` | Fetches "Who Will Win?" stats widget |
 | `openLeagueFixtures(cuid, name)` | Opens fixtures for a specific tournament |
 | `_xpToLevel(xp)` | Maps XP to badge level (Bronze → Legend) |
-| `ACTIVE_LEAGUE_NAMES` | Whitelist of display names for active leagues |
 | `openLeagueDetailPage(tournamentId, name)` | **[NEW 2026-06-08]** Navigates to the full league detail page (`#page-league-detail`) showing podium + rankings + upcoming fixtures |
 | `openMiniLeagueDetail(id)` | **[REDESIGNED 2026-06-08]** Navigates directly to mini-league detail from leaderboard — renders two-column layout (podium ranking + fixtures grid) |
+| `openJokerModal()` / `openShieldModal()` | **[NEW 2026-06-09]** Opens modal to select an upcoming prediction and apply a Joker (2x XP) or Shield boost |
+| `openDemonModal()` / `castDemon()` | **[NEW 2026-06-09]** Opens mini-league victim selector and posts The Demon cast to deduct 500 XP |
+| `_showBoostConfirmModal()` | **[NEW 2026-06-09]** Renders custom styled confirmation dialog for boosts |
 
 ### Key HTML Pages/Panels (in `app.html`)
 
@@ -461,15 +476,16 @@ The main user-facing app is served at `/app` and is a **static HTML + Vanilla JS
 | `#page-minileague` | Mini-leagues listing page |
 | `#mini-league-detail-panel` | Inline mini-league detail panel (within `#page-minileague`) |
 | `#yrb-today-xp` | **[NEW 2026-06-08]** Span in "Your Rank" banner that shows real-time daily XP gain/loss |
+| `#boost-modal-overlay` | **[NEW 2026-06-09]** Modal sheet for selecting matches/rivals to apply boosts |
 
 ### Key JS Functions (in `backend_api.js`)
 
 | Function | Description |
 |---|---|
 | `_hydrateData()` | Main data hydration: fetches `/api/tournaments`, injects CUIDs into cards |
-| `ACTIVE_EXACT` | Array of exact canonical tournament names (must match DB after normalisation) |
-| `ACTIVE_LEAGUES` | Config for active league cards |
-| `_loadUserRank()` | **[UPDATED 2026-06-08]** Fetches `/api/leaderboard/my-rank` and now also reads `xpToday` to render the daily XP insight (`↑120 today` in green, `— today` in muted, `↓N today` in red) on the `#yrb-today-xp` element |
+| `LEAGUE_META` | **[NEW 2026-06-09]** Comprehensive map of API-Football league IDs to emojis, clean names, logos, colors |
+| `_loadUserRank()` | **[UPDATED 2026-06-08]** Fetches `/api/leaderboard/my-rank` and now also reads `xpToday` to render the daily XP insight |
+| `toggleLeagueFollow(name, action, tournamentId)` | **[UPDATED 2026-06-09]** Updates preferredLeagues preferences and registers/unregisters user in database |
 
 ### Routing
 
@@ -484,9 +500,9 @@ Next.js rewrites map `/app` and `/:lang/app` to `app.html`:
 
 ### Versioning
 
-When changing any public JS file, bump the version query string in `app.html`:
+Bump the version query string in `app.html` when changing files (e.g. `?v=6.8` or timestamp):
 ```html
-<script src="/js/app.js?v=2.6"></script>
+<script src="/js/backend_api.js?v=6.8"></script>
 ```
 
 ---
@@ -565,10 +581,12 @@ API-Football returns `"Premier League"` for **both** English (ID: 39) and Egypti
 |---|---|
 | Correct match outcome (win/draw/loss) | +10 XP |
 | Exact correct scoreline | +30 XP |
-| Correct first goalscorer | +150 XP |
-| Both Teams to Score correct | +15 XP |
-| Total Goals correct | +15 XP |
-| Double Joker (double XP one per round) | 2× base XP |
+| Correct first goalscorer | +150 XP (Wrong pick = -100 XP) |
+| Both Teams to Score correct | +75 XP |
+| Total Goals correct | +75 XP |
+| The Joker (double XP boost, 7-day cooldown) | 2× base XP |
+| Scoreline Shield (exact score protection, 7-day cooldown) | Exact score XP if outcome is correct |
+| The Demon penalty (1x per mini-league) | -500 XP to target user |
 | Club Vote | +20 XP per vote |
 | Referral bonus | Variable |
 | Daily Spin | Variable |
@@ -580,17 +598,28 @@ API-Football returns `"Premier League"` for **both** English (ID: 39) and Egypti
 
 | Level | XP Required |
 |---|---|
-| 🥉 Bronze | 0 |
-| 🥈 Silver | 1,000 |
-| 🥇 Gold | 10,000 |
-| 💎 Platinum | 20,000 |
-| 🏆 Legend | 50,000 |
+| 🥉 Bronze | 0–2,999 |
+| 🥈 Silver | 3,000–9,999 |
+| 🥇 Gold | 10,000–19,999 |
+| 💎 Platinum | 20,000–49,999 |
+| 🏆 Legend | 50,000+ |
 
 ### Prediction Locking
 Predictions are locked the moment a match leaves `UPCOMING` status. The `POST /api/predictions` endpoint returns HTTP 400 if the match has started.
 
-### Double Joker
-One per round per tournament. Doubles XP earned for a single match. Attempting to place a second double in the same round returns HTTP 400.
+### Boosts & Penalties
+
+#### The Joker
+Doubles the XP earned for a single match. Limited to **one use every 7 days** globally.
+
+#### Scoreline Shield
+Protects the prediction from a near-miss. If you predict the correct outcome (win/draw/loss) but miss the exact scoreline, it still awards you the **exact scoreline bonus (+30 XP)**. Limited to **one use every 7 days**.
+
+#### The Demon
+A penalty cast in private mini-leagues. A user can choose a rival in a mini-league and cast The Demon to deduct **500 XP** from their ranking. Limited to **one use per mini-league**.
+
+#### First Goalscorer Penalty
+Predicting the first goalscorer carries a risk-vs-reward penalty. An incorrect prediction results in a flat **-100 XP** penalty.
 
 ---
 
@@ -606,9 +635,11 @@ Challenges reset every **Monday at 00:00 local time**. Progress is tracked in re
 
 ---
 
-## 13. Leagues Whitelist
+## 13. Dynamic Leagues List
 
-**Only 5 leagues are active.** This is a hard constraint enforced in both backend and frontend.
+The hardcoded 5-league whitelist has been replaced by a **fully dynamic seasonal league management system**. Leagues are mapped by their API-Football IDs via the `LEAGUE_META` structure in `backend_api.js` and stored dynamically in the database.
+
+### Core Active Leagues
 
 | League | API-Football ID | Continent |
 |---|---|---|
@@ -618,7 +649,9 @@ Challenges reset every **Monday at 00:00 local time**. Progress is tracked in re
 | Egyptian Premier League | 233 | Africa |
 | FIFA World Cup | 1 | World |
 
-Any data from other leagues must be purged via `/api/cron/cleanup-leagues`.
+Other regional and cup competitions (e.g. Saudi Pro League, CAF Champions League, MLS) are supported and displayed dynamically as "Ongoing", "Completed", or "Coming Soon" based on their season status in the database.
+
+Any data from unauthorized or unsupported leagues can be purged via `/api/cron/cleanup-leagues`.
 
 ---
 
@@ -684,19 +717,20 @@ npx prisma db push   # NOT: prisma migrate dev
 |---|---|
 | Using `f.league.name` directly in sync logic | Use `CANONICAL_NAMES` map instead |
 | Forgetting to normalise tournament name in frontend | Call `_normaliseTournamentName()` before whitelist check |
-| Adding leagues not in the 5-league whitelist | User will report clutter; stick to whitelist |
 | Using `getElementById('podium-1')` for leaderboard podium | IDs don't exist — use `.querySelectorAll('.podium-card')` |
 | Running `prisma migrate dev` on Vercel | Use `prisma db push` in non-interactive envs |
 | Stale matches showing as LIVE | `sync-today` cron runs `fix-stale` first; never remove this step |
 | Discover page shows empty leagues | `ACTIVE_EXACT` names must match canonical names after normalisation |
 | Double XP joker placed twice | Enforced server-side — check existing double before creating |
 | Weekly challenge XP awarded multiple times | Check `ChallengeReward` table before inserting |
+| Forgetting to handle `isShield` when checking exact scorelines | The sync engine and adminPATCH routes must evaluate `exactScore = trueExactScore || (pred.isShield && correctResult)` |
+| Hardcoding league cards and active tabs on frontend | Use dynamic hydration from `/api/tournaments` and map metadata via `LEAGUE_META` |
 
 ---
 
 ## 18. Git History Summary
 
-**Total commits:** 159 (147 + 12 today)  
+**Total commits:** 209 (159 baseline + 50 recent changes)  
 **Active branches:** `main` (remote: `origin/main`)  
 **Initial commit:** Legacy HTML app  
 **Migration to Next.js:** Full-stack Next.js with auth, Prisma, admin area
@@ -732,6 +766,14 @@ npx prisma db push   # NOT: prisma migrate dev
 | 2026-06-08 | Clickable official league detail pages (podium + rankings + fixtures) |
 | 2026-06-08 | Overlay bug fixed (legacy `openLeagueDetail` removed) |
 | 2026-06-08 | Default leaderboard period changed from "This Week" to "All Time" |
+| 2026-06-08 | Flat 100XP penalty for wrong first goalscorer |
+| 2026-06-08 | Gender-based default avatar assignment |
+| 2026-06-08 | Overhaul of Boost Inventory: Joker, Scoreline Shield, The Demon |
+| 2026-06-08 | Capturing user country on registration and flag display on leaderboard podiums |
+| 2026-06-09 | Seasonal league management (season tagging, auto-complete, auto-register returning users) |
+| 2026-06-09 | Fully dynamic leagues page with comprehensive meta structure |
+| 2026-06-09 | Auto-join league on prediction (idempotent Registration creation) |
+| 2026-06-09 | Level badge thresholds fix and visible rank numbers on podiums |
 
 ---
 
@@ -783,4 +825,79 @@ npx prisma db push   # NOT: prisma migrate dev
 
 ---
 
-*Documentation last updated: 2026-06-08 13:49 EET.*
+## 20. Changelog — 2026-06-08 (Evening) & 2026-06-09
+
+> 50 commits landed on `main` over these two days. The updates cover a full rework of the boost system, dynamic seasonal league management, capture and display of user countries, profile state synchronization, auto-joining of tournaments, and general bug fixes.
+
+### Features
+
+#### 🛡️ Overhaul of Boost Inventory: Joker, Scoreline Shield, and The Demon
+- Complete redesign of the boost cards layout in the user Profile tab. Old mock items like `Double XP x3` and `Wildcard x2` are replaced with interactive boost buttons:
+  - **The Joker**: Doubles XP on your next correct prediction. Limited to **one use every 7 days** globally.
+  - **Scoreline Shield**: Guarantees exact score XP (+30 XP) if you guess the correct outcome (win/draw/loss) but miss the exact scoreline. Limited to **one use every 7 days**.
+  - **The Demon**: Deducts **500 XP** from a rival's ranking in a private mini-league. Castable from a new target selector popup. Limited to **one use per mini-league**.
+- Added `#boost-modal-overlay` HTML container in `app.html` to host the boost match/rival selections.
+- Added custom confirmation modals (`_showBoostConfirmModal()`) to prevent accidental activations.
+- Integrated `/api/boosts/demon` POST endpoint to log casting and aggregate penalties inside the mini-league leaderboard rankings.
+
+#### 🌍 Capturing User Country and Displaying Flags
+- Capture new user registration country automatically from the `x-vercel-ip-country` header, defaulting to `EG` (Egypt) for local development.
+- Stored in the new `country` database field in the `User` model.
+- Exhibited country flags next to names on the global, tournament, and mini-league leaderboard podiums and lists.
+
+#### 📅 Seasonal League Management & Dynamic Leagues
+- Added `season` field to `Tournament` and `Match` models to store API-Football season years (e.g. `2025/26`).
+- Fully dynamic leagues page in `/app` powered by the new `LEAGUE_META` config object. Replaces the old 5-league hardcoding.
+- Dynamic league card status: displays "Completed" badges for completed seasons, "Coming Soon" badges for upcoming seasons, and hides Join/Joined action toggle buttons for completed tournaments.
+- Completed tournaments are kept on the Discover page with their season years.
+- Sorts leagues on the page with "Coming Soon" at the end of the list.
+- Automatically marks tournaments as `COMPLETED` in the fixture sync engine if all matches are completed and the last match date was more than 7 days ago.
+
+#### 🔄 Auto-Join & Registration Improvements
+- **Auto-Join League on Prediction**: When a user predicts a match, the backend automatically registers the user for the corresponding tournament (creates a `Registration` row if it is an OPEN tournament) and adds the league name to the user's preferred leagues.
+- **Registration Table Sync**: Refactored Follow/Unfollow action to make explicit `POST` and `DELETE` requests to `/api/tournaments/[id]/register` to unify leaderboard membership with preferences.
+- **Auto-Register Returning Users**: During the fixture sync of a new season tournament, users who registered for that league in the previous season are automatically registered for the new season tournament.
+
+#### 👤 Enhanced Profile Customization & JWT Session Sync
+- **Gender-Based Default Avatar**: Automatically assigns a default cartoon avatar URL (from `avatar.iran.liara.run`) on registration based on the selected gender (`male`/`female`).
+- **Profile Edit Mode Sync**: Saves name and avatar picker changes directly to the local `window.Backend.user` state, and updates the NextAuth session JWT on every token refresh from the database, preventing profile state reverts on subsequent UI renders.
+- **XP Progress Bar Threshold Correction**: XP progress bar width calculation is updated to accurately map to the active levels tier thresholds (Bronze, Silver, Gold, Platinum, Legend) instead of divided by a static 20000.
+
+#### ✉️ Referral XP Deferral
+- Referral welcome bonus is still given immediately to the referred user, but the referrer's **+200 XP** reward is deferred until the referred user makes their **first prediction** (triggering a `ReferralConvertedEmail` alert).
+
+---
+
+### Bug Fixes & Adjustments
+
+- **First Goalscorer Penalty**: Wrong first goalscorer selections now result in a flat **-100 XP** penalty, replacing the confidence-based formula. Warning added to first goalscorer picker UI.
+- **Podium Visuals**: Made podium rank numbers `#1`, `#2`, `#3` visible by giving them distinct colors instead of a semi-transparent black.
+- **Silver & Bronze Badge styles**: Added missing `.bronze` and `.silver` CSS class styles to the level badges in both main stylesheets and corrected silver badge text color.
+- **State Hydration Re-renders**: Triggered UI re-renders directly from state properties instead of undefined window states, ensuring season tags and Completed badges render immediately on page load.
+- **Cache Busting**: Bumped JS asset versions to timestamp query parameters to bypass edge caching on deployment.
+
+---
+
+### Files Changed Today
+
+| File | Changes |
+|---|---|
+| `prisma/schema.prisma` | Added `country` to `User`; `season` to `Tournament`/`Match`; `isShield` to `Prediction`; created `DemonUsage` model. |
+| `public/app.html` | Updated boost cards structure, added `#boost-modal-overlay`, updated FGS penalty info, simplified mini-league creation form, bumped asset versions. |
+| `public/css/main.css` / `main.v6.css` | Added Bronze/Silver level styles, colored podium rank numbers. |
+| `public/js/app.js` | Added boost modal logic, victim selectors, confirm popups, FGS UI text change, version timestamp query parameter. |
+| `public/js/backend_api.js` | Integrated `LEAGUE_META`, dynamic follow/unfollow registration calls, local profile edit state updates, level tier XP progress calculations. |
+| `public/js/data.js` | Added logo URLs, status flags, season years to mock/placeholder leagues list. |
+| `src/lib/auth.ts` | Selected and token-cached country; synced user edits (name, image, country) from DB to JWT session. |
+| `src/app/api/auth/register/route.ts` | Captured country from header, assigned default avatar URL, deferred referral XP award. |
+| `src/app/api/predictions/route.ts` | Implemented 7-day cooldown limits on Joker/Shield, added boost-only update path, added auto-join registration, deferred referral XP transaction. |
+| `src/app/api/admin/sync-fixtures/route.ts` | Implemented flat FGS penalty (-100 XP), checked `isShield` for exact score bonus, auto-registered returning users, auto-completed seasons. |
+| `src/app/api/boosts/demon/route.ts` | **[NEW]** Created Demon cast route. |
+| `src/app/api/tournaments/[id]/register/route.ts` | **[NEW]** Created tournament register POST/DELETE handlers. |
+| `src/app/api/leaderboard/route.ts` | Aggregated and returned `country` code in rankings. |
+| `src/app/api/mini-leagues/[id]/route.ts` | Aggregated and subtracted `DemonUsage` penalties from ranks. |
+| `src/emails/WelcomeEmail.tsx` / `ReferralWelcomeBonusEmail.tsx` | Updated welcome email copies to reflect prediction deferral. |
+
+---
+
+*Documentation last updated: 2026-06-09 21:30 EET.*
