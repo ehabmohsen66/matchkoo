@@ -92,8 +92,8 @@ export default function Home() {
               <div className="step-icon cyan">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#08BDBD" strokeWidth="2" width="22" height="22"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
               </div>
-              <div className="step-title">Discover Matches</div>
-              <div className="step-desc">Browse 188 leagues across every continent. Filter by competition, date, and difficulty rating.</div>
+              <div className="step-title">Discover Matches & Clubs</div>
+              <div className="step-desc">Browse leagues and clubs across every continent. Filter by competition or country.</div>
             </div>
             <div className="step-card reveal reveal-delay-3">
               <div className="step-num">03</div>
