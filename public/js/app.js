@@ -4419,7 +4419,7 @@ const CLUBS_DB = {
   'Botola Pro (Morocco)': { country: 'Morocco', flag: '🇲🇦', continent: 'africa', clubs: [
     'Wydad AC','Raja CA','RS Berkane','AS FAR',
     'Moghreb Tétouan','Olympique Khouribga','Hassania Agadir','Difaa El Jadidi',
-    'Ittihad Tanger','FUS Rabat','MAS Fès','Renaissance Berkane',
+    'Ittihad Tanger','FUS Rabat','MAS Fès',
     'Rapide Oued Zem','Chabab Rif','Youssoufia Berrechid','Maghreb Fès'
   ]},
   'Ligue 1 (Algeria)': { country: 'Algeria', flag: '🇩🇿', continent: 'africa', clubs: [
