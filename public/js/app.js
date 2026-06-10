@@ -1146,6 +1146,7 @@ const TEAM_DISPLAY_MAP = {
   'Arminia Bielefeld': { logo: '/images/clubs/arminia_bielefeld.png' },
   'Paderborn':         { logo: '/images/clubs/paderborn.png' },
   'SC Paderborn 07':   { logo: '/images/clubs/paderborn.png' },
+  'Fortuna Düsseldorf':{ logo: '/images/clubs/fortuna_dusseldorf.png' },
 
   // Morocco Botola Pro
   'Wydad Casablanca':    { name: 'Wydad AC' },
@@ -4145,7 +4146,7 @@ const STATIC_LOGO_MAP = {
   'Hertha Berlin':      'https://media.api-sports.io/football/teams/159.png',
   'FC Köln':            'https://media.api-sports.io/football/teams/192.png',
   'Hannover 96':        'https://media.api-sports.io/football/teams/183.png',
-  'Fortuna Düsseldorf': 'https://media.api-sports.io/football/teams/181.png',
+  'Fortuna Düsseldorf': '/images/clubs/fortuna_dusseldorf.png',
   'Nürnberg':           'https://media.api-sports.io/football/teams/188.png',
   'Darmstadt 98':       '/images/clubs/darmstadt_98.png',
   'Kaiserslautern':     '/images/clubs/kaiserslautern.png',
@@ -4368,7 +4369,7 @@ const CLUBS_DB = {
     'Werder Bremen','Wolfsburg','Bochum','Holstein Kiel','FC Köln',
     'Schalke 04','Hertha Berlin','Hannover 96','Fortuna Düsseldorf','Nürnberg',
     'Darmstadt 98','Kaiserslautern','Greuther Fürth','Paderborn','Karlsruhe',
-    'Arminia Bielefeld','VfB Stuttgart II'
+    'Arminia Bielefeld'
   ]},
   'Ligue 1': { country: 'France', flag: '🇫🇷', continent: 'europe', clubs: [
     'PSG','Monaco','Marseille','Lyon','Lille',
