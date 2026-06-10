@@ -4373,7 +4373,7 @@ const CLUBS_DB = {
     'Eintracht Frankfurt','Freiburg','Hamburger SV','Heidenheim','Hoffenheim',
     'Mainz','RB Leipzig','St. Pauli','Stuttgart','Union Berlin',
     'Werder Bremen','Wolfsburg','Bochum','Holstein Kiel','FC Köln',
-    'Schalke 04','Hertha Berlin','Hannover 96','Fortuna Düsseldorf','Nürnberg',
+    'Schalke 04','Hertha Berlin','Hannover 96','Fortuna Düsseldorf',
     'Darmstadt 98','Kaiserslautern','Paderborn','Karlsruhe',
     'Arminia Bielefeld'
   ]},
