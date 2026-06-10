@@ -4379,12 +4379,10 @@ const CLUBS_DB = {
   ]},
   'Ligue 1': { country: 'France', flag: '🇫🇷', continent: 'europe', clubs: [
     'PSG','Monaco','Marseille','Lyon','Lille',
-    'Nice','Lens','Rennes','Strasbourg','Toulouse',
-    'Montpellier','Nantes','Reims','Le Havre','Auxerre',
+    'Nice','Lens','Rennes','Strasbourg',
+    'Montpellier','Nantes','Le Havre','Auxerre',
     'Angers','Saint-Etienne','Brest','Lorient','Metz',
-    'Bordeaux','Guingamp','Caen','Dijon','Clermont',
-    'Ajaccio','Nancy','Valenciennes','Nîmes','Bastia',
-    'Grenoble','Troyes'
+    'Bordeaux'
   ]},
 
   // ── AFRICA ──────────────────────────────────────────────────────
