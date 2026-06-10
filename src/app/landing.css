@@ -914,3 +914,98 @@
       to { transform: translateX(50%); }
     }
   
+/* ─── LANDING LIVE TICKER (matches app style) ────────────── */
+.landing-ticker-wrap {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  margin: 0 auto 40px;
+  max-width: 1200px;
+  overflow: hidden;
+  position: relative;
+  height: 56px;
+  padding-left: 18px;
+}
+.landing-ticker-wrap::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #29BF12, #08BDBD, #FF9914);
+  border-radius: 16px 16px 0 0;
+}
+.landing-ticker-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(242,27,63,0.12);
+  border: 1px solid rgba(242,27,63,0.3);
+  border-radius: 100px;
+  padding: 5px 12px;
+  margin-right: 16px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.landing-live-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #F21B3F;
+  animation: live-pulse 1.4s ease-in-out infinite;
+  display: inline-block;
+}
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.75); }
+}
+.landing-ticker-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #F21B3F;
+  letter-spacing: 1.5px;
+}
+.landing-ticker-viewport {
+  flex: 1;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+.landing-ticker-track {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: lt-scroll 36s linear infinite;
+  will-change: transform;
+}
+.landing-ticker-track:hover { animation-play-state: paused; }
+@keyframes lt-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.lt-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 28px 0 0;
+  font-size: 0.84rem;
+  color: rgba(255,255,255,0.7);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: default;
+}
+.lt-item strong { color: #fff; font-weight: 800; }
+.lt-score {
+  font-family: 'Russo One', 'Inter', sans-serif;
+  color: #29BF12;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+.lt-sep { color: rgba(255,255,255,0.2); margin: 0 4px; }
+@media (max-width: 768px) {
+  .landing-ticker-wrap { margin: 0 16px 28px; height: 48px; }
+}

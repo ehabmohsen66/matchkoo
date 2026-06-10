@@ -2,6 +2,7 @@ import './landing.css';
 import Link from 'next/link';
 import MatchkooLogo from '@/components/MatchkooLogo';
 import ScrollReveal from '@/components/ScrollReveal';
+import LiveTicker from '@/components/LiveTicker';
 
 export default function Home() {
   return (
@@ -68,35 +69,7 @@ export default function Home() {
       </section>
 
       {/*  ─── LIVE TICKER ────────────────────────────────────  */}
-      <div className="ticker-wrap">
-        <div className="ticker-inner">
-          {/*  Repeated twice for seamless loop  */}
-          <div className="ticker-item"><span className="ticker-live"><span className="mock-live-dot"></span>Live</span><span>Man United</span><span className="ticker-score">1 – 2</span><span>Arsenal</span><span style={{ "color": "#29BF12", "fontSize": "0.72rem", "fontWeight": "700" }}>67'</span></div>
-          <div className="ticker-sep"></div>
-          <div className="ticker-item"><span className="ticker-live"><span className="mock-live-dot"></span>Live</span><span>Real Madrid</span><span className="ticker-score">2 – 0</span><span>Barcelona</span><span style={{ "color": "#08BDBD", "fontSize": "0.72rem", "fontWeight": "700" }}>34'</span></div>
-          <div className="ticker-sep"></div>
-          <div className="ticker-item"><span style={{ "color": "#ABFF4F", "fontSize": "0.72rem", "fontWeight": "700", "letterSpacing": "1px" }}>FT</span><span>Bayern Munich</span><span className="ticker-score">3 – 1</span><span>Dortmund</span></div>
-          <div className="ticker-sep"></div>
-          <div className="ticker-item"><span className="ticker-live"><span className="mock-live-dot"></span>Live</span><span>PSG</span><span className="ticker-score">1 – 1</span><span>Lyon</span><span style={{ "color": "#FF9914", "fontSize": "0.72rem", "fontWeight": "700" }}>78'</span></div>
-          <div className="ticker-sep"></div>
-          <div className="ticker-item"><span style={{ "color": "#ABFF4F", "fontSize": "0.72rem", "fontWeight": "700", "letterSpacing": "1px" }}>FT</span><span>Al Ahly</span><span className="ticker-score">2 – 0</span><span>Wydad</span></div>
-          <div className="ticker-sep"></div>
-          <div className="ticker-item"><span className="ticker-live"><span className="mock-live-dot"></span>Live</span><span>AC Milan</span><span className="ticker-score">0 – 1</span><span>Juventus</span><span style={{ "color": "#F21B3F", "fontSize": "0.72rem", "fontWeight": "700" }}>52'</span></div>
-          <div className="ticker-sep"></div>
-          {/*  duplicate  */}
-          <div className="ticker-item"><span className="ticker-live"><span className="mock-live-dot"></span>Live</span><span>Man United</span><span className="ticker-score">1 – 2</span><span>Arsenal</span><span style={{ "color": "#29BF12", "fontSize": "0.72rem", "fontWeight": "700" }}>67'</span></div>
-          <div className="ticker-sep"></div>
-          <div className="ticker-item"><span className="ticker-live"><span className="mock-live-dot"></span>Live</span><span>Real Madrid</span><span className="ticker-score">2 – 0</span><span>Barcelona</span><span style={{ "color": "#08BDBD", "fontSize": "0.72rem", "fontWeight": "700" }}>34'</span></div>
-          <div className="ticker-sep"></div>
-          <div className="ticker-item"><span style={{ "color": "#ABFF4F", "fontSize": "0.72rem", "fontWeight": "700", "letterSpacing": "1px" }}>FT</span><span>Bayern Munich</span><span className="ticker-score">3 – 1</span><span>Dortmund</span></div>
-          <div className="ticker-sep"></div>
-          <div className="ticker-item"><span className="ticker-live"><span className="mock-live-dot"></span>Live</span><span>PSG</span><span className="ticker-score">1 – 1</span><span>Lyon</span><span style={{ "color": "#FF9914", "fontSize": "0.72rem", "fontWeight": "700" }}>78'</span></div>
-          <div className="ticker-sep"></div>
-          <div className="ticker-item"><span style={{ "color": "#ABFF4F", "fontSize": "0.72rem", "fontWeight": "700", "letterSpacing": "1px" }}>FT</span><span>Al Ahly</span><span className="ticker-score">2 – 0</span><span>Wydad</span></div>
-          <div className="ticker-sep"></div>
-          <div className="ticker-item"><span className="ticker-live"><span className="mock-live-dot"></span>Live</span><span>AC Milan</span><span className="ticker-score">0 – 1</span><span>Juventus</span><span style={{ "color": "#F21B3F", "fontSize": "0.72rem", "fontWeight": "700" }}>52'</span></div>
-        </div>
-      </div>
+      <LiveTicker />
 
       {/*  ─── HOW IT WORKS ───────────────────────────────────  */}
       <div id="how" style={{ "maxWidth": "1200px", "margin": "0 auto" }}>
