@@ -1218,6 +1218,20 @@ const TEAM_DISPLAY_MAP = {
   'Etoile Sahel':      { name: 'Étoile Sahel' },
   'US Monastirienne':  { name: 'US Monastir' },
 
+  // Saudi Arabia
+  'Al Nassr':           { logo: '/images/clubs/al_nassr.png' },
+  'Al Nassr FC':        { name: 'Al Nassr', logo: '/images/clubs/al_nassr.png' },
+  'Al Ittihad':         { logo: '/images/clubs/al_ittihad.png' },
+  'Al-Ittihad':         { name: 'Al Ittihad', logo: '/images/clubs/al_ittihad.png' },
+  'Al Ittihad Jeddah':  { name: 'Al Ittihad', logo: '/images/clubs/al_ittihad.png' },
+  'Al Ahli':            { logo: '/images/clubs/al_ahli.png' },
+  'Al-Ahli':            { name: 'Al Ahli', logo: '/images/clubs/al_ahli.png' },
+  'Al Ahli Jeddah':     { name: 'Al Ahli', logo: '/images/clubs/al_ahli.png' },
+  'Al Ettifaq':         { logo: '/images/clubs/al_ettifaq.png' },
+  'Al-Ettifaq':         { name: 'Al Ettifaq', logo: '/images/clubs/al_ettifaq.png' },
+  'Al Fateh':           { logo: '/images/clubs/al_fateh.png' },
+  'Al-Fateh':           { name: 'Al Fateh', logo: '/images/clubs/al_fateh.png' },
+
   // Spain
   'Zaragoza':           { logo: '/images/clubs/zaragoza.png' },
   'Real Zaragoza':      { name: 'Zaragoza', logo: '/images/clubs/zaragoza.png' },
@@ -4360,11 +4374,11 @@ const STATIC_LOGO_MAP = {
   'Petrojet FC':        '/images/clubs/petrojet_fc.png',
   // ── Saudi Pro League ─────────────────────────────────────────────────
   'Al Hilal':             'https://media.api-sports.io/football/teams/2932.png',
-  'Al Nassr':             'https://media.api-sports.io/football/teams/2931.png',
-  'Al Ittihad':           'https://media.api-sports.io/football/teams/2934.png',
-  'Al Ahli':              'https://media.api-sports.io/football/teams/2937.png',
-  'Al Ettifaq':           'https://media.api-sports.io/football/teams/2938.png',
-  'Al Fateh':             'https://media.api-sports.io/football/teams/2935.png',
+  'Al Nassr':             '/images/clubs/al_nassr.png',
+  'Al Ittihad':           '/images/clubs/al_ittihad.png',
+  'Al Ahli':              '/images/clubs/al_ahli.png',
+  'Al Ettifaq':           '/images/clubs/al_ettifaq.png',
+  'Al Fateh':             '/images/clubs/al_fateh.png',
   'Al Shabab':            'https://media.api-sports.io/football/teams/2940.png',
   'Al Qadsiah':           'https://media.api-sports.io/football/teams/5377.png',
   'Al Taawoun':           'https://media.api-sports.io/football/teams/10029.png',
@@ -4504,13 +4518,6 @@ const STATIC_LOGO_MAP = {
   'USA':          'https://flagcdn.com/w80/us.png',
   'Uruguay':      'https://flagcdn.com/w80/uy.png',
   'Wales':        'https://flagcdn.com/w80/gb-wls.png',
-  // ── Saudi Pro League ─────────────────────────────────────────────
-  'Al Hilal':     'https://media.api-sports.io/football/teams/2932.png',
-  'Al Nassr':     'https://media.api-sports.io/football/teams/2930.png',
-  'Al Ittihad':   'https://media.api-sports.io/football/teams/2934.png',
-  'Al Ahli':      'https://media.api-sports.io/football/teams/2937.png',
-  'Al Ettifaq':   'https://media.api-sports.io/football/teams/2924.png',
-  'Al Shabab':    'https://media.api-sports.io/football/teams/2929.png',
 };
 
 const CLUBS_DB = {
