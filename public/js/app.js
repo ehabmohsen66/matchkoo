@@ -2685,7 +2685,7 @@ async function createLeague() {
     document.getElementById('league-name-input').style.borderColor = 'var(--red)';
     return;
   }
-  const competition = document.querySelector('input[name="mini_league_comp"]:checked')?.value || 'Premier League';
+  const competition = document.querySelector('input[name="mini_league_comp"]:checked')?.value || 'premier_league';
   const scoringMode = 'global';
   const code = 'KO-' + name.replace(/\s/g,'').toUpperCase().slice(0,6) + '-' + Math.floor(1000+Math.random()*9000);
   try {
