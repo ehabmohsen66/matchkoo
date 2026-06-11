@@ -3974,7 +3974,27 @@ function closeCreateLeague() {
 }
 
 async function deleteMiniLeague(id, name, btn) {
-  if (!confirm(`Delete "${name}"?\n\nThis will permanently remove the league and all its members. This cannot be undone.`)) return;
+  const confirmed = await new Promise(resolve => {
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;';
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#0F1520;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:32px 28px;max-width:320px;width:90%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.6);';
+    card.innerHTML = '<div style="font-size:2.8rem;margin-bottom:12px;">🗑️</div>'
+      + '<div style="font-size:1rem;font-weight:800;color:#fff;margin-bottom:8px;">Delete League?</div>'
+      + '<div style="font-size:0.85rem;color:rgba(255,255,255,0.7);font-weight:600;margin-bottom:6px;">' + name + '</div>'
+      + '<div style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin-bottom:24px;line-height:1.6;">This will permanently remove the league and all its members.<br>This cannot be undone.</div>'
+      + '<div style="display:flex;gap:10px;">'
+      + '<button id="_del_cancel" style="flex:1;padding:11px;border-radius:12px;font-size:0.85rem;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);">Cancel</button>'
+      + '<button id="_del_confirm" style="flex:1;padding:11px;border-radius:12px;font-size:0.85rem;font-weight:700;cursor:pointer;background:rgba(244,67,54,0.15);border:1px solid rgba(244,67,54,0.4);color:#f44336;">Delete</button>'
+      + '</div>';
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+    const cleanup = (r) => { backdrop.remove(); resolve(r); };
+    card.querySelector('#_del_cancel').onclick = () => cleanup(false);
+    card.querySelector('#_del_confirm').onclick = () => cleanup(true);
+    backdrop.addEventListener('click', e => { if (e.target === backdrop) cleanup(false); });
+  });
+  if (!confirmed) return;
 
   btn.disabled = true;
   btn.textContent = '⏳';
