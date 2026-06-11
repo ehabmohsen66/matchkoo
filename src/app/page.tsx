@@ -345,7 +345,6 @@ export default function Home() {
           <h2 className="cta-title">
             Ready to Prove You Know Football?
           </h2>
-          <p className="cta-sub">Join 2.5 thousand predictors today. Your first prediction takes 30 seconds.</p>
           <div className="cta-actions">
             <a href="/register" className="btn-primary btn-primary-lg">
               Start Predicting Free
