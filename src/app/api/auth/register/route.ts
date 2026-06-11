@@ -59,7 +59,15 @@ export async function POST(req: NextRequest) {
         verificationToken,
         gender: gender === "female" ? "female" : "male", // validate input
         country, // Captured automatically
-        image: gender === "female" ? `https://avatar.iran.liara.run/public/girl?username=${encodeURIComponent(name)}` : `https://avatar.iran.liara.run/public/boy?username=${encodeURIComponent(name)}`,
+        image: (() => {
+          // Male avatars: Felix, Kai, Marco, Zara (neutral)
+          // Female avatars: Nadia, Luna, Jade, Sofia
+          const maleSeeds   = ["Felix&backgroundColor=b6e3f4", "Kai&backgroundColor=c0aede", "Marco&backgroundColor=ffd5dc"];
+          const femaleSeeds = ["Nadia&backgroundColor=b6e3f4", "Luna&backgroundColor=c0aede", "Jade&backgroundColor=ffd5dc", "Sofia&backgroundColor=d1d4f9"];
+          const pool = gender === "female" ? femaleSeeds : maleSeeds;
+          const seed = pool[Math.floor(Math.random() * pool.length)];
+          return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+        })(),
         preferredLeagues: Array.isArray(preferredLeagues) ? preferredLeagues : [],
         ...(validDob ? { dateOfBirth: validDob } : {}),
         // Give new user their +200 XP welcome bonus immediately if referred
