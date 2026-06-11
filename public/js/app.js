@@ -1318,7 +1318,9 @@ const TEAM_DISPLAY_MAP = {
   'LAFC':               { name: 'Los Angeles FC (LAFC)', logo: '/images/clubs/lafc.png' },
   'Los Angeles FC (LAFC)': { logo: '/images/clubs/lafc.png' },
   'New York City FC':   { logo: '/images/clubs/nycfc.png' },
-  'Seattle Sounders':   { name: 'Seattle Sounders FC' },
+  'Seattle Sounders':   { name: 'Seattle Sounders FC', logo: '/images/clubs/seattle_sounders.png' },
+  'Seattle Sounders FC': { logo: '/images/clubs/seattle_sounders.png' },
+  'Portland Timbers':   { logo: '/images/clubs/portland_timbers.png' },
 };
 
 function _resolveTeam(name, logo) {
@@ -4501,9 +4503,9 @@ const STATIC_LOGO_MAP = {
   'LAFC':                     '/images/clubs/lafc.png',
   'Los Angeles FC (LAFC)':    '/images/clubs/lafc.png',
   'New York City FC':         '/images/clubs/nycfc.png',
-  'Portland Timbers':         'https://media.api-sports.io/football/teams/1604.png',
-  'Seattle Sounders':         'https://media.api-sports.io/football/teams/1602.png',
-  'Seattle Sounders FC':      'https://media.api-sports.io/football/teams/1602.png',
+  'Portland Timbers':         '/images/clubs/portland_timbers.png',
+  'Seattle Sounders':         '/images/clubs/seattle_sounders.png',
+  'Seattle Sounders FC':      '/images/clubs/seattle_sounders.png',
   // ── Brasileirão Série A ───────────────────────────────────────────────
   'Flamengo':                 'https://media.api-sports.io/football/teams/127.png',
   'Palmeiras':                'https://media.api-sports.io/football/teams/121.png',
