@@ -1311,7 +1311,8 @@ const TEAM_DISPLAY_MAP = {
   'Malaga':             { name: 'Málaga', logo: '/images/clubs/malaga.png' },
 
   // MLS
-  'Atlanta United':     { name: 'Atlanta United FC' },
+  'Atlanta United':     { name: 'Atlanta United FC', logo: '/images/clubs/atlanta_united.png' },
+  'Atlanta United FC':  { logo: '/images/clubs/atlanta_united.png' },
   'Inter Miami':        { name: 'Inter Miami CF', logo: '/images/clubs/inter_miami.png' },
   'Inter Miami CF':     { logo: '/images/clubs/inter_miami.png' },
   'LAFC':               { name: 'Los Angeles FC (LAFC)' },
@@ -4489,12 +4490,12 @@ const STATIC_LOGO_MAP = {
   'Al Nasr':              '/images/clubs/al_nasr.png',
   // ── MLS ──────────────────────────────────────────────────────────────
 
-  'Atlanta United':           'https://media.api-sports.io/football/teams/1596.png',
-  'Atlanta United FC':        'https://media.api-sports.io/football/teams/1596.png',
-  'D.C. United':              'https://media.api-sports.io/football/teams/1617.png',
+  'Atlanta United':           '/images/clubs/atlanta_united.png',
+  'Atlanta United FC':        '/images/clubs/atlanta_united.png',
+  'D.C. United':              '/images/clubs/dc_united.png',
   'Inter Miami':              '/images/clubs/inter_miami.png',
   'Inter Miami CF':           '/images/clubs/inter_miami.png',
-  'LA Galaxy':                'https://media.api-sports.io/football/teams/1600.png',
+  'LA Galaxy':                '/images/clubs/la_galaxy.png',
   'LAFC':                     'https://media.api-sports.io/football/teams/1594.png',
   'Los Angeles FC (LAFC)':    'https://media.api-sports.io/football/teams/1594.png',
   'New York City FC':         'https://media.api-sports.io/football/teams/1599.png',
