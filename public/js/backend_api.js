@@ -26,6 +26,8 @@ const Backend = {
           predictionCount: session.user.predictionCount ?? 0,
           gender: session.user.gender ?? 'male',
         };
+        // Expose user ID globally so UI can check ownership
+        window._myUserId = this.user.id;
         this._updateAuthState();
         // Fetch global rank immediately (doesn't depend on full leaderboard)
         this._fetchAndShowGlobalRank();

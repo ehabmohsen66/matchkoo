@@ -2407,7 +2407,12 @@ async function initMiniLeagues() {
     container.innerHTML = myLeagues.map(ml => {
       const comp = COMP_META[ml.competition] || COMP_META['premier_league'];
       return `
-      <div class="league-tile" role="button" tabindex="0" onclick="openMiniLeagueDetail('${ml.id}')" style="cursor:pointer;">
+      <div class="league-tile" role="button" tabindex="0" onclick="openMiniLeagueDetail('${ml.id}')" style="cursor:pointer;position:relative;">
+        ${ml.createdByUserId === window._myUserId ? `
+        <button onclick="event.stopPropagation();deleteMiniLeague('${ml.id}','${ml.name.replace(/'/g, "\\'")}',this)"
+          title="Delete league"
+          style="position:absolute;top:10px;right:10px;background:rgba(244,67,54,0.1);border:1px solid rgba(244,67,54,0.3);color:#f44336;border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.85rem;z-index:2;transition:background 0.2s"
+          onmouseenter="this.style.background='rgba(244,67,54,0.25)'" onmouseleave="this.style.background='rgba(244,67,54,0.1)'">🗑️</button>` : ''}
         <div class="league-tile-header">
           <div class="league-tile-badge" style="background:rgba(0,0,0,0.3);width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex-shrink:0;">${_compBadge(comp, 32)}</div>
           <div class="league-tile-info">
@@ -3966,6 +3971,30 @@ async function openCreateLeague() {
 function closeCreateLeague() {
   document.getElementById('create-league-modal').classList.add('hidden');
   document.body.style.overflow = '';
+}
+
+async function deleteMiniLeague(id, name, btn) {
+  if (!confirm(`Delete "${name}"?\n\nThis will permanently remove the league and all its members. This cannot be undone.`)) return;
+
+  btn.disabled = true;
+  btn.textContent = '⏳';
+
+  try {
+    const res = await fetch(`/api/tournaments/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (res.ok) {
+      showNotification(`"${name}" has been deleted.`, 'success');
+      initMiniLeagues(); // refresh the list
+    } else {
+      showNotification(data.message || 'Could not delete league', 'error');
+      btn.disabled = false;
+      btn.textContent = '🗑️';
+    }
+  } catch(e) {
+    showNotification('Network error — please try again', 'error');
+    btn.disabled = false;
+    btn.textContent = '🗑️';
+  }
 }
 
 // ─── CHAT ────────────────────────────────────────────────────────
