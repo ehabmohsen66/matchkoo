@@ -1323,8 +1323,8 @@ input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
   .lb-name { font-size: 0.82rem; }
   .lb-xp   { font-size: 0.82rem; }
   /* Modal */
-  .modal-overlay { padding: 12px; align-items: flex-end; }
-  .modal-sheet   { border-radius: var(--radius-xl) var(--radius-xl) 0 0; max-height: 92vh; }
+  .modal-overlay { padding: 12px; align-items: flex-end; padding-bottom: 72px; }
+  .modal-sheet   { border-radius: var(--radius-xl) var(--radius-xl) 0 0; max-height: 85vh; }
   /* Pred insights */
   .pred-insights-grid { grid-template-columns: repeat(2, 1fr); }
   /* Profile */
@@ -1362,8 +1362,8 @@ input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
   .trophies-grid       { grid-template-columns: repeat(2, 1fr); }
 
   /* Modal — full width on phone */
-  .modal-sheet         { width: 100%; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
-  .modal-overlay       { padding: 0; align-items: flex-end; }
+  .modal-sheet         { width: 100%; border-radius: var(--radius-xl) var(--radius-xl) 0 0; max-height: 82vh; }
+  .modal-overlay       { padding: 0; padding-bottom: 68px; align-items: flex-end; }
   .modal-body          { padding: 16px; }
   .modal-header        { padding: 16px 16px; }
   .modal-match-header  { gap: 8px; }
