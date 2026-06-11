@@ -319,11 +319,12 @@ async function _renderHomeVoteWidget() {
     // Fetch leaderboard + vote state in parallel, and ensure logos are loaded
     const [lbClubs, voteState] = await Promise.all([
       fetch('/api/clubs/leaderboard?period=monthly').then(r => r.ok ? r.json() : []),
-      fetch('/api/clubs/vote-state').then(r => r.ok ? r.json() : {}).catch(() => {}),
+      fetch('/api/clubs/vote').then(r => r.ok ? r.json() : {}).catch(() => {}),
       ensureClubLogosLoaded()
     ]);
 
-    const voted = voteState?.votedClub || '';
+    // Build a set of clubs voted for today using the votedToday array
+    const votedTodaySet = new Set((voteState?.votedToday || []).map(v => v.clubName));
     const topClubs = lbClubs.slice(0, 10);
 
     if (!topClubs.length) {
@@ -334,8 +335,8 @@ async function _renderHomeVoteWidget() {
     const colours = ['#e63946','#457b9d','#2a9d8f','#e9c46a','#f4a261','#6a0572','#1982c4','#8ac926','#ff595e','#c77dff'];
 
     clubEl.innerHTML = topClubs.map((c, i) => {
-      const isVoted = voted && voted === c.clubName;
-      const isBlocked = voted && !isVoted;
+      const isVoted = votedTodaySet.has(c.clubName);
+      const isBlocked = votedTodaySet.size > 0 && !isVoted;
       const initials = (c.clubName || 'CL').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
       const badgeBg = colours[(c.clubName||'').charCodeAt(0) % colours.length];
       const logoUrl = (typeof clubLogosMap !== 'undefined' && clubLogosMap[c.clubName]) || '';
@@ -378,6 +379,7 @@ async function _renderHomeVoteWidget() {
 
   } catch(e) { if (clubEl) clubEl.innerHTML = ''; }
 }
+
 
 function _homeVote(el) {
   if (!el) return;
