@@ -5,14 +5,21 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
-// ─── The 5 whitelisted leagues ────────────────────────────────────────────────
-const LEAGUES = [
-  { id: "epl",   name: "English Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", color: "#3D1A78", accent: "#9B5DE5" },
-  { id: "laliga",name: "La Liga",                flag: "🇪🇸",       color: "#B5002A", accent: "#FF3D68" },
-  { id: "ucl",   name: "UEFA Champions League",  flag: "🏆",        color: "#0A1E6E", accent: "#4B6EF5" },
-  { id: "epl233",name: "Egyptian Premier League",flag: "🇪🇬",       color: "#8B1A1A", accent: "#E53935" },
-  { id: "wc",    name: "FIFA World Cup",         flag: "🌍",        color: "#065143", accent: "#3CB82E" },
-];
+// ─── Competition metadata (same slugs as COMP_META in app.js) ────────────────
+const COMP_META: Record<string, { name: string; flag: string; color: string; accent: string }> = {
+  premier_league:          { name: "English Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", color: "#3D1A78", accent: "#9B5DE5" },
+  la_liga:                 { name: "La Liga",                flag: "🇪🇸",       color: "#B5002A", accent: "#FF3D68" },
+  champions_league:        { name: "UEFA Champions League",  flag: "🏆",        color: "#0A1E6E", accent: "#4B6EF5" },
+  egyptian_premier_league: { name: "Egyptian Premier League",flag: "🇪🇬",       color: "#8B1A1A", accent: "#E53935" },
+  world_cup:               { name: "FIFA World Cup 2026",    flag: "🌍",        color: "#065143", accent: "#3CB82E" },
+  serie_a:                 { name: "Serie A",                flag: "🇮🇹",       color: "#0d47a1", accent: "#42a5f5" },
+  bundesliga:              { name: "Bundesliga",             flag: "🇩🇪",       color: "#b71c1c", accent: "#ef9a9a" },
+  ligue_1:                 { name: "Ligue 1",                flag: "🇫🇷",       color: "#1a237e", accent: "#7986cb" },
+  saudi_league:            { name: "Saudi Pro League",       flag: "🇸🇦",       color: "#1b5e20", accent: "#69f0ae" },
+  mls:                     { name: "MLS",                    flag: "🇺🇸",       color: "#0d47a1", accent: "#82b1ff" },
+};
+
+type ActiveLeague = { id: string; slug: string; name: string; flag: string; color: string; accent: string };
 
 // ─── Club logos: hidden on mobile ────────────────────────────────────────────
 const CLUB_LOGOS = [
@@ -68,6 +75,8 @@ function RegisterForm() {
   const [gender, setGender] = useState<'male'|'female'|''>("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [activeLeagues, setActiveLeagues] = useState<ActiveLeague[]>([]);
+  const [leaguesLoading, setLeaguesLoading] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -82,8 +91,8 @@ function RegisterForm() {
     });
   };
 
-  // Step 1 → validate → go to step 2
-  const handleStep1 = (e: React.FormEvent) => {
+  // Step 1 → validate → go to step 2, then fetch active leagues
+  const handleStep1 = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
@@ -93,6 +102,37 @@ function RegisterForm() {
     const age = (Date.now() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
     if (age < 5 || age > 120) { setError("Please enter a valid date of birth."); return; }
     setStep(2);
+
+    // Fetch active leagues dynamically
+    setLeaguesLoading(true);
+    try {
+      const res = await fetch("/api/tournaments");
+      const tournaments = res.ok ? await res.json() : [];
+      // Only OPEN registration, non-COMPLETED, deduplicated by competition slug
+      const seen = new Map<string, ActiveLeague>();
+      for (const t of tournaments) {
+        if (t.registrationMode === "INVITE_ONLY" || t.status === "COMPLETED" || !t.competition) continue;
+        if (!seen.has(t.competition)) {
+          const meta = COMP_META[t.competition];
+          seen.set(t.competition, {
+            id: t.id,
+            slug: t.competition,
+            name: meta?.name ?? t.name,
+            flag: meta?.flag ?? "🏆",
+            color: meta?.color ?? "#1a1a2e",
+            accent: meta?.accent ?? "#6FE840",
+          });
+        } else if (t.status === "ONGOING" && seen.get(t.competition)?.slug) {
+          // prefer ONGOING over UPCOMING
+          const meta = COMP_META[t.competition];
+          seen.set(t.competition, { id: t.id, slug: t.competition, name: meta?.name ?? t.name, flag: meta?.flag ?? "🏆", color: meta?.color ?? "#1a1a2e", accent: meta?.accent ?? "#6FE840" });
+        }
+      }
+      setActiveLeagues(Array.from(seen.values()));
+    } catch {
+      setActiveLeagues([]);
+    }
+    setLeaguesLoading(false);
   };
 
   // Step 2 → submit to API
@@ -279,7 +319,11 @@ function RegisterForm() {
               </p>
 
               <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                {LEAGUES.map((lg, i) => {
+                {leaguesLoading ? (
+                  <div style={{ textAlign:"center", padding:"32px 0", color:"rgba(255,255,255,0.4)", fontSize:"0.85rem" }}>Loading active leagues…</div>
+                ) : activeLeagues.length === 0 ? (
+                  <div style={{ textAlign:"center", padding:"24px 0", color:"rgba(255,255,255,0.35)", fontSize:"0.85rem" }}>No active leagues right now.</div>
+                ) : activeLeagues.map((lg, i) => {
                   const isOn = selected.has(lg.name);
                   return (
                     <motion.button
