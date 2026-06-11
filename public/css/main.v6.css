@@ -1542,7 +1542,7 @@ input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
 
 /* ─── MOBILE (480px) ────────────────────────────────────────── */
 @media (max-width: 480px) {
-  .continent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .continent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .match-card { min-width: 240px; }
   .match-cards-scroll { gap: 10px; }
   .podium-card         { max-width: 115px; gap: 5px; }

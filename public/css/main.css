@@ -1334,7 +1334,7 @@ input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
 /* ─── MOBILE (480px) ────────────────────────────────────────── */
 @media (max-width: 480px) {
   /* Navigation */
-  .continent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .continent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 
   /* Match cards */
   .match-card { min-width: 240px; }
