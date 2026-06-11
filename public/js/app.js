@@ -3921,18 +3921,32 @@ async function openCreateLeague() {
     listEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.8rem;padding:8px;">Loading active leagues…</div>';
     try {
       const tournaments = await fetch('/api/tournaments').then(r => r.ok ? r.json() : []);
-      // Only show official (non INVITE_ONLY) UPCOMING or ONGOING tournaments
+      
+      // Only show official (non INVITE_ONLY) non-COMPLETED tournaments
       const active = tournaments.filter(t =>
         t.registrationMode !== 'INVITE_ONLY' &&
-        (t.status === 'UPCOMING' || t.status === 'ONGOING')
+        t.status !== 'COMPLETED' &&
+        t.competition  // must have a competition slug
       );
 
-      if (!active.length) {
+      // Deduplicate: keep one entry per unique competition slug (prefer ONGOING over UPCOMING)
+      const seen = new Map();
+      for (const t of active) {
+        const existing = seen.get(t.competition);
+        if (!existing) {
+          seen.set(t.competition, t);
+        } else if (t.status === 'ONGOING' && existing.status === 'UPCOMING') {
+          seen.set(t.competition, t); // prefer ONGOING
+        }
+      }
+      const deduped = Array.from(seen.values());
+
+      if (!deduped.length) {
         listEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.8rem;padding:8px;">No active leagues available right now.</div>';
         return;
       }
 
-      listEl.innerHTML = active.map((t, i) => {
+      listEl.innerHTML = deduped.map((t, i) => {
         const comp = COMP_META[t.competition] || null;
         const logoHtml = comp
           ? `<img src="${comp.logo}" width="20" height="20" style="object-fit:contain;vertical-align:middle;margin-right:6px;">`

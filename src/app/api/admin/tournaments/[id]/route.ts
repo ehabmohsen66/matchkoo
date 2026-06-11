@@ -15,7 +15,7 @@ export async function PATCH(
   const { id } = await params;
   const body = await req.json();
 
-  const allowed = ["name", "status", "type", "prizes", "prizePool", "maxPlayers", "registrationMode", "inviteCode", "description"];
+  const allowed = ["name", "status", "type", "prizes", "prizePool", "maxPlayers", "registrationMode", "inviteCode", "description", "competition"];
   const data: Record<string, any> = {};
   allowed.forEach(k => { if (body[k] !== undefined) data[k] = body[k]; });
 
