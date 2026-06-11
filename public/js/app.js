@@ -3904,7 +3904,7 @@ async function _checkDailySpinStatus() {
 }
 
 // ─── MINI LEAGUES MODALS ─────────────────────────────────────────
-function openCreateLeague() {
+async function openCreateLeague() {
   if (window.animateModalEnter) {
     window.animateModalEnter(
       document.getElementById('create-league-modal'),
@@ -3914,6 +3914,39 @@ function openCreateLeague() {
     document.getElementById('create-league-modal').classList.remove('hidden');
   }
   document.body.style.overflow = 'hidden';
+
+  // Dynamically populate competition radio buttons with active/upcoming leagues only
+  const listEl = document.getElementById('create-league-comp-list');
+  if (listEl) {
+    listEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.8rem;padding:8px;">Loading active leagues…</div>';
+    try {
+      const tournaments = await fetch('/api/tournaments').then(r => r.ok ? r.json() : []);
+      // Only show official (non INVITE_ONLY) UPCOMING or ONGOING tournaments
+      const active = tournaments.filter(t =>
+        t.registrationMode !== 'INVITE_ONLY' &&
+        (t.status === 'UPCOMING' || t.status === 'ONGOING')
+      );
+
+      if (!active.length) {
+        listEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.8rem;padding:8px;">No active leagues available right now.</div>';
+        return;
+      }
+
+      listEl.innerHTML = active.map((t, i) => {
+        const comp = COMP_META[t.competition] || null;
+        const logoHtml = comp
+          ? `<img src="${comp.logo}" width="20" height="20" style="object-fit:contain;vertical-align:middle;margin-right:6px;">`
+          : '';
+        const label = comp ? comp.label : t.name;
+        return `<label class="comp-check">
+          <input type="radio" name="mini_league_comp" value="${t.competition}" ${i === 0 ? 'checked' : ''}>
+          ${logoHtml}${label}
+        </label>`;
+      }).join('');
+    } catch(e) {
+      listEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.8rem;padding:8px;">Could not load leagues.</div>';
+    }
+  }
 }
 
 function closeCreateLeague() {
