@@ -5093,16 +5093,29 @@ function renderClubLeaderboard(data) {
     container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;">No votes yet. Be the first!</div>';
     return;
   }
-  container.innerHTML = data.slice(0, 10).map((club, i) =>
-    '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">' +
-      '<div style="font-weight:800;color:' + (i===0?'#ffd700':i===1?'#c0c0c0':i===2?'#cd7f32':'rgba(255,255,255,0.4)') + ';min-width:28px;text-align:center">' + (i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)) + '</div>' +
-      '<div style="flex:1">' +
-        '<div style="font-weight:700;color:#fff;font-size:0.9rem">' + club.clubName + '</div>' +
-        '<div style="font-size:0.7rem;color:rgba(255,255,255,0.4)">' + club.country + ' · ' + club.continent + '</div>' +
+  const colours = ['#e63946','#457b9d','#2a9d8f','#e9c46a','#f4a261','#6a0572','#1982c4','#8ac926','#ff595e','#6a4ca6'];
+  container.innerHTML = data.slice(0, 10).map((club, i) => {
+    const logoUrl = (typeof clubLogosMap !== 'undefined' && clubLogosMap[club.clubName]) || '';
+    const badgeBg = colours[club.clubName.charCodeAt(0) % colours.length];
+    const initials = club.clubName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const logoHtml = logoUrl
+      ? '<img src="' + logoUrl + '" alt="' + club.clubName + '" style="width:36px;height:36px;object-fit:contain;border-radius:50%;background:rgba(255,255,255,0.06);padding:2px;flex-shrink:0;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">' +
+        '<span style="display:none;width:36px;height:36px;border-radius:50%;background:' + badgeBg + ';align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;flex-shrink:0;">' + initials + '</span>'
+      : '<span style="width:36px;height:36px;border-radius:50%;background:' + badgeBg + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;flex-shrink:0;">' + initials + '</span>';
+    const rankIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '<span style="font-size:0.75rem">#' + (i+1) + '</span>';
+    const rankColor = i === 0 ? '#ffd700' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : 'rgba(255,255,255,0.35)';
+    const rowBg = i < 3 ? 'rgba(255,255,255,0.025)' : 'transparent';
+    const borderBottom = i < 9 ? '1px solid rgba(255,255,255,0.05)' : 'none';
+    return '<div style="display:flex;align-items:center;gap:14px;padding:12px 8px;border-bottom:' + borderBottom + ';background:' + rowBg + ';border-radius:' + (i<3?'10px':'4px') + ';margin-bottom:' + (i<3?'2px':'0') + ';transition:background 0.2s;cursor:default;" onmouseover="this.style.background=\'rgba(255,255,255,0.05)\'" onmouseout="this.style.background=\'' + rowBg + '\'">' +
+      '<div style="font-weight:800;color:' + rankColor + ';min-width:32px;text-align:center;font-size:' + (i<3?'1.15rem':'0.8rem') + ';">' + rankIcon + '</div>' +
+      '<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + logoHtml + '</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-weight:700;color:#fff;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + club.clubName + '">' + club.clubName + '</div>' +
+        '<div style="font-size:0.7rem;color:rgba(255,255,255,0.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + club.country + ' · ' + club.continent + '</div>' +
       '</div>' +
-      '<div style="font-weight:800;color:var(--green);font-size:0.85rem">' + club.votes.toLocaleString() + ' votes</div>' +
-    '</div>'
-  ).join('');
+      '<div style="font-weight:800;color:var(--green);font-size:0.85rem;flex-shrink:0;">' + club.votes.toLocaleString() + ' <span style="font-size:0.65rem;opacity:0.6;font-weight:600">votes</span></div>' +
+    '</div>';
+  }).join('');
 }
 
 async function loadContinentLeaderboards(period) {
