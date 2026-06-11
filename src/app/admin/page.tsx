@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 // ─── Types ───────────────────────────────────────────────
-type Tournament = { id: string; name: string; game: string; type: string; status: string; prizePool: string; prizes?: string; maxPlayers: number; startDate: string; registrationMode: string; inviteCode?: string; description: string; _count?: { registrations: number; matches: number } };
+type Tournament = { id: string; name: string; game: string; type: string; status: string; prizePool: string; prizes?: string; maxPlayers: number; startDate: string; registrationMode: string; inviteCode?: string; description: string; competition?: string; _count?: { registrations: number; matches: number } };
 type Match = { id: string; tournamentId: string; homeTeam: string; awayTeam: string; matchDate: string; round: string; status: string; homeScore?: number; awayScore?: number; firstGoalScorer?: string; tournament: { name: string; type: string } };
 type User = { id: string; name: string; email: string; role: string; xp: number; createdAt: string; _count: { registrations: number; predictions: number } };
 
@@ -116,7 +116,28 @@ function TournamentsTab() {
                   <button onClick={() => del(t.id)} style={{ ...btnGhost, color: "#F87171", borderColor: "rgba(248,113,113,0.25)" }}>Del</button>
                 </div>
               </div>
-              <div style={{ marginTop: 10, fontSize: "0.72rem", color: "rgba(255,255,255,0.35)" }}>
+              {/* Competition slug selector */}
+              <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.35)", fontWeight: 700, letterSpacing: "0.08em", flexShrink: 0 }}>COMPETITION SLUG</span>
+                <select
+                  value={t.competition || "premier_league"}
+                  onChange={e => patch(t.id, { competition: e.target.value })}
+                  style={{ ...btnGhost, fontSize: "0.72rem", paddingRight: 6, color: "#08BDBD", borderColor: "rgba(8,189,189,0.3)", flex: 1 }}
+                >
+                  <option value="premier_league">🏴󠁧󠁢󠁥󠁮󠁧󠁿 premier_league</option>
+                  <option value="la_liga">🇪🇸 la_liga</option>
+                  <option value="champions_league">⭐ champions_league</option>
+                  <option value="europa_league">🟠 europa_league</option>
+                  <option value="egyptian_premier_league">🇪🇬 egyptian_premier_league</option>
+                  <option value="world_cup">🌍 world_cup</option>
+                  <option value="serie_a">🇮🇹 serie_a</option>
+                  <option value="bundesliga">🇩🇪 bundesliga</option>
+                  <option value="ligue_1">🇫🇷 ligue_1</option>
+                  <option value="saudi_league">🇸🇦 saudi_league</option>
+                  <option value="mls">🇺🇸 mls</option>
+                </select>
+              </div>
+              <div style={{ marginTop: 8, fontSize: "0.72rem", color: "rgba(255,255,255,0.35)" }}>
                 Prize: <b style={{ color: "#6FE840" }}>{t.prizePool}</b> · {t.registrationMode} · Starts {new Date(t.startDate).toLocaleDateString("en-GB")}
               </div>
               {t.prizes && <div style={{ marginTop: 6, fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", whiteSpace: "pre-line" }}>{t.prizes}</div>}
