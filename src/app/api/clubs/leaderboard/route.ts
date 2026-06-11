@@ -14,16 +14,20 @@ export async function GET(req: Request) {
   let dateFilter: any = {};
   const normalizedPeriod = period.toLowerCase();
   
-  if (normalizedPeriod === "weekly" || normalizedPeriod === "thisweekly" || normalizedPeriod === "week") {
-    const weekAgo = new Date(now);
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    dateFilter = { createdAt: { gte: weekAgo } };
+  if (normalizedPeriod === "weekly" || normalizedPeriod === "thisweek" || normalizedPeriod === "week") {
+    // Start of current week (Monday at 00:00:00)
+    const startOfWeek = new Date(now);
+    const day = startOfWeek.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    const diffToMonday = (day === 0 ? -6 : 1 - day);
+    startOfWeek.setDate(startOfWeek.getDate() + diffToMonday);
+    startOfWeek.setHours(0, 0, 0, 0);
+    dateFilter = { createdAt: { gte: startOfWeek } };
   } else if (normalizedPeriod === "monthly" || normalizedPeriod === "thismonth" || normalizedPeriod === "month") {
-    const monthAgo = new Date(now);
-    monthAgo.setMonth(monthAgo.getMonth() - 1);
-    dateFilter = { createdAt: { gte: monthAgo } };
+    // Start of current calendar month at 00:00:00
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+    dateFilter = { createdAt: { gte: startOfMonth } };
   } else if (normalizedPeriod === "thisyear" || normalizedPeriod === "yearly" || normalizedPeriod === "year") {
-    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const startOfYear = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
     dateFilter = { createdAt: { gte: startOfYear } };
   }
 
