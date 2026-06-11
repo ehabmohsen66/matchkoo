@@ -335,4 +335,5 @@ model DemonUsage {
   createdAt    DateTime @default(now())
 
   @@unique([miniLeagueId, sourceUserId])
+  @@unique([miniLeagueId, targetUserId])
 }

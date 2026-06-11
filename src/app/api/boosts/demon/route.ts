@@ -44,6 +44,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "You have already used The Demon in this mini league!" }, { status: 400 });
     }
 
+    // Check if the target has already been hit by The Demon in this league (by anyone)
+    const targetAlreadyHit = await prisma.demonUsage.findUnique({
+      where: {
+        miniLeagueId_targetUserId: {
+          miniLeagueId,
+          targetUserId
+        }
+      }
+    });
+
+    if (targetAlreadyHit) {
+      return NextResponse.json({ message: "This player has already been hit by The Demon in this mini league — they're protected!" }, { status: 400 });
+    }
+
     // Cast the demon
     await prisma.demonUsage.create({
       data: {
