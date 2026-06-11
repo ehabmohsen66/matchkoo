@@ -1315,7 +1315,9 @@ const TEAM_DISPLAY_MAP = {
   'Atlanta United FC':  { logo: '/images/clubs/atlanta_united.png' },
   'Inter Miami':        { name: 'Inter Miami CF', logo: '/images/clubs/inter_miami.png' },
   'Inter Miami CF':     { logo: '/images/clubs/inter_miami.png' },
-  'LAFC':               { name: 'Los Angeles FC (LAFC)' },
+  'LAFC':               { name: 'Los Angeles FC (LAFC)', logo: '/images/clubs/lafc.png' },
+  'Los Angeles FC (LAFC)': { logo: '/images/clubs/lafc.png' },
+  'New York City FC':   { logo: '/images/clubs/nycfc.png' },
   'Seattle Sounders':   { name: 'Seattle Sounders FC' },
 };
 
@@ -4496,9 +4498,9 @@ const STATIC_LOGO_MAP = {
   'Inter Miami':              '/images/clubs/inter_miami.png',
   'Inter Miami CF':           '/images/clubs/inter_miami.png',
   'LA Galaxy':                '/images/clubs/la_galaxy.png',
-  'LAFC':                     'https://media.api-sports.io/football/teams/1594.png',
-  'Los Angeles FC (LAFC)':    'https://media.api-sports.io/football/teams/1594.png',
-  'New York City FC':         'https://media.api-sports.io/football/teams/1599.png',
+  'LAFC':                     '/images/clubs/lafc.png',
+  'Los Angeles FC (LAFC)':    '/images/clubs/lafc.png',
+  'New York City FC':         '/images/clubs/nycfc.png',
   'Portland Timbers':         'https://media.api-sports.io/football/teams/1604.png',
   'Seattle Sounders':         'https://media.api-sports.io/football/teams/1602.png',
   'Seattle Sounders FC':      'https://media.api-sports.io/football/teams/1602.png',
