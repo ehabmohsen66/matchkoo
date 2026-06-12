@@ -2008,16 +2008,23 @@ async function loadMyLeagueRanks() {
       if (!myMiniLeagues.length) {
         miniListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:24px">No mini leagues joined yet</div>';
       } else {
-        miniListEl.innerHTML = myMiniLeagues.map(t => {
-          const lr = miniRankResults.find(r => r.tournament.id === t.id);
-          const rows = lr ? lr.rows : [];
-          let me = rows.find(r => r.isMe);
-          if (!me) me = { rank: '-', accuracy: 0 };
-          
+        // Fetch each mini league's full detail (which returns prediction-based rankings)
+        const miniDetails = await Promise.all(
+          myMiniLeagues.map(t =>
+            fetch('/api/mini-leagues/' + t.id)
+              .then(r => r.ok ? r.json() : null)
+              .then(data => ({ tournament: t, data }))
+          )
+        );
+
+        miniListEl.innerHTML = miniDetails.map(({ tournament: t, data }) => {
+          const ranking = data?.ranking || [];
+          let me = ranking.find(r => r.isMe);
+          if (!me) me = { rank: '-', xp: 0, accuracy: 0 };
+
           const comp = COMP_META[t.competition] || COMP_META['premier_league'];
           const logoHtml = `<img src="${comp.logo}" width="30" height="30" style="object-fit:contain;">`;
           const rankColor = me.rank === 1 ? '#ffd700' : me.rank === 2 ? '#c0c0c0' : me.rank === 3 ? '#cd7f32' : '#fff';
-          const trendHtml = me.trend === 'up' ? '<span style="color:#4caf50;font-size:0.8rem;margin-left:6px">▲</span>' : me.trend === 'down' ? '<span style="color:#f44336;font-size:0.8rem;margin-left:6px">▼</span>' : '<span style="color:rgba(255,255,255,0.2);font-size:0.8rem;margin-left:6px">—</span>';
           
           return '<div style="display:flex;align-items:center;gap:14px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.2s" ' +
             'onclick="navigateToMiniLeague(\'' + t.id + '\')" ' +
@@ -2028,8 +2035,8 @@ async function loadMyLeagueRanks() {
               '<div style="font-size:0.7rem;color:rgba(255,255,255,0.4)">' + comp.label + ' · ' + (t._count?.registrations || 0) + ' members</div>' +
             '</div>' +
             '<div style="text-align:right">' +
-              '<div style="display:flex;align-items:center;justify-content:flex-end;font-weight:800;font-size:1.1rem;color:' + rankColor + '">#' + me.rank + trendHtml + '</div>' +
-              '<div style="font-size:0.65rem;color:rgba(255,255,255,0.3)">' + Math.round((me.accuracy || 0)) + '% acc</div>' +
+              '<div style="display:flex;align-items:center;justify-content:flex-end;font-weight:800;font-size:1.1rem;color:' + rankColor + '">#' + me.rank + '<span style="color:rgba(255,255,255,0.2);font-size:0.8rem;margin-left:6px">—</span></div>' +
+              '<div style="font-size:0.65rem;color:rgba(255,255,255,0.3)">' + (me.xp || 0).toLocaleString() + ' XP</div>' +
             '</div>' +
             '<div style="color:rgba(255,255,255,0.25);font-size:0.75rem;margin-left:4px">›</div>' +
           '</div>';
