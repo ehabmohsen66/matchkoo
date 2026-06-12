@@ -2987,9 +2987,17 @@ async function initPublicProfile() {
         predsList.innerHTML = preds.map((pred, idx) => {
           const won = (pred.xpEarned || 0) > 0;
           const exactScore = pred.homeScore === pred.match.homeScore && pred.awayScore === pred.match.awayScore;
-          const outcomeIcon = won ? (exactScore ? '🌟' : '✅') : '❌';
-          const outcome = exactScore ? 'Exact Score!' : won ? 'Result Correct' : 'Wrong Prediction';
-          const outcomeColor = exactScore ? '#FBBF24' : won ? '#6FE840' : (pred.xpEarned || 0) < 0 ? '#F87171' : 'rgba(255,255,255,0.3)';
+          // Derive correctResult from scores (more reliable than xpEarned when DB has stale data)
+          const hs = pred.match.homeScore, as = pred.match.awayScore;
+          const correctResult = hs != null && as != null && (
+            (pred.homeScore > pred.awayScore && hs > as) ||
+            (pred.homeScore < pred.awayScore && hs < as) ||
+            (pred.homeScore === pred.awayScore && hs === as)
+          );
+          const outcomeIcon = exactScore ? '🌟' : correctResult ? '✅' : '❌';
+          const outcome = exactScore ? 'Exact Score!' : correctResult ? 'Result Correct' : 'Wrong Prediction';
+          const outcomeColor = exactScore ? '#FBBF24' : correctResult ? '#6FE840' : 'rgba(255,255,255,0.3)';
+
           const homeLogo = pred.match.homeLogo ? `<img src="${pred.match.homeLogo}" width="22" height="22" style="object-fit:contain;">` : '';
           const awayLogo = pred.match.awayLogo ? `<img src="${pred.match.awayLogo}" width="22" height="22" style="object-fit:contain;">` : '';
           const matchDate = new Date(pred.match.matchDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
