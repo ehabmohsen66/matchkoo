@@ -145,6 +145,7 @@ export async function POST(req: NextRequest) {
           where: {
             status: "COMPLETED",
             firstGoalScorer: null,
+            events: { not: null },
           },
           select: { id: true, homeTeam: true, awayTeam: true, events: true },
         });
