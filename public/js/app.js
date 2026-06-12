@@ -3869,6 +3869,10 @@ async function submitPrediction() {
 
     if (success) {
       closeMatchModal();
+      // Instantly refresh both the home fixtures list and predictions tab
+      // so the locked card state shows without needing a page refresh
+      renderFixturesList();
+      renderPredictions('upcoming');
       setTimeout(() => showCelebration(1000), 300);
     } else {
       showNotification(message || 'Failed to save prediction', 'error');
