@@ -233,11 +233,7 @@ export default function PublicProfilePage() {
               <div style={{ background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: 100, padding: "5px 14px", fontSize: "0.8rem", fontWeight: 700, color: "#FBBF24", display: "flex", alignItems: "center", gap: 6 }}>
                 🔥 {profile.streak} streak
               </div>
-              {profile.bestStreak > 0 && (
-                <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, padding: "5px 14px", fontSize: "0.8rem", fontWeight: 600, color: "rgba(255,255,255,0.45)", display: "flex", alignItems: "center", gap: 6 }}>
-                  🏆 Best: {profile.bestStreak}
-                </div>
-              )}
+
             </div>
           </div>
         </div>
@@ -253,7 +249,6 @@ export default function PublicProfilePage() {
             { label: "Correct", value: profile.correctCount, icon: "✅", color: "#6FE840" },
             { label: "Accuracy", value: `${accuracy}%`, icon: "🎯", color: accuracy >= 60 ? "#6FE840" : accuracy >= 40 ? "#FBBF24" : "rgba(255,255,255,0.5)" },
             { label: "Streak", value: profile.streak, icon: "🔥", color: "#FBBF24" },
-            { label: "Best Streak", value: profile.bestStreak, icon: "🏆", color: "#FBBF24" },
           ].map((stat) => (
             <div key={stat.label} className="stat-card" style={{
               background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
