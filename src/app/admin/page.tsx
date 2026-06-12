@@ -206,15 +206,6 @@ function SyncTab() {
           <button style={{ ...btnGhost, textAlign: "left", borderColor: "rgba(255,153,20,0.3)", color: "#ff9914" }} disabled={!!loading} onClick={() => sync("update-live")}>
             {loading === "update-live" ? "Updating..." : "🔴 Update Live Scores"}
           </button>
-          <button style={{ ...btnGhost, textAlign: "left", borderColor: "rgba(251,191,36,0.3)", color: "#FBBF24" }} disabled={!!loading} onClick={async () => {
-            setLoading("backfill");
-            const res = await fetch("/api/admin/backfill-scorers", { method: "POST" });
-            const data = await res.json();
-            alert(`✅ Backfill done: ${data.filled} scorer(s) set from stored events.\n\n${data.details?.join("\n") || "None updated."}`);
-            setLoading("");
-          }}>
-            {loading === "backfill" ? "Backfilling..." : "⚽ Backfill Scorers from Events"}
-          </button>
         </div>
 
         <h3 style={{ ...sectionTitle, marginTop: 20 }}>Sync by League</h3>
@@ -341,12 +332,12 @@ function MatchesTab() {
             <div key={m.id} style={{ ...card, marginBottom: 0 }}>
               {resultId === m.id ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  <div style={{ fontWeight: 700, fontSize: "0.85rem", marginBottom: 4 }}>{m.status === "COMPLETED" ? "Edit Result" : "Set Result"}: {m.homeTeam} vs {m.awayTeam}</div>
+                  <div style={{ fontWeight: 700, fontSize: "0.85rem", marginBottom: 4 }}>Set Result: {m.homeTeam} vs {m.awayTeam}</div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                     <div><label style={label}>{m.homeTeam} SCORE</label><input type="number" min={0} style={inputStyle} value={result.homeScore} onChange={e => setResult(r => ({ ...r, homeScore: Number(e.target.value) }))} /></div>
                     <div><label style={label}>{m.awayTeam} SCORE</label><input type="number" min={0} style={inputStyle} value={result.awayScore} onChange={e => setResult(r => ({ ...r, awayScore: Number(e.target.value) }))} /></div>
                   </div>
-                  <div><label style={label}>FIRST GOALSCORER <span style={{ color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>(auto-fetched from API if blank)</span></label><input style={inputStyle} value={result.firstGoalScorer} onChange={e => setResult(r => ({ ...r, firstGoalScorer: e.target.value }))} placeholder="Leave blank to auto-fetch from API" /></div>
+                  <div><label style={label}>FIRST GOALSCORER</label><input style={inputStyle} value={result.firstGoalScorer} onChange={e => setResult(r => ({ ...r, firstGoalScorer: e.target.value }))} /></div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={() => setMatchResult(m.id)} style={btnGreen}>Save & Award XP</button>
                     <button onClick={() => setResultId(null)} style={btnGhost}>Cancel</button>
@@ -359,12 +350,12 @@ function MatchesTab() {
                     <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.35)", marginTop: 3 }}>
                       {m.round} · {new Date(m.matchDate).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                       {m.status === "COMPLETED" && <span style={{ color: "#6FE840", marginLeft: 8 }}>{m.homeScore}–{m.awayScore}</span>}
-                      {m.firstGoalScorer && <span style={{ color: "#FBBF24", marginLeft: 8 }}>⚽ {m.firstGoalScorer}</span>}
-                      {m.status === "COMPLETED" && !m.firstGoalScorer && <span style={{ color: "rgba(255,100,100,0.6)", marginLeft: 8, fontStyle: "italic" }}>No scorer recorded</span>}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 6 }}>
-                    <button onClick={() => { setResultId(m.id); setResult({ homeScore: m.homeScore ?? 0, awayScore: m.awayScore ?? 0, firstGoalScorer: m.firstGoalScorer ?? "" }); }} style={btnGhost}>{m.status === "COMPLETED" ? "Edit" : "Set Result"}</button>
+                    {m.status !== "COMPLETED" && (
+                      <button onClick={() => { setResultId(m.id); setResult({ homeScore: 0, awayScore: 0, firstGoalScorer: "" }); }} style={btnGhost}>Set Result</button>
+                    )}
                     <button onClick={() => delMatch(m.id)} style={{ ...btnGhost, color: "#F87171", borderColor: "rgba(248,113,113,0.2)" }}>Del</button>
                   </div>
                 </div>
