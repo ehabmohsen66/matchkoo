@@ -90,6 +90,52 @@ export async function POST(req: NextRequest) {
       });
       const liveData = await liveRes.json();
       fixtures = (liveData.response ?? []).filter((f: any) => ALLOWED_LEAGUES.has(f.league.id));
+
+      // ── Recently-finished sweep ───────────────────────────────────────────
+      // ?live=all only returns CURRENTLY live matches. Once a match ends it
+      // disappears from that endpoint, so the XP engine in upsertFixtures
+      // never sees the COMPLETED transition. Fix: find any DB matches still
+      // marked LIVE that aren't in the live API response, then re-fetch them
+      // by fixture ID to get their final score + status.
+      const liveFixtureExternalIds = new Set(
+        fixtures.map((f: ApiFixture) => `apif-${f.fixture.id}`)
+      );
+
+      const dbLiveMatches = await prisma.match.findMany({
+        where: {
+          status: "LIVE",
+          externalId: { startsWith: "apif-" },
+        },
+        select: { id: true, externalId: true },
+      });
+
+      // Matches that are LIVE in DB but gone from the live feed → just finished
+      const justFinished = dbLiveMatches.filter(
+        (m) => !liveFixtureExternalIds.has(m.externalId ?? "")
+      );
+
+      if (justFinished.length > 0) {
+        const ids = justFinished
+          .map((m) => (m.externalId ?? "").replace("apif-", ""))
+          .filter(Boolean)
+          .join(",");
+
+        console.log(`[sync] Re-fetching ${justFinished.length} recently-finished match(es): ${ids}`);
+
+        const finishedRes = await fetch(
+          `https://v3.football.api-sports.io/fixtures?ids=${ids}`,
+          { headers: { "x-apisports-key": process.env.FOOTBALL_API_KEY! } }
+        );
+        const finishedData = await finishedRes.json();
+        const finishedFixtures = (finishedData.response ?? []).filter(
+          (f: any) => ALLOWED_LEAGUES.has(f.league.id)
+        );
+
+        // Merge into the fixtures list so upsertFixtures processes them and
+        // fires the XP engine when it sees the LIVE → COMPLETED transition.
+        fixtures = [...fixtures, ...finishedFixtures];
+      }
+      // ─────────────────────────────────────────────────────────────────────
     } else if (mode === "fix-stale") {
       // Find all matches stuck in LIVE or UPCOMING past their match date
       const stale = await prisma.match.findMany({
