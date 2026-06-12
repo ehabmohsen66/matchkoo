@@ -208,12 +208,11 @@ export async function POST(req: NextRequest) {
             const correctScorer = !!pred.firstGoalScorer && !!staleMatch.firstGoalScorer &&
               pred.firstGoalScorer.trim().toLowerCase() === staleMatch.firstGoalScorer.trim().toLowerCase();
 
-            let baseXp = 0;
-            if (correctResult) baseXp += 50;
-            if (exactScore)    baseXp += 150;
-            if (correctScorer) baseXp += 150;
+            // Confidence multiplier applies ONLY to match result outcome
             const multiplier = 1 + ((pred.confidence - 50) / 50);
-            let xp = Math.round(baseXp * multiplier);
+            let xp = correctResult ? Math.round(50 * multiplier) : 0;
+            if (exactScore)    xp += 150;  // flat, no multiplier
+            if (correctScorer) xp += 150;  // flat, no multiplier
 
             // Confidence Penalty
             if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));
@@ -559,15 +558,11 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
           const predBucket   = (pred.totalGoals ?? -1) >= 5 ? 5 : (pred.totalGoals ?? -1);
           const correctTotalGoals = pred.totalGoals !== null && pred.totalGoals !== undefined && predBucket === actualBucket;
 
-          // ── 4. Base XP ───────────────────────────────────────────────────────
-          let baseXp = 0;
-          if (correctResult)     baseXp += 50;   // correct result
-          if (exactScore)        baseXp += 150;  // exact scoreline bonus (total 200)
-          if (correctScorer)     baseXp += 150;  // first goalscorer bonus
-
-          // ── 5. Confidence multiplier: 50%=1.0×, 75%=1.5×, 100%=2.0× ────────
+          // ── 4. Confidence multiplier applies ONLY to match result outcome ──────
           const multiplier = 1 + ((pred.confidence - 50) / 50);
-          let xp = Math.round(baseXp * multiplier);
+          let xp = correctResult ? Math.round(50 * multiplier) : 0;
+          if (exactScore)        xp += 150;  // flat, no multiplier
+          if (correctScorer)     xp += 150;  // flat, no multiplier
 
           // ── 6. Confidence Penalty (Risk vs Reward) ───────────────────────────
           if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));

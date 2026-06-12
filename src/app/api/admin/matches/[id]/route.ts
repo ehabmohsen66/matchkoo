@@ -79,15 +79,11 @@ export async function PATCH(
       const exactScore = trueExactScore || (pred.isShield && correctResult);
       const correctFGS = !!(resolvedScorer && pred.firstGoalScorer?.toLowerCase() === resolvedScorer.toLowerCase());
 
-      // Base XP
-      let baseXp = 0;
-      if (correctResult) baseXp += 50;
-      if (exactScore)    baseXp += 150;
-      if (correctFGS)    baseXp += 150;
-
-      // Confidence multiplier: 50%=1.0×, 100%=2.0×
+      // Confidence multiplier applies ONLY to match result outcome
       const multiplier = 1 + ((pred.confidence - 50) / 50);
-      xp = Math.round(baseXp * multiplier);
+      xp = correctResult ? Math.round(50 * multiplier) : 0;
+      if (exactScore) xp += 150;  // flat, no multiplier
+      if (correctFGS) xp += 150;  // flat, no multiplier
 
       // Confidence Penalty (Risk vs Reward)
       if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));

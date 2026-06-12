@@ -1582,12 +1582,11 @@ function _getScoringBreakdownHtml(pred) {
   const conf = p.confidence || 50;
   const multiplier = 1 + ((conf - 50) / 50);
 
-  let baseXp = 0;
-  if (correctResult) baseXp += 50;
-  if (exactScore)    baseXp += 150;
-  if (p.firstGoalScorer) baseXp += correctFGS ? 150 : 0;
-  let xp = Math.round(baseXp * multiplier);
-  if (!correctResult) xp -= Math.round(50  * (conf / 100));
+  // Confidence multiplier applies ONLY to match result outcome
+  let xp = correctResult ? Math.round(50 * multiplier) : 0;
+  if (exactScore) xp += 150;                              // flat, no multiplier
+  if (p.firstGoalScorer && correctFGS) xp += 150;        // flat, no multiplier
+  if (!correctResult) xp -= Math.round(50 * (conf / 100));
   if (p.firstGoalScorer && !correctFGS) xp -= 100;
   const bttsBonus  = correctBtts ? 75 : 0;
   const tgBonus    = correctTotalGoals ? 75 : 0;
@@ -1672,10 +1671,10 @@ function _getScoringBreakdownHtml(pred) {
         ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x2705; Correct outcome <span style="font-size:0.72rem;color:rgba(255,255,255,0.3);">(${conf}% conf)</span></span>${tick('+'+Math.round(50*multiplier)+' XP')}</div>`
         : `<div style="${rowStyle}"><span style="${labelStyle}">&#x274C; Wrong outcome <span style="font-size:0.72rem;color:rgba(255,255,255,0.3);">(${conf}% conf)</span></span>${cross('\u2212'+Math.round(50*(conf/100))+' XP')}</div>`
       }
-      ${exactScore ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F3AF; Exact scoreline bonus <span style="font-size:0.72rem;color:rgba(255,255,255,0.3);">(${conf}% conf)</span></span>${tick('+'+Math.round(150*multiplier)+' XP')}</div>` : ''}
+      ${exactScore ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F3AF; Exact scoreline bonus</span>${tick('+150 XP')}</div>` : ''}
       ${p.firstGoalScorer
         ? (correctFGS
-          ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x26BD; First goalscorer bonus <span style="font-size:0.72rem;color:rgba(255,255,255,0.3);">(${conf}% conf)</span></span>${tick('+'+Math.round(150*multiplier)+' XP')}</div>`
+          ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x26BD; First goalscorer bonus</span>${tick('+150 XP')}</div>`
           : `<div style="${rowStyle}"><span style="${labelStyle}">&#x26BD; Wrong goalscorer (penalty)</span>${cross('\u2212100 XP')}</div>`)
         : ''
       }
