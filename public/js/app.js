@@ -1662,33 +1662,31 @@ function _getScoringBreakdownHtml(pred) {
     <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;">
       <div style="font-size:0.7rem;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;">XP Calculation</div>
 
-      ${correctResult 
-        ? `<div style="${rowStyle}"><span style="${labelStyle}">✅ Correct outcome</span>${tick('+50 XP')}</div>` 
-        : `<div style="${rowStyle}"><span style="${labelStyle}">❌ Wrong outcome (penalty)</span>${cross('−'+Math.round(50*(conf/100))+' XP')}</div>`
+      ${correctResult
+        ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x2705; Correct outcome <span style="font-size:0.72rem;color:rgba(255,255,255,0.3);">(${conf}% conf)</span></span>${tick('+'+Math.round(50*multiplier)+' XP')}</div>`
+        : `<div style="${rowStyle}"><span style="${labelStyle}">&#x274C; Wrong outcome <span style="font-size:0.72rem;color:rgba(255,255,255,0.3);">(${conf}% conf)</span></span>${cross('\u2212'+Math.round(50*(conf/100))+' XP')}</div>`
       }
-      ${exactScore ? `<div style="${rowStyle}"><span style="${labelStyle}">🎯 Exact scoreline bonus</span>${tick('+150 XP')}</div>` : ''}
-      
-      ${p.firstGoalScorer 
-        ? (correctFGS  
-          ? `<div style="${rowStyle}"><span style="${labelStyle}">⚽ First goalscorer bonus</span>${tick('+150 XP')}</div>` 
-          : `<div style="${rowStyle}"><span style="${labelStyle}">⚽ Wrong goalscorer (penalty)</span>${cross('−100 XP')}</div>`)
+      ${exactScore ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F3AF; Exact scoreline bonus <span style="font-size:0.72rem;color:rgba(255,255,255,0.3);">(${conf}% conf)</span></span>${tick('+'+Math.round(150*multiplier)+' XP')}</div>` : ''}
+      ${p.firstGoalScorer
+        ? (correctFGS
+          ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x26BD; First goalscorer bonus <span style="font-size:0.72rem;color:rgba(255,255,255,0.3);">(${conf}% conf)</span></span>${tick('+'+Math.round(150*multiplier)+' XP')}</div>`
+          : `<div style="${rowStyle}"><span style="${labelStyle}">&#x26BD; Wrong goalscorer (penalty)</span>${cross('\u2212100 XP')}</div>`)
         : ''
       }
-      ${p.btts !== null && p.btts !== undefined 
-        ? (bttsBonus > 0  
-          ? `<div style="${rowStyle}"><span style="${labelStyle}">🔵 Both teams scored bonus</span>${tick('+75 XP')}</div>` 
-          : `<div style="${rowStyle}"><span style="${labelStyle}">🔵 BTTS wrong</span><span style="color:rgba(255,255,255,0.3)">0 XP</span></div>`)
+      ${p.btts !== null && p.btts !== undefined
+        ? (bttsBonus > 0
+          ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F535; Both teams scored bonus</span>${tick('+75 XP')}</div>`
+          : `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F535; BTTS wrong</span><span style="color:rgba(255,255,255,0.3)">0 XP</span></div>`)
         : ''
       }
-      ${p.totalGoals !== null && p.totalGoals !== undefined 
-        ? (tgBonus > 0  
-          ? `<div style="${rowStyle}"><span style="${labelStyle}">🎱 Total goals correct bonus</span>${tick('+75 XP')}</div>` 
-          : `<div style="${rowStyle}"><span style="${labelStyle}">🎱 Total goals wrong</span><span style="color:rgba(255,255,255,0.3)">0 XP</span></div>`)
+      ${p.totalGoals !== null && p.totalGoals !== undefined
+        ? (tgBonus > 0
+          ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F3B1; Total goals correct bonus</span>${tick('+75 XP')}</div>`
+          : `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F3B1; Total goals wrong</span><span style="color:rgba(255,255,255,0.3)">0 XP</span></div>`)
         : ''
       }
-      
-      <div style="${rowStyle}"><span style="${labelStyle}">Confidence multiplier (${conf}%)</span><span style="color:var(--cyan);font-weight:700;">×${multiplier.toFixed(1)}</span></div>
-      ${p.isDouble && beforeDouble > 0 ? `<div style="${rowStyle}"><span style="${labelStyle}">🃏 Double Joker active</span><span style="color:var(--gold);font-weight:800;">×2</span></div>` : ''}
+      ${p.isDouble && beforeDouble > 0 ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F0CF; Double Joker active</span><span style="color:var(--gold);font-weight:800;">x2</span></div>` : ''}
+
 
       <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 0;margin-top:8px;border-top:1px solid rgba(255,255,255,0.12);">
         <span style="font-size:0.9rem;font-weight:800;color:#fff;">Net Score (current rules)</span>
