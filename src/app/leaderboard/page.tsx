@@ -113,18 +113,21 @@ export default function Leaderboard() {
                   {row.rank <= 3 ? ["🥇", "🥈", "🥉"][row.rank - 1] : `#${row.rank}`}
                 </div>
 
-                {/* Avatar */}
-                <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(60,184,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.85rem", fontWeight: 700, color: "#6FE840", flexShrink: 0, overflow: "hidden" }}>
-                  {row.image ? <img src={row.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (row.name?.[0] ?? "?")}
-                </div>
-
-                {/* Name */}
-                <div style={{ flex: 1, fontWeight: row.isMe ? 700 : 500, fontSize: "0.88rem" }}>
-                  {row.name} {row.isMe && <span style={{ fontSize: "0.65rem", color: "#6FE840", fontWeight: 700, marginLeft: 4 }}>(you)</span>}
-                </div>
+                {/* Avatar + Name — clickable link to public profile */}
+                <Link
+                  href={`/profile/${row.userId}`}
+                  style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, textDecoration: "none", color: "inherit", minWidth: 0 }}
+                >
+                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(60,184,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.85rem", fontWeight: 700, color: "#6FE840", flexShrink: 0, overflow: "hidden", transition: "box-shadow 0.2s", cursor: "pointer" }}>
+                    {row.image ? <img src={row.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (row.name?.[0] ?? "?")}
+                  </div>
+                  <div style={{ fontWeight: row.isMe ? 700 : 500, fontSize: "0.88rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {row.name} {row.isMe && <span style={{ fontSize: "0.65rem", color: "#6FE840", fontWeight: 700, marginLeft: 4 }}>(you)</span>}
+                  </div>
+                </Link>
 
                 {/* XP */}
-                <div style={{ textAlign: "right" }}>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
                   <div style={{ fontSize: "0.95rem", fontWeight: 800, color: row.isMe ? "#6FE840" : "#fff" }}>
                     {row.xp.toLocaleString()}
                   </div>
