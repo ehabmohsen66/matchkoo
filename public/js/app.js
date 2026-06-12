@@ -2945,20 +2945,33 @@ async function initPublicProfile() {
       setTimeout(() => { if (xpBar) xpBar.style.width = pct + '%'; }, 150);
     }
 
-    // Stats
+    // Stats — derive correctResult from actual scores (not xpEarned) so
+    // stale DB values (e.g. xpEarned=0 for a genuinely correct prediction)
+    // don't corrupt the accuracy figure.
     const preds = data.completedPredictions || [];
-    const correct = preds.filter(p => (p.xpEarned || 0) > 0).length;
-    const total = preds.length || data.predictionCount || 0;
-    const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const correct = preds.filter(p => {
+      const hs = p.match?.homeScore, as = p.match?.awayScore;
+      if (hs == null || as == null) return false;
+      return (p.homeScore > p.awayScore && hs > as) ||
+             (p.homeScore < p.awayScore && hs < as) ||
+             (p.homeScore === p.awayScore && hs === as);
+    }).length;
+    // totalCompleted = denominator for accuracy (only completed matches count)
+    // totalAllTime   = all-time predictions shown on the "Predicted Matches" card
+    const totalCompleted = preds.length;
+    const totalAllTime   = data.predictionCount || totalCompleted;
+    const accuracy = totalCompleted > 0 ? Math.round((correct / totalCompleted) * 100) : 0;
 
-    const accEl   = document.getElementById('pub-profile-stat-accuracy');
+    const accEl    = document.getElementById('pub-profile-stat-accuracy');
     const predsEl  = document.getElementById('pub-profile-stat-preds');
     const streakEl = document.getElementById('pub-profile-stat-streak');
     const correctEl = document.getElementById('pub-profile-stat-correct');
-    if (accEl)    accEl.textContent    = accuracy + '%';
-    if (predsEl)  predsEl.textContent  = total.toLocaleString();
-    if (streakEl) streakEl.textContent = (data.bestStreak || 0).toLocaleString();
+    if (accEl)     accEl.textContent     = accuracy + '%';
+    if (predsEl)   predsEl.textContent   = totalAllTime.toLocaleString();
+    if (streakEl)  streakEl.textContent  = (data.bestStreak || 0).toLocaleString();
     if (correctEl) correctEl.textContent = correct.toLocaleString();
+
+
 
     // Global rank from leaderboard
     try {
