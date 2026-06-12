@@ -319,10 +319,14 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Unsettled-Prediction Sweep ────────────────────────────────────────────
-    // On every update-live tick: find COMPLETED matches that still have
-    // predictions with status=null (missed by the LIVE→COMPLETED transition).
-    // This guarantees all rankings update within 2 minutes of a match ending.
-    if (mode === "update-live") {
+    // Runs every 30 min (at :00 and :30 of each hour) to settle predictions for
+    // COMPLETED matches that were missed by the LIVE→COMPLETED transition.
+    // Live score updates still happen every 2 min — only the heavy XP settlement
+    // is throttled to reduce DB load.
+    const sweepMinute = new Date().getMinutes();
+    const shouldRunSweep = sweepMinute < 2 || (sweepMinute >= 30 && sweepMinute < 32);
+    if (mode === "update-live" && shouldRunSweep) {
+
       const completedWithUnsettled = await prisma.match.findMany({
         where: {
           status: "COMPLETED",
