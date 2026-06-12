@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
           },
         },
       },
-      orderBy: [{ match: { matchDate: "desc" } }],
+      orderBy: [{ match: { matchDate: "asc" } }],
     });
 
     return NextResponse.json(predictions);

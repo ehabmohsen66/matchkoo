@@ -1730,8 +1730,12 @@ function applyLocalPredFilter(statusFilterOverride) {
   else if (statusFilter === 'wrong')    preds = preds.filter(p => p.status === 'wrong');
   else if (statusFilter === 'upcoming') preds = preds.filter(p => p.status === 'pending');
 
-  // Sort: most recently played/upcoming match first
-  preds = [...preds].sort((a, b) => (b.matchDateTs || 0) - (a.matchDateTs || 0));
+  // Sort: most recently played first (for completed tabs), soonest first (for upcoming)
+  if (statusFilter !== 'upcoming') {
+    preds = [...preds].sort((a, b) => (b.matchDateTs || 0) - (a.matchDateTs || 0));
+  } else {
+    preds = [...preds].sort((a, b) => (a.matchDateTs || 0) - (b.matchDateTs || 0));
+  }
 
   const select = document.getElementById('pred-league-filter');
   if (select) {
