@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
       if (!ALLOWED_LEAGUES.has(lid)) {
         return NextResponse.json({ error: `League ${lid} is not in the allowed list` }, { status: 400 });
       }
-      fixtures = await getFixturesByLeague(lid, 2025, 30);
+      fixtures = await getFixturesByLeague(lid, new Date().getFullYear(), 30);
     } else if (mode === "update-live") {
       const liveRes = await fetch("https://v3.football.api-sports.io/fixtures?live=all", {
         headers: { "x-apisports-key": process.env.FOOTBALL_API_KEY! },

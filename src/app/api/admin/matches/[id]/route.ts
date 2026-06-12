@@ -52,7 +52,7 @@ export async function PATCH(
       let baseXp = 0;
       if (correctResult) baseXp += 50;
       if (exactScore)    baseXp += 150;
-      if (correctFGS)    baseXp += 100;
+      if (correctFGS)    baseXp += 150;
 
       // Confidence multiplier: 50%=1.0×, 100%=2.0×
       const multiplier = 1 + ((pred.confidence - 50) / 50);

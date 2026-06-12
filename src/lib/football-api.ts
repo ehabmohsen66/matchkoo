@@ -59,9 +59,13 @@ export async function getFixturesByDate(
   leagueId?: number,
   season?: number
 ): Promise<ApiFixture[]> {
-  // Auto-detect season: Jan-Jul = previous year, Aug-Dec = current year
+  // Auto-detect season: use the current calendar year.
+  // The old heuristic (Jan-Jul → previous year) was wrong for calendar-year
+  // tournaments like the FIFA World Cup 2026 (running June-July 2026), which
+  // use season=2026 in API-Football. Club leagues (PL, La Liga, etc.) are not
+  // affected because update-live and today/week modes fetch by date, not by season.
   const now = new Date();
-  const autoSeason = season ?? (now.getMonth() < 7 ? now.getFullYear() - 1 : now.getFullYear());
+  const autoSeason = season ?? now.getFullYear();
 
   if (leagueId) {
     // League-specific: pass league + season + date range (required by API)
@@ -95,9 +99,9 @@ export async function getFixturesByLeague(
   const toDate = new Date();
   toDate.setDate(toDate.getDate() + daysAhead);
   const to = toDate.toISOString().split("T")[0];
-  // Auto-detect season: Jan-Jul = previous year's season, Aug-Dec = current year
+  // Auto-detect season: current calendar year (see getFixturesByDate for rationale)
   const now = new Date();
-  const autoSeason = season ?? (now.getMonth() < 7 ? now.getFullYear() - 1 : now.getFullYear());
+  const autoSeason = season ?? now.getFullYear();
   return getFixturesByDate(from, to, leagueId, autoSeason);
 }
 
