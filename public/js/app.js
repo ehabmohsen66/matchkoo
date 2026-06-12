@@ -1653,7 +1653,13 @@ function _getScoringBreakdownHtml(pred) {
         ${p.firstGoalScorer ? `
         <div style="${labelStyle}">1st Scorer</div>
         <div style="color:#fff;font-weight:700;font-size:0.78rem;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${fgsLabel}">${fgsLabel}</div>
-        <div style="font-size:0.78rem;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${actualFgsLabel}">${correctFGS ? tick(actualFgsLabel) : cross(actualFgsLabel)}</div>
+        <div style="font-size:0.78rem;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${actualFgsLabel}">
+          ${p.match.firstGoalScorer
+            ? (correctFGS ? tick(actualFgsLabel) : cross(actualFgsLabel))
+            : (actualTotal > 0
+                ? '<span style="color:rgba(255,255,255,0.3);font-style:italic;">Not recorded</span>'
+                : '<span style="color:rgba(255,255,255,0.3);">—</span>')}
+        </div>
         ` : ''}
       </div>
     </div>
