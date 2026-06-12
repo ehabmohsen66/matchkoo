@@ -1584,7 +1584,7 @@ function _getScoringBreakdownHtml(pred) {
 
   // Confidence multiplier applies ONLY to match result outcome
   let xp = correctResult ? Math.round(50 * multiplier) : 0;
-  if (exactScore) xp += 150;                              // flat, no multiplier
+  if (exactScore) xp += 200;                              // flat, no multiplier
   if (p.firstGoalScorer && correctFGS) xp += 150;        // flat, no multiplier
   if (!correctResult) xp -= Math.round(50 * (conf / 100));
   if (p.firstGoalScorer && !correctFGS) xp -= 100;
@@ -1671,7 +1671,7 @@ function _getScoringBreakdownHtml(pred) {
         ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x2705; Correct outcome <span style="font-size:0.72rem;color:rgba(255,255,255,0.3);">(${conf}% conf)</span></span>${tick('+'+Math.round(50*multiplier)+' XP')}</div>`
         : `<div style="${rowStyle}"><span style="${labelStyle}">&#x274C; Wrong outcome <span style="font-size:0.72rem;color:rgba(255,255,255,0.3);">(${conf}% conf)</span></span>${cross('\u2212'+Math.round(50*(conf/100))+' XP')}</div>`
       }
-      ${exactScore ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F3AF; Exact scoreline bonus</span>${tick('+150 XP')}</div>` : ''}
+      ${exactScore ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F3AF; Exact scoreline bonus</span>${tick('+200 XP')}</div>` : ''}
       ${p.firstGoalScorer
         ? (correctFGS
           ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x26BD; First goalscorer bonus</span>${tick('+150 XP')}</div>`

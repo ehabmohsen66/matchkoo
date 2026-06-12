@@ -211,7 +211,7 @@ export async function POST(req: NextRequest) {
             // Confidence multiplier applies ONLY to match result outcome
             const multiplier = 1 + ((pred.confidence - 50) / 50);
             let xp = correctResult ? Math.round(50 * multiplier) : 0;
-            if (exactScore)    xp += 150;  // flat, no multiplier
+            if (exactScore)    xp += 200;  // flat, no multiplier
             if (correctScorer) xp += 150;  // flat, no multiplier
 
             // Confidence Penalty
@@ -561,7 +561,7 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
           // ── 4. Confidence multiplier applies ONLY to match result outcome ──────
           const multiplier = 1 + ((pred.confidence - 50) / 50);
           let xp = correctResult ? Math.round(50 * multiplier) : 0;
-          if (exactScore)        xp += 150;  // flat, no multiplier
+          if (exactScore)        xp += 200;  // flat, no multiplier
           if (correctScorer)     xp += 150;  // flat, no multiplier
 
           // ── 6. Confidence Penalty (Risk vs Reward) ───────────────────────────

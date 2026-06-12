@@ -82,7 +82,7 @@ export async function PATCH(
       // Confidence multiplier applies ONLY to match result outcome
       const multiplier = 1 + ((pred.confidence - 50) / 50);
       xp = correctResult ? Math.round(50 * multiplier) : 0;
-      if (exactScore) xp += 150;  // flat, no multiplier
+      if (exactScore) xp += 200;  // flat, no multiplier
       if (correctFGS) xp += 150;  // flat, no multiplier
 
       // Confidence Penalty (Risk vs Reward)
