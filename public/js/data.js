@@ -189,14 +189,11 @@ const DATA = {
   ],
 
   spinPrizes: [
-    { label: '+50 XP',    color: '#ABFF4F', textColor: '#1a4d00' },
-    { label: '+150 XP',   color: '#29BF12', textColor: '#FFFFFF' },
-    { label: 'Double XP', color: '#FF9914', textColor: '#FFFFFF' },
-    { label: '+100 XP',   color: '#08BDBD', textColor: '#FFFFFF' },
-    { label: '+500 XP',   color: '#F21B3F', textColor: '#FFFFFF' },
-    { label: 'Wildcard',  color: '#ABFF4F', textColor: '#1a4d00' },
-    { label: '+250 XP',   color: '#29BF12', textColor: '#FFFFFF' },
-    { label: 'Shield',    color: '#08BDBD', textColor: '#FFFFFF' },
+    { label: '+50 XP',  color: '#ABFF4F', textColor: '#1a4d00' },  // index 0 — 40%
+    { label: '+100 XP', color: '#08BDBD', textColor: '#FFFFFF' },  // index 1 — 25%
+    { label: '+150 XP', color: '#29BF12', textColor: '#FFFFFF' },  // index 2 — 20%
+    { label: '+250 XP', color: '#29BF12', textColor: '#FFFFFF' },  // index 3 — 10%
+    { label: '+500 XP', color: '#F21B3F', textColor: '#FFFFFF' },  // index 4 —  5%
   ],
 
   matchDetail: {

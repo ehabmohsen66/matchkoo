@@ -6,6 +6,29 @@ import * as React from "react";
 import { sendEmail } from "@/lib/email";
 import DailyBonusEmail from "@/emails/DailyBonusEmail";
 
+/**
+ * Prize table — server is the single source of truth.
+ * Order MUST match the spinPrizes array in public/js/data.js (index 0–4).
+ * Weights are relative: 40+25+20+10+5 = 100 (treated as percentages).
+ */
+const SPIN_PRIZES = [
+  { index: 0, label: "+50 XP",  xp: 50,  weight: 40 },
+  { index: 1, label: "+100 XP", xp: 100, weight: 25 },
+  { index: 2, label: "+150 XP", xp: 150, weight: 20 },
+  { index: 3, label: "+250 XP", xp: 250, weight: 10 },
+  { index: 4, label: "+500 XP", xp: 500, weight: 5  },
+];
+
+function pickPrize() {
+  const totalWeight = SPIN_PRIZES.reduce((sum, p) => sum + p.weight, 0);
+  let rand = Math.random() * totalWeight;
+  for (const prize of SPIN_PRIZES) {
+    rand -= prize.weight;
+    if (rand <= 0) return prize;
+  }
+  return SPIN_PRIZES[0]; // fallback
+}
+
 // GET /api/daily-spin — check if user has spun today
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -18,38 +41,42 @@ export async function GET() {
     where: { userId_spinDate: { userId, spinDate: today } },
   });
 
-  return NextResponse.json({ spunToday: !!existing, prize: existing?.prize ?? null });
+  return NextResponse.json({
+    spunToday: !!existing,
+    prize: existing?.prize ?? null,
+    prizeIndex: existing
+      ? (SPIN_PRIZES.find((p) => p.label === existing.prize)?.index ?? 0)
+      : null,
+  });
 }
 
-// POST /api/daily-spin — record the spin and award XP
+// POST /api/daily-spin — server picks the prize, records it, and awards XP
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const userId = (session.user as any).id;
   const today = new Date().toISOString().split("T")[0];
-  const { prize, xp } = await req.json();
 
-  if (!prize || xp == null) {
-    return NextResponse.json({ error: "Missing prize or xp" }, { status: 400 });
+  // Guard: reject if already spun today
+  const existing = await prisma.dailySpin.findUnique({
+    where: { userId_spinDate: { userId, spinDate: today } },
+  });
+  if (existing) {
+    return NextResponse.json({ error: "Already spun today" }, { status: 409 });
   }
 
-  try {
-    // Check already spun today
-    const existing = await prisma.dailySpin.findUnique({
-      where: { userId_spinDate: { userId, spinDate: today } },
-    });
-    if (existing) {
-      return NextResponse.json({ error: "Already spun today" }, { status: 409 });
-    }
+  // ── Server-side prize selection (client has no say) ──────────────────
+  const selected = pickPrize();
 
+  try {
     const updatedUser = await prisma.$transaction(async (tx) => {
       await tx.dailySpin.create({
-        data: { userId, spinDate: today, prize, xpAwarded: xp },
+        data: { userId, spinDate: today, prize: selected.label, xpAwarded: selected.xp },
       });
       return tx.user.update({
         where: { id: userId },
-        data: { xp: { increment: xp } },
+        data: { xp: { increment: selected.xp } },
         select: { email: true, name: true, xp: true },
       });
     });
@@ -58,17 +85,24 @@ export async function POST(req: NextRequest) {
     if (updatedUser.email) {
       sendEmail({
         to: updatedUser.email,
-        subject: `🎡 You won ${prize} on today's Daily Spin!`,
+        subject: `🎡 You won ${selected.label} on today's Daily Spin!`,
         react: React.createElement(DailyBonusEmail, {
           name: updatedUser.name ?? "there",
-          prize,
-          xpAwarded: xp,
+          prize: selected.label,
+          xpAwarded: selected.xp,
           newTotalXp: updatedUser.xp,
         }),
-      }).catch((err) => console.error(`[email] Failed to send daily bonus email to ${updatedUser.email}:`, err));
+      }).catch((err) =>
+        console.error(`[email] Failed to send daily bonus email to ${updatedUser.email}:`, err)
+      );
     }
 
-    return NextResponse.json({ success: true, xpAwarded: xp });
+    return NextResponse.json({
+      success: true,
+      prize: selected.label,
+      prizeIndex: selected.index,
+      xpAwarded: selected.xp,
+    });
   } catch (e: any) {
     if (e.code === "P2002") {
       return NextResponse.json({ error: "Already spun today" }, { status: 409 });

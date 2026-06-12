@@ -4057,21 +4057,48 @@ async function spinWheel() {
   btn.disabled = true;
   btn.textContent = 'Spinning...';
 
+  // ── 1. Ask the SERVER which prize the user wins (weighted, tamper-proof) ──
+  let prizeIndex, prizeLabel, xpAwarded;
+  try {
+    const res = await fetch('/api/daily-spin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    if (res.status === 409) {
+      // Already spun today (race condition)
+      btn.textContent = '🎊 Come back tomorrow!';
+      return;
+    }
+    const data = await res.json();
+    if (!data.success) {
+      showNotification(data.error || 'Spin failed. Try again.', 'error');
+      state.spinDone = false;
+      btn.disabled = false;
+      btn.textContent = 'SPIN!';
+      return;
+    }
+    prizeIndex  = data.prizeIndex;
+    prizeLabel  = data.prize;
+    xpAwarded   = data.xpAwarded;
+  } catch(e) {
+    showNotification('Network error. Please try again.', 'error');
+    state.spinDone = false;
+    btn.disabled = false;
+    btn.textContent = 'SPIN!';
+    return;
+  }
+
+  // ── 2. Animate wheel to land on the server-chosen segment ──────────────
   const prizes = DATA.spinPrizes;
   const n = prizes.length;
   const arc = (2 * Math.PI) / n;
-  const winIndex = Math.floor(Math.random() * n);
 
   // Spin 6–9 full rotations then land pointer at centre of winning segment
   const fullRotations = 6 + Math.floor(Math.random() * 4);
   const targetAngle = fullRotations * 2 * Math.PI
-    + (n - winIndex) * arc
+    + (n - prizeIndex) * arc
     - arc / 2;
 
   const duration = 5000;
   const startTime = performance.now();
 
-  // Elastic ease-out — wheel bounces slightly at the end (CodePen style)
   function easeOutElastic(t) {
     if (t <= 0 || t >= 1) return t;
     const p = 0.38;
@@ -4085,36 +4112,25 @@ async function spinWheel() {
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      // ── Reveal result ──────────────────────────────────────────────
-      const prize = prizes[winIndex];
+      // ── 3. Reveal result ───────────────────────────────────────────────
+      const prize = prizes[prizeIndex];
       const resultEl = document.getElementById('spin-result');
       resultEl.classList.remove('hidden');
-      document.getElementById('spin-result-text').textContent = `🎉 You won ${prize.label}!`;
+      document.getElementById('spin-result-text').textContent = `🎉 You won ${prizeLabel}!`;
       const counter = document.getElementById('xp-counter');
-      counter.textContent = prize.label.includes('XP') ? '+' + prize.label : prize.label + ' unlocked!';
+      counter.textContent = '+' + prizeLabel;
       counter.style.color = prize.color;
       counter.style.textShadow = `0 0 24px ${prize.color}88`;
       btn.textContent = '🎊 Come back tomorrow!';
-      floatXP(prize.label, document.getElementById('bonus-modal-overlay'));
+      floatXP(prizeLabel, document.getElementById('bonus-modal-overlay'));
 
-      // Award XP in DB
-      const xpMatch = prize.label.match(/(\d+)\s*XP/);
-      const xpAmount = xpMatch ? parseInt(xpMatch[1]) : 0;
-      fetch('/api/daily-spin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prize: prize.label, xp: xpAmount }),
-      }).then(r => {
-        if (r.status === 409) { btn.textContent = '🎊 Come back tomorrow!'; btn.disabled = true; return null; }
-        return r.json();
-      }).then(d => {
-        if (d && d.xpAwarded) {
-          document.querySelectorAll('.user-xp, #profile-xp').forEach(el => {
-            const cur = parseInt((el.textContent || '0').replace(/\D/g, '')) || 0;
-            el.textContent = (cur + d.xpAwarded).toLocaleString() + ' XP';
-          });
-        }
-      }).catch(() => {});
+      // Update XP display in UI
+      if (xpAwarded > 0) {
+        document.querySelectorAll('.user-xp, #profile-xp').forEach(el => {
+          const cur = parseInt((el.textContent || '0').replace(/\D/g, '')) || 0;
+          el.textContent = (cur + xpAwarded).toLocaleString() + ' XP';
+        });
+      }
     }
   }
 
