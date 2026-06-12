@@ -1513,7 +1513,7 @@ async function renderPredictions(filter) {
       let status = p.status || 'pending';
       if (!p.status) {
         if (p.match?.status === 'UPCOMING' || p.match?.status === 'LIVE') status = 'pending';
-        else if (p.match?.status === 'COMPLETED') status = p.xpEarned > 0 ? 'correct' : 'wrong';
+        else if (p.match?.status === 'COMPLETED') status = 'wrong'; // unsettled completed = treat as wrong until backend settles
       }
 
       // Build picks display
@@ -2985,11 +2985,11 @@ async function initPublicProfile() {
         predsList.innerHTML = '<div style="text-align:center;padding:60px 24px;border:1px dashed rgba(255,255,255,0.08);border-radius:16px;"><div style="font-size:2.5rem;margin-bottom:12px;">📭</div><p style="color:rgba(255,255,255,0.25);font-size:0.9rem;margin:0;">No completed predictions yet.</p></div>';
       } else {
         predsList.innerHTML = preds.map((pred, idx) => {
-          const won = (pred.xpEarned || 0) > 0;
+          const correctOutcome = pred.status === 'correct';
           const exactScore = pred.homeScore === pred.match.homeScore && pred.awayScore === pred.match.awayScore;
-          const outcomeIcon = won ? (exactScore ? '🌟' : '✅') : '❌';
-          const outcome = exactScore ? 'Exact Score!' : won ? 'Result Correct' : 'Wrong Prediction';
-          const outcomeColor = exactScore ? '#FBBF24' : won ? '#6FE840' : (pred.xpEarned || 0) < 0 ? '#F87171' : 'rgba(255,255,255,0.3)';
+          const outcomeIcon = exactScore ? '🌟' : correctOutcome ? '✅' : '❌';
+          const outcome = exactScore ? 'Exact Score!' : correctOutcome ? 'Result Correct' : 'Wrong Prediction';
+          const outcomeColor = exactScore ? '#FBBF24' : correctOutcome ? '#6FE840' : '#F87171';
           const homeLogo = pred.match.homeLogo ? `<img src="${pred.match.homeLogo}" width="22" height="22" style="object-fit:contain;">` : '';
           const awayLogo = pred.match.awayLogo ? `<img src="${pred.match.awayLogo}" width="22" height="22" style="object-fit:contain;">` : '';
           const matchDate = new Date(pred.match.matchDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
