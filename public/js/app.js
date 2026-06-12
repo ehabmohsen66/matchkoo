@@ -2986,7 +2986,7 @@ async function initPublicProfile() {
           const exactScore = pred.homeScore === pred.match.homeScore && pred.awayScore === pred.match.awayScore;
           const outcomeIcon = won ? (exactScore ? '🌟' : '✅') : '❌';
           const outcome = exactScore ? 'Exact Score!' : won ? 'Result Correct' : 'Wrong Prediction';
-          const outcomeColor = exactScore ? '#FBBF24' : won ? '#6FE840' : 'rgba(255,255,255,0.3)';
+          const outcomeColor = exactScore ? '#FBBF24' : won ? '#6FE840' : (pred.xpEarned || 0) < 0 ? '#F87171' : 'rgba(255,255,255,0.3)';
           const homeLogo = pred.match.homeLogo ? `<img src="${pred.match.homeLogo}" width="22" height="22" style="object-fit:contain;">` : '';
           const awayLogo = pred.match.awayLogo ? `<img src="${pred.match.awayLogo}" width="22" height="22" style="object-fit:contain;">` : '';
           const matchDate = new Date(pred.match.matchDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -3021,7 +3021,7 @@ async function initPublicProfile() {
                   ${pred.isDouble ? '<span style="font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#A78BFA;">🃏 JOKER 2×</span>' : ''}
                   ${pred.isShield ? '<span style="font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:#60A5FA;">🛡️ SHIELD</span>' : ''}
                 </div>
-                <div style="font-size:0.85rem;font-weight:800;color:${won ? '#6FE840' : 'rgba(255,255,255,0.25)'};background:${won ? 'rgba(60,184,46,0.1)' : 'rgba(255,255,255,0.04)'};border:1px solid ${won ? 'rgba(60,184,46,0.25)' : 'rgba(255,255,255,0.08)'};border-radius:100px;padding:4px 12px;font-family:'Russo One',sans-serif;">${won ? '+' + pred.xpEarned : '0'} XP</div>
+                <div style="font-size:0.85rem;font-weight:800;color:${won ? '#6FE840' : (pred.xpEarned || 0) < 0 ? '#F87171' : 'rgba(255,255,255,0.25)'};background:${won ? 'rgba(60,184,46,0.1)' : (pred.xpEarned || 0) < 0 ? 'rgba(248,113,113,0.1)' : 'rgba(255,255,255,0.04)'};border:1px solid ${won ? 'rgba(60,184,46,0.25)' : (pred.xpEarned || 0) < 0 ? 'rgba(248,113,113,0.25)' : 'rgba(255,255,255,0.08)'};border-radius:100px;padding:4px 12px;font-family:'Russo One',sans-serif;">${won ? '+' + pred.xpEarned : (pred.xpEarned || 0) < 0 ? pred.xpEarned : '0'} XP</div>
               </div>
             </div>`;
         }).join('');

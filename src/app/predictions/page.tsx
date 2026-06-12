@@ -126,8 +126,8 @@ function MatchCard({ match, onPredict }: { match: Match; onPredict: (m: Match) =
         </button>
       )}
       {locked && match.status === "COMPLETED" && p?.xpEarned != null && (
-        <div style={{ textAlign: "center", fontSize: "0.8rem", fontWeight: 800, color: "#6FE840" }}>
-          +{p.xpEarned} XP earned
+        <div style={{ textAlign: "center", fontSize: "0.8rem", fontWeight: 800, color: p.xpEarned < 0 ? "#F87171" : "#6FE840" }}>
+          {p.xpEarned > 0 ? "+" : ""}{p.xpEarned} XP earned
         </div>
       )}
       {locked && match.status !== "COMPLETED" && (

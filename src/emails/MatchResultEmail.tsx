@@ -45,7 +45,7 @@ export default function MatchResultEmail({
   const outcomeColor = scoreCorrect || resultCorrect ? "#7CE900" : "#FF4B4B";
 
   return (
-    <BaseLayout previewText={scoreCorrect ? `Perfect call! +${xpEarned} XP` : `Match Result: ${homeTeam} vs ${awayTeam}`}>
+    <BaseLayout previewText={scoreCorrect ? `Perfect call! +${xpEarned} XP` : xpEarned < 0 ? `Match Result: ${xpEarned} XP` : `Match Result: ${homeTeam} vs ${awayTeam}`}>
       {/* Hero / Header */}
       <Section style={hero}>
         <div style={{ ...badge, color: outcomeColor, backgroundColor: `${outcomeColor}1A` }}>
@@ -114,8 +114,8 @@ export default function MatchResultEmail({
         <Row style={{ marginTop: "18px" }}>
           <Column style={statCol}>
             <div style={statCard}>
-              <div style={{ ...statValue, color: "#7CE900" }}>+{xpEarned}</div>
-              <div style={statLabel}>XP Earned</div>
+              <div style={{ ...statValue, color: xpEarned < 0 ? "#FF4B4B" : "#7CE900" }}>{xpEarned > 0 ? "+" : ""}{xpEarned}</div>
+              <div style={statLabel}>XP {xpEarned < 0 ? "Deducted" : "Earned"}</div>
             </div>
           </Column>
           <Column style={statColCenter}>
