@@ -154,6 +154,22 @@ function SyncTab() {
   const [status, setStatus] = useState<any>(null);
   const [loading, setLoading] = useState("");
   const [result, setResult] = useState<any>(null);
+  const [rescoreMatchId, setRescoreMatchId] = useState("");
+  const [rescoreResult, setRescoreResult] = useState<any>(null);
+  const [rescoring, setRescoring] = useState(false);
+
+  const forceResettle = async () => {
+    if (!rescoreMatchId.trim()) return;
+    setRescoring(true); setRescoreResult(null);
+    const r = await fetch("/api/admin/settle-xp/patch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ matchId: rescoreMatchId.trim() }),
+    });
+    const data = await r.json();
+    setRescoreResult({ ...data, ok: r.ok });
+    setRescoring(false);
+  };
 
   useEffect(() => {
     fetch("/api/admin/sync-fixtures").then(r => r.ok ? r.json() : null).then(setStatus);
@@ -217,7 +233,43 @@ function SyncTab() {
             </button>
           ))}
         </div>
+
+        {/* Force Re-Settle XP */}
+        <h3 style={{ ...sectionTitle, marginTop: 28, color: "#ff9914" }}>🔧 Force Re-Settle XP</h3>
+        <div style={{ ...card, borderColor: "rgba(255,153,20,0.3)" }}>
+          <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.4)", marginBottom: 10, lineHeight: 1.6 }}>
+            Use when a match score was corrected <b style={{ color: "#ff9914" }}>after</b> the XP cron already ran.
+            This reverts old XP and recalculates correct XP for <b>all</b> users who predicted that match.
+          </div>
+          <input
+            value={rescoreMatchId}
+            onChange={e => setRescoreMatchId(e.target.value)}
+            placeholder="Match ID (e.g. cmp5asfd3003vjs04...)"
+            style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,153,20,0.3)", background: "rgba(255,255,255,0.05)", color: "#fff", fontSize: "0.82rem", marginBottom: 10, boxSizing: "border-box", fontFamily: "monospace" }}
+          />
+          <button
+            style={{ ...btnGreen, background: "linear-gradient(135deg,#ff9914,#ffb347)", color: "#000", opacity: rescoring ? 0.6 : 1 }}
+            disabled={rescoring || !rescoreMatchId.trim()}
+            onClick={forceResettle}
+          >
+            {rescoring ? "Re-settling..." : "⚡ Force Re-Settle All Predictions"}
+          </button>
+          {rescoreResult && (
+            <div style={{ marginTop: 12, padding: "12px 14px", borderRadius: 10, background: rescoreResult.ok ? "rgba(60,184,46,0.08)" : "rgba(255,68,68,0.08)", border: `1px solid ${rescoreResult.ok ? "rgba(60,184,46,0.3)" : "rgba(255,68,68,0.3)"}`, fontSize: "0.82rem", lineHeight: 1.8 }}>
+              {rescoreResult.ok ? (
+                <>
+                  <div style={{ color: "#6FE840", fontWeight: 700 }}>✅ {rescoreResult.message}</div>
+                  <div style={{ color: "rgba(255,255,255,0.5)" }}>Match: {rescoreResult.match}</div>
+                  <div style={{ color: "rgba(255,255,255,0.5)" }}>Predictions re-settled: <b style={{ color: "#fff" }}>{rescoreResult.resettled}</b></div>
+                </>
+              ) : (
+                <div style={{ color: "#ff4444" }}>❌ {rescoreResult.error || "Something went wrong"}</div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
+
 
       <div>
         <h3 style={sectionTitle}>📊 DB Status</h3>
