@@ -205,41 +205,41 @@ export default function Home() {
                 <div className="mock-lb-header">
                   Global Leaderboard · This Week
                 </div>
-                <div className="mock-lb-row">
+                <Link href="/register" className="mock-lb-row" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div className="mock-lb-rank" style={{ "color": "#FF9914" }}>🥇</div>
                   <div className="mock-lb-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=marcus" alt="Marcus" /></div>
                   <div className="mock-lb-name">Marcus T. <span style={{ "fontSize": "0.7rem", "color": "rgba(255,255,255,0.4)" }}>🇩🇪</span></div>
                   <div className="mock-lb-badge badge-gold">Legend</div>
                   <div className="mock-lb-xp">142,880</div>
-                </div>
-                <div className="mock-lb-row">
+                </Link>
+                <Link href="/register" className="mock-lb-row" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div className="mock-lb-rank" style={{ "color": "#94A3B8" }}>🥈</div>
                   <div className="mock-lb-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=alex" alt="Alex" /></div>
                   <div className="mock-lb-name">Alex K. <span style={{ "fontSize": "0.7rem", "color": "rgba(255,255,255,0.4)" }}>🇧🇷</span></div>
                   <div className="mock-lb-badge badge-plat">Diamond</div>
                   <div className="mock-lb-xp">89,420</div>
-                </div>
-                <div className="mock-lb-row">
+                </Link>
+                <Link href="/register" className="mock-lb-row" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div className="mock-lb-rank" style={{ "color": "#CD7F32" }}>🥉</div>
                   <div className="mock-lb-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=sofia" alt="Sofia" /></div>
                   <div className="mock-lb-name">Sofia L. <span style={{ "fontSize": "0.7rem", "color": "rgba(255,255,255,0.4)" }}>🇫🇷</span></div>
                   <div className="mock-lb-badge badge-gold">Gold</div>
                   <div className="mock-lb-xp">76,150</div>
-                </div>
-                <div className="mock-lb-row">
+                </Link>
+                <Link href="/register" className="mock-lb-row" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div className="mock-lb-rank" style={{ "color": "rgba(255,255,255,0.4)" }}>#4</div>
                   <div className="mock-lb-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=yusuf" alt="Yusuf" /></div>
                   <div className="mock-lb-name">Yusuf A. <span style={{ "fontSize": "0.7rem", "color": "rgba(255,255,255,0.4)" }}>🇳🇬</span></div>
                   <div className="mock-lb-badge badge-gold">Gold</div>
                   <div className="mock-lb-xp">64,800</div>
-                </div>
-                <div className="mock-lb-row you">
+                </Link>
+                <Link href="/register" className="mock-lb-row you" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div className="mock-lb-rank" style={{ "color": "#29BF12" }}>#1,247</div>
                   <div className="mock-lb-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=kickoff" alt="You" /></div>
                   <div className="mock-lb-name"><strong>You</strong> <span style={{ "fontSize": "0.7rem", "color": "rgba(255,255,255,0.4)" }}>🇪🇬</span></div>
                   <div className="mock-lb-badge badge-you">Gold</div>
                   <div className="mock-lb-xp">12,450</div>
-                </div>
+                </Link>
               </div>
             </div>
             <div className="feature-list reveal reveal-delay-2">

@@ -136,7 +136,7 @@ function renderMiniLeaderboardStatic(container) {
   container.innerHTML = DATA.friendsLeaderboard.map(u => {
     const rankClass = u.rank === 1 ? 'gold-rank' : u.rank === 2 ? 'silver-rank' : u.rank === 3 ? 'bronze-rank' : u.isYou ? 'you-rank' : '';
     return `
-      <div class="mini-lb-row ${u.isYou ? 'you-row' : ''}" role="row">
+      <div class="mini-lb-row ${u.isYou ? 'you-row' : ''}" role="row" style="cursor:pointer;transition:background 0.15s;" onclick="goToProfile('${u.seed}')" onmouseenter="this.style.background='rgba(60,184,46,0.06)'" onmouseleave="this.style.background=''">
         <div class="lb-rank ${rankClass}">${u.rank === 1 ? '🥇' : u.rank === 2 ? '🥈' : u.rank === 3 ? '🥉' : '#'+u.rank}</div>
         <div class="lb-avatar">
           <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${u.seed}" alt="${u.name}" width="36" height="36">
@@ -383,7 +383,7 @@ function renderLeaderboardTableStatic(entries) {
   container.innerHTML = entries.slice(3).map((u, i) => {
     const displayRank = i + 4;
     return `
-      <div class="mini-lb-row ${u.isYou ? 'you-row' : ''}" role="row">
+      <div class="mini-lb-row ${u.isYou ? 'you-row' : ''}" role="row" style="cursor:pointer;transition:background 0.15s;" onclick="goToProfile('${u.seed}')" onmouseenter="this.style.background='rgba(60,184,46,0.06)'" onmouseleave="this.style.background=''">
         <div class="lb-rank" style="color: var(--text-muted)">#${displayRank}</div>
         <div class="lb-avatar">
           <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${u.seed}" alt="${u.name}" width="36" height="36">
