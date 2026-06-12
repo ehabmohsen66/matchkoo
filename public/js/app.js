@@ -2164,7 +2164,7 @@ async function initLeagueDetail() {
       const streak = u.streak || 0;
       const acc = u.accuracy != null ? Math.round(u.accuracy) + '%' : '';
       return `
-      <div class="mini-lb-row ${u.isMe ? 'you-row' : ''}" role="row">
+      <div class="mini-lb-row ${u.isMe ? 'you-row' : ''}" role="row" style="cursor:pointer;transition:background 0.15s;" onclick="goToProfile('${u.userId || u.id || ''}')" onmouseenter="this.style.background='rgba(255,255,255,0.04)'" onmouseleave="this.style.background=''">
         <div class="lb-rank" style="color:var(--text-muted);font-weight:800">#${u.rank}</div>
         <div class="lb-avatar">
           <img src="${avatar}" alt="${u.name || 'Player'}" width="36" height="36" style="border-radius:50%">
@@ -2579,7 +2579,7 @@ async function openMiniLeagueDetail(leagueId) {
       const streak = u.streak || 0;
       const acc = u.accuracy != null ? Math.round(u.accuracy) + '%' : '';
       return `
-      <div class="mini-lb-row ${u.isMe ? 'you-row' : ''}" role="row">
+      <div class="mini-lb-row ${u.isMe ? 'you-row' : ''}" role="row" style="cursor:pointer;transition:background 0.15s;" onclick="goToProfile('${u.userId || u.id || ''}')" onmouseenter="this.style.background='rgba(255,255,255,0.04)'" onmouseleave="this.style.background=''">
         <div class="lb-rank" style="color:var(--text-muted);font-weight:800">#${u.rank || (i+4)}</div>
         <div class="lb-avatar">
           <img src="${avatar}" alt="${u.name || 'Player'}" width="36" height="36" style="border-radius:50%">
