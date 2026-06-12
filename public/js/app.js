@@ -1513,10 +1513,7 @@ async function renderPredictions(filter) {
       let status = p.status || 'pending';
       if (!p.status) {
         if (p.match?.status === 'UPCOMING' || p.match?.status === 'LIVE') status = 'pending';
-        // For completed matches with no DB status, leave as 'pending' — do NOT
-        // guess from xpEarned, as bonuses (BTTS/total goals) can make xp > 0
-        // even when the match outcome was wrong.
-        else if (p.match?.status === 'COMPLETED') status = 'pending';
+        else if (p.match?.status === 'COMPLETED') status = p.xpEarned > 0 ? 'correct' : 'wrong';
       }
 
       // Build picks display
@@ -2988,7 +2985,7 @@ async function initPublicProfile() {
         predsList.innerHTML = '<div style="text-align:center;padding:60px 24px;border:1px dashed rgba(255,255,255,0.08);border-radius:16px;"><div style="font-size:2.5rem;margin-bottom:12px;">📭</div><p style="color:rgba(255,255,255,0.25);font-size:0.9rem;margin:0;">No completed predictions yet.</p></div>';
       } else {
         predsList.innerHTML = preds.map((pred, idx) => {
-          const won = pred.status === 'correct';
+          const won = (pred.xpEarned || 0) > 0;
           const exactScore = pred.homeScore === pred.match.homeScore && pred.awayScore === pred.match.awayScore;
           const outcomeIcon = won ? (exactScore ? '🌟' : '✅') : '❌';
           const outcome = exactScore ? 'Exact Score!' : won ? 'Result Correct' : 'Wrong Prediction';
