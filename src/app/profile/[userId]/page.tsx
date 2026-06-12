@@ -59,6 +59,7 @@ function countryFlag(code: string | null) {
 function xpBreakdownLabel(pred: CompletedPrediction): { label: string; color: string } {
   const { xpEarned, homeScore, awayScore, match } = pred;
   if (xpEarned == null || xpEarned === 0) return { label: "No points", color: "rgba(255,255,255,0.3)" };
+  if (xpEarned < 0) return { label: "Wrong Prediction", color: "#F87171" };
 
   const exactScore = homeScore === match.homeScore && awayScore === match.awayScore;
   if (exactScore) return { label: "Exact score ✨", color: "#FBBF24" };
@@ -68,7 +69,7 @@ function xpBreakdownLabel(pred: CompletedPrediction): { label: string; color: st
       ? match.homeScore > match.awayScore ? "H" : match.awayScore > match.homeScore ? "A" : "D"
       : null;
   const predResult = homeScore > awayScore ? "H" : awayScore > homeScore ? "A" : "D";
-  if (actualResult && predResult === actualResult) return { label: "Correct result", color: "#6FE840" };
+  if (actualResult && predResult === actualResult) return { label: "Result Correct", color: "#6FE840" };
 
   return { label: "Points earned", color: "#6FE840" };
 }
@@ -417,13 +418,13 @@ export default function PublicProfilePage() {
                       {/* XP pill */}
                       <div style={{
                         fontSize: "0.85rem", fontWeight: 800,
-                        color: won ? "#6FE840" : "rgba(255,255,255,0.25)",
-                        background: won ? "rgba(60,184,46,0.1)" : "rgba(255,255,255,0.04)",
-                        border: `1px solid ${won ? "rgba(60,184,46,0.25)" : "rgba(255,255,255,0.08)"}`,
+                        color: won ? "#6FE840" : (pred.xpEarned ?? 0) < 0 ? "#F87171" : "rgba(255,255,255,0.25)",
+                        background: won ? "rgba(60,184,46,0.1)" : (pred.xpEarned ?? 0) < 0 ? "rgba(248,113,113,0.1)" : "rgba(255,255,255,0.04)",
+                        border: `1px solid ${ won ? "rgba(60,184,46,0.25)" : (pred.xpEarned ?? 0) < 0 ? "rgba(248,113,113,0.25)" : "rgba(255,255,255,0.08)"}`,
                         borderRadius: 100, padding: "4px 12px",
                         fontFamily: "'Russo One', sans-serif",
                       }}>
-                        {won ? `+${pred.xpEarned}` : "0"} XP
+                        {won ? `+${pred.xpEarned}` : (pred.xpEarned ?? 0) < 0 ? `${pred.xpEarned}` : "0"} XP
                       </div>
                     </div>
                   </div>
