@@ -119,15 +119,15 @@ export async function GET(req: NextRequest) {
       pastRows.sort((a, b) => (b._sum.xpEarned ?? 0) - (a._sum.xpEarned ?? 0));
       const pastRankMap = new Map(pastRows.map((r, i) => [r.userId, i + 1]));
 
-      // Get per-league accuracy stats
+      // Get per-league accuracy — use status='correct' (score-derived, not xpEarned)
       const totalPreds = await prisma.prediction.groupBy({
         by: ["userId"],
-        where: { userId: { in: userIds }, match: { tournamentId, status: "COMPLETED" } },
+        where: { userId: { in: userIds }, match: { tournamentId, status: "COMPLETED" }, status: { not: null } },
         _count: { id: true },
       });
       const correctPreds = await prisma.prediction.groupBy({
         by: ["userId"],
-        where: { userId: { in: userIds }, match: { tournamentId, status: "COMPLETED" }, xpEarned: { gt: 0 } },
+        where: { userId: { in: userIds }, match: { tournamentId, status: "COMPLETED" }, status: "correct" },
         _count: { id: true },
       });
       const totalMap = Object.fromEntries(totalPreds.map((r) => [r.userId, r._count.id]));
@@ -182,47 +182,66 @@ export async function GET(req: NextRequest) {
       const userIds = rows.map((r) => r.userId);
       const users   = await prisma.user.findMany({
         where: { id: { in: userIds } },
-        select: { id: true, name: true, image: true, streak: true, correctCount: true, predictionCount: true, country: true },
+        select: { id: true, name: true, image: true, streak: true, country: true },
       });
       const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
+      // Live accuracy — status='correct' is set from score comparison, not xpEarned
+      const [accTotal, accCorrect] = await Promise.all([
+        prisma.prediction.groupBy({ by: ["userId"], where: { userId: { in: userIds }, match: { status: "COMPLETED", matchDate: { gte: since! } }, status: { not: null } }, _count: { id: true } }),
+        prisma.prediction.groupBy({ by: ["userId"], where: { userId: { in: userIds }, match: { status: "COMPLETED", matchDate: { gte: since! } }, status: "correct" }, _count: { id: true } }),
+      ]);
+      const accTotalMap   = Object.fromEntries(accTotal.map(r => [r.userId, r._count.id]));
+      const accCorrectMap = Object.fromEntries(accCorrect.map(r => [r.userId, r._count.id]));
       return NextResponse.json(
-        rows.map((r, i) => ({
-          rank:     i + 1,
-          userId:   r.userId,
-          name:     userMap[r.userId]?.name ?? "Unknown",
-          image:    userMap[r.userId]?.image ?? null,
-          country:  userMap[r.userId]?.country ?? "EG",
-          xp:       r._sum.xpEarned ?? 0,
-          streak:   userMap[r.userId]?.streak ?? 0,
-          accuracy: userMap[r.userId]?.predictionCount
-            ? Math.round((userMap[r.userId].correctCount / userMap[r.userId].predictionCount) * 100)
-            : 0,
-          isMe: r.userId === userId,
-        }))
+        rows.map((r, i) => {
+          const t = accTotalMap[r.userId] || 0;
+          const c = accCorrectMap[r.userId] || 0;
+          return {
+            rank:     i + 1,
+            userId:   r.userId,
+            name:     userMap[r.userId]?.name ?? "Unknown",
+            image:    userMap[r.userId]?.image ?? null,
+            country:  userMap[r.userId]?.country ?? "EG",
+            xp:       r._sum.xpEarned ?? 0,
+            streak:   userMap[r.userId]?.streak ?? 0,
+            accuracy: t > 0 ? Math.round((c / t) * 100) : 0,
+            isMe: r.userId === userId,
+          };
+        })
       );
     }
 
     // ── Global all-time leaderboard ───────────────────────────────────
     const users = await prisma.user.findMany({
       where: {},
-      select: { id: true, name: true, image: true, xp: true, streak: true, correctCount: true, predictionCount: true, country: true },
+      select: { id: true, name: true, image: true, xp: true, streak: true, country: true },
       orderBy: { xp: "desc" },
       take: 100,
     });
+    const allUserIds = users.map(u => u.id);
+    // Live accuracy — status='correct' is score-derived, avoids stale correctCount
+    const [allTotal, allCorrect] = await Promise.all([
+      prisma.prediction.groupBy({ by: ["userId"], where: { userId: { in: allUserIds }, match: { status: "COMPLETED" }, status: { not: null } }, _count: { id: true } }),
+      prisma.prediction.groupBy({ by: ["userId"], where: { userId: { in: allUserIds }, match: { status: "COMPLETED" }, status: "correct" }, _count: { id: true } }),
+    ]);
+    const allTotalMap   = Object.fromEntries(allTotal.map(r => [r.userId, r._count.id]));
+    const allCorrectMap = Object.fromEntries(allCorrect.map(r => [r.userId, r._count.id]));
     return NextResponse.json(
-      users.map((u, i) => ({
-        rank:     i + 1,
-        userId:   u.id,
-        name:     u.name ?? "Unknown",
-        image:    u.image ?? null,
-        country:  u.country ?? "EG",
-        xp:       u.xp,
-        streak:   u.streak,
-        accuracy: u.predictionCount
-          ? Math.round((u.correctCount / u.predictionCount) * 100)
-          : 0,
-        isMe: u.id === userId,
-      }))
+      users.map((u, i) => {
+        const t = allTotalMap[u.id] || 0;
+        const c = allCorrectMap[u.id] || 0;
+        return {
+          rank:     i + 1,
+          userId:   u.id,
+          name:     u.name ?? "Unknown",
+          image:    u.image ?? null,
+          country:  u.country ?? "EG",
+          xp:       u.xp,
+          streak:   u.streak,
+          accuracy: t > 0 ? Math.round((c / t) * 100) : 0,
+          isMe: u.id === userId,
+        };
+      })
     );
   } catch (error) {
     console.error("Leaderboard error:", error);
