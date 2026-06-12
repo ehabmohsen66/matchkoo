@@ -14,7 +14,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
-export async function PATCH(req: NextRequest) {
+export async function POST(req: NextRequest) {
   const cronSecret = req.headers.get("x-cron-secret");
   const isValidCron = cronSecret && cronSecret === process.env.CRON_SECRET;
 
