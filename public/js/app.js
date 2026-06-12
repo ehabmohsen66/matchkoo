@@ -2956,10 +2956,10 @@ async function initPublicProfile() {
              (p.homeScore < p.awayScore && hs < as) ||
              (p.homeScore === p.awayScore && hs === as);
     }).length;
-    // totalCompleted = denominator for accuracy (only completed matches count)
-    // totalAllTime   = all-time predictions shown on the "Predicted Matches" card
+    // totalCompleted = actual completed preds from API (always accurate)
+    // totalAllTime   = fall back to user.predictionCount only if API returned nothing
     const totalCompleted = preds.length;
-    const totalAllTime   = data.predictionCount || totalCompleted;
+    const totalAllTime   = totalCompleted || data.predictionCount || 0;
     const accuracy = totalCompleted > 0 ? Math.round((correct / totalCompleted) * 100) : 0;
 
     const accEl    = document.getElementById('pub-profile-stat-accuracy');
