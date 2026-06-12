@@ -60,13 +60,16 @@ export async function POST(req: NextRequest) {
         gender: gender === "female" ? "female" : "male", // validate input
         country, // Captured automatically
         image: (() => {
-          // Male avatars: Felix, Kai, Marco, Zara (neutral)
-          // Female avatars: Nadia, Luna, Jade, Sofia
-          const maleSeeds   = ["Felix&backgroundColor=b6e3f4", "Kai&backgroundColor=c0aede", "Marco&backgroundColor=ffd5dc"];
-          const femaleSeeds = ["Nadia&backgroundColor=b6e3f4", "Luna&backgroundColor=c0aede", "Jade&backgroundColor=ffd5dc", "Sofia&backgroundColor=d1d4f9"];
-          const pool = gender === "female" ? femaleSeeds : maleSeeds;
-          const seed = pool[Math.floor(Math.random() * pool.length)];
-          return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+          // Use DiceBear's explicit sex parameter to guarantee correct gender appearance.
+          // seed is randomised per user so each gets a unique-looking avatar.
+          const isFemale = gender === "female";
+          const sex = isFemale ? "female" : "male";
+          const bgColors = isFemale
+            ? ["b6e3f4", "c0aede", "ffd5dc", "d1d4f9"]
+            : ["b6e3f4", "c0aede", "ffd5dc", "ffdfbf"];
+          const bg = bgColors[Math.floor(Math.random() * bgColors.length)];
+          const seed = Math.random().toString(36).substring(2, 10); // random unique seed
+          return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&sex=${sex}&backgroundColor=${bg}`;
         })(),
         preferredLeagues: Array.isArray(preferredLeagues) ? preferredLeagues : [],
         ...(validDob ? { dateOfBirth: validDob } : {}),
