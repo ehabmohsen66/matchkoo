@@ -8,15 +8,16 @@ import DailyBonusEmail from "@/emails/DailyBonusEmail";
 
 /**
  * Prize table — server is the single source of truth.
- * Order MUST match the spinPrizes array in public/js/data.js (index 0–4).
- * Weights are relative: 40+25+20+10+5 = 100 (treated as percentages).
+ * Order/index MUST match spinPrizes array in public/js/data.js exactly.
+ * Weights: 50+30+10+5+4+1 = 100 (treated as percentages).
  */
 const SPIN_PRIZES = [
-  { index: 0, label: "+50 XP",  xp: 50,  weight: 40 },
-  { index: 1, label: "+100 XP", xp: 100, weight: 25 },
-  { index: 2, label: "+150 XP", xp: 150, weight: 20 },
-  { index: 3, label: "+250 XP", xp: 250, weight: 10 },
-  { index: 4, label: "+500 XP", xp: 500, weight: 5  },
+  { index: 0, label: "Bad Luck :(",  xp: 0,   weight: 50 },
+  { index: 1, label: "+50 XP",       xp: 50,  weight: 30 },
+  { index: 2, label: "+100 XP",      xp: 100, weight: 10 },
+  { index: 3, label: "+150 XP",      xp: 150, weight: 5  },
+  { index: 4, label: "+250 XP",      xp: 250, weight: 4  },
+  { index: 5, label: "+500 XP",      xp: 500, weight: 1  },
 ];
 
 function pickPrize() {

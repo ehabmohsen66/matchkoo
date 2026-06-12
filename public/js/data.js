@@ -189,11 +189,12 @@ const DATA = {
   ],
 
   spinPrizes: [
-    { label: '+50 XP',  color: '#ABFF4F', textColor: '#1a4d00' },  // index 0 — 40%
-    { label: '+100 XP', color: '#08BDBD', textColor: '#FFFFFF' },  // index 1 — 25%
-    { label: '+150 XP', color: '#29BF12', textColor: '#FFFFFF' },  // index 2 — 20%
-    { label: '+250 XP', color: '#29BF12', textColor: '#FFFFFF' },  // index 3 — 10%
-    { label: '+500 XP', color: '#F21B3F', textColor: '#FFFFFF' },  // index 4 —  5%
+    { label: 'Bad Luck :(',  color: '#08BDBD', textColor: '#FFFFFF' },  // index 0 — 50%
+    { label: '+50 XP',       color: '#ABFF4F', textColor: '#1a4d00' },  // index 1 — 30%
+    { label: '+100 XP',      color: '#FF9914', textColor: '#FFFFFF' },  // index 2 — 10%
+    { label: '+150 XP',      color: '#29BF12', textColor: '#FFFFFF' },  // index 3 —  5%
+    { label: '+250 XP',      color: '#F21B3F', textColor: '#FFFFFF' },  // index 4 —  4%
+    { label: '+500 XP',      color: '#FF9914', textColor: '#FFFFFF' },  // index 5 —  1%
   ],
 
   matchDetail: {

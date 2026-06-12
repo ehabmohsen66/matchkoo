@@ -3914,9 +3914,12 @@ async function openDailyBonus() {
       btn.textContent = 'Come back tomorrow!';
       // Show what they already won today
       if (data.prize) {
+        const isBadLuck = data.prize === 'Bad Luck :(';
         document.getElementById('spin-result').classList.remove('hidden');
-        document.getElementById('spin-result-text').textContent = `You already won ${data.prize} today!`;
-        document.getElementById('xp-counter').textContent = data.prize;
+        document.getElementById('spin-result-text').textContent = isBadLuck
+          ? '😔 No luck today — try again tomorrow!'
+          : `You already won ${data.prize} today!`;
+        document.getElementById('xp-counter').textContent = isBadLuck ? 'Bad Luck :(' : data.prize;
       }
     } else {
       state.spinDone = false;
@@ -4114,19 +4117,43 @@ async function spinWheel() {
     } else {
       // ── 3. Reveal result ───────────────────────────────────────────────
       const prize = prizes[prizeIndex];
+      const isBadLuck = prizeLabel === 'Bad Luck :(';
       const resultEl = document.getElementById('spin-result');
       resultEl.classList.remove('hidden');
-      document.getElementById('spin-result-text').textContent = `🎉 You won ${prizeLabel}!`;
-      const counter = document.getElementById('xp-counter');
-      counter.textContent = '+' + prizeLabel;
-      counter.style.color = prize.color;
-      counter.style.textShadow = `0 0 24px ${prize.color}88`;
-      btn.textContent = '🎊 Come back tomorrow!';
-      floatXP(prizeLabel, document.getElementById('bonus-modal-overlay'));
 
-      // Update XP display in UI
+      if (isBadLuck) {
+        document.getElementById('spin-result-text').textContent = '😔 No luck today — better luck tomorrow!';
+        const counter = document.getElementById('xp-counter');
+        counter.textContent = 'Bad Luck :(';
+        counter.style.color = prize.color;
+        counter.style.textShadow = `0 0 24px ${prize.color}88`;
+      } else {
+        document.getElementById('spin-result-text').textContent = `🎉 You won ${prizeLabel}!`;
+        const counter = document.getElementById('xp-counter');
+        counter.textContent = '+' + prizeLabel;
+        counter.style.color = prize.color;
+        counter.style.textShadow = `0 0 24px ${prize.color}88`;
+        floatXP(prizeLabel, document.getElementById('bonus-modal-overlay'));
+      }
+
+      btn.textContent = '🎊 Come back tomorrow!';
+
+      // ── Real-time XP update across all display elements ────────────────
       if (xpAwarded > 0) {
-        document.querySelectorAll('.user-xp, #profile-xp').forEach(el => {
+        // Profile sidebar XP
+        const sidebarXp = document.getElementById('sidebar-xp');
+        if (sidebarXp) {
+          const cur = parseInt((sidebarXp.textContent || '0').replace(/\D/g, '')) || 0;
+          sidebarXp.textContent = (cur + xpAwarded).toLocaleString() + ' XP';
+        }
+        // Profile page XP
+        const profileXp = document.getElementById('profile-xp');
+        if (profileXp) {
+          const cur = parseInt((profileXp.textContent || '0').replace(/\D/g, '')) || 0;
+          profileXp.textContent = (cur + xpAwarded).toLocaleString() + ' XP';
+        }
+        // Any other .user-xp elements
+        document.querySelectorAll('.user-xp').forEach(el => {
           const cur = parseInt((el.textContent || '0').replace(/\D/g, '')) || 0;
           el.textContent = (cur + xpAwarded).toLocaleString() + ' XP';
         });
