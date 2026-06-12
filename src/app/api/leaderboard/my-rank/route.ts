@@ -27,19 +27,16 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Count how many OTHER regular users have strictly more XP
+    // Count how many OTHER users have strictly more XP (include all roles)
     const usersAhead = await prisma.user.count({
       where: {
-        role: "USER",
         xp: { gt: me.xp ?? 0 },
         id: { not: userId },
       },
     });
 
-    // Count total ranked users (role=USER)
-    const totalUsers = await prisma.user.count({
-      where: { role: "USER" },
-    });
+    // Count total ranked users (all roles)
+    const totalUsers = await prisma.user.count({});
 
     // XP earned today (UTC midnight → now)
     const todayStart = new Date();
