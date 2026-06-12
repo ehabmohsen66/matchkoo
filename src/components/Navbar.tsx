@@ -13,7 +13,7 @@ export default function Navbar() {
   if (pathname === "/" || pathname === "/ar") return null;
 
   // The full app lives at /app — don't show this navbar there either
-  if (pathname === "/app") return null;
+  if (pathname === "/app" || pathname.startsWith("/profile")) return null;
 
   // Auth pages are fully immersive — no navbar
   if (pathname === "/login" || pathname === "/register") return null;
