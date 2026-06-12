@@ -136,38 +136,6 @@ export async function POST(req: NextRequest) {
         fixtures = [...fixtures, ...finishedFixtures];
       }
       // ─────────────────────────────────────────────────────────────────────
-
-      // ── Backfill firstGoalScorer from stored events (no extra API call) ──
-      // Runs every cron tick. Finds completed matches that have events cached
-      // in DB but firstGoalScorer is still null, and fills it automatically.
-      try {
-        const missingScorer = await prisma.match.findMany({
-          where: {
-            status: "COMPLETED",
-            firstGoalScorer: null,
-            events: { not: null },
-          },
-          select: { id: true, homeTeam: true, awayTeam: true, events: true },
-        });
-
-        for (const m of missingScorer) {
-          const evts = m.events as any[];
-          if (!Array.isArray(evts) || evts.length === 0) continue;
-          const firstGoal = evts.find(
-            (e) => e.type === "Goal" && e.detail !== "Own Goal"
-          );
-          if (firstGoal?.playerName) {
-            await prisma.match.update({
-              where: { id: m.id },
-              data: { firstGoalScorer: firstGoal.playerName },
-            });
-            console.log(`[sync] backfill scorer: ${m.homeTeam} vs ${m.awayTeam} → ${firstGoal.playerName}`);
-          }
-        }
-      } catch (e) {
-        console.error("[sync] backfill scorer error:", e);
-      }
-      // ─────────────────────────────────────────────────────────────────────
     } else if (mode === "fix-stale") {
       // Find all matches stuck in LIVE or UPCOMING past their match date
       const stale = await prisma.match.findMany({
