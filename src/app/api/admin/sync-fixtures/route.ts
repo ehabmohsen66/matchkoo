@@ -318,10 +318,155 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── Unsettled-Prediction Sweep ────────────────────────────────────────────
+    // On every update-live tick: find COMPLETED matches that still have
+    // predictions with status=null (missed by the LIVE→COMPLETED transition).
+    // This guarantees all rankings update within 2 minutes of a match ending.
+    if (mode === "update-live") {
+      const completedWithUnsettled = await prisma.match.findMany({
+        where: {
+          status: "COMPLETED",
+          homeScore: { not: null },
+          awayScore: { not: null },
+          predictions: { some: { status: null } },
+        },
+        select: {
+          id: true, homeTeam: true, awayTeam: true,
+          homeScore: true, awayScore: true, firstGoalScorer: true,
+        },
+        take: 10, // cap per run to stay within 10s Vercel function timeout
+      });
+
+      for (const match of completedWithUnsettled) {
+        const hs = match.homeScore!, as = match.awayScore!;
+        const unsettled = await prisma.prediction.findMany({
+          where: { matchId: match.id, status: null },
+          include: { user: { select: { id: true, email: true, name: true, xp: true, streak: true, bestStreak: true, predictionCount: true, correctCount: true } } },
+        });
+
+        console.log(`[unsettled-sweep] Settling ${unsettled.length} predictions for ${match.homeTeam} ${hs}–${as} ${match.awayTeam}`);
+
+        for (const pred of unsettled) {
+          const correctResult =
+            (pred.homeScore > pred.awayScore && hs > as) ||
+            (pred.homeScore < pred.awayScore && hs < as) ||
+            (pred.homeScore === pred.awayScore && hs === as);
+          const trueExactScore = pred.homeScore === hs && pred.awayScore === as;
+          const exactScore = trueExactScore || (pred.isShield && correctResult);
+          const correctScorer = !!pred.firstGoalScorer && !!match.firstGoalScorer &&
+            pred.firstGoalScorer.trim().toLowerCase() === match.firstGoalScorer.trim().toLowerCase();
+
+          const multiplier = 1 + ((pred.confidence - 50) / 50);
+          let xp = correctResult ? Math.round(50 * multiplier) : 0;
+          if (exactScore)    xp += 200;
+          if (correctScorer) xp += 150;
+          if (!correctResult) xp -= Math.round(50 * (pred.confidence / 100));
+          if (pred.firstGoalScorer && !correctScorer) xp -= 100;
+
+          const actualBtts = hs > 0 && as > 0;
+          if (pred.btts !== null && pred.btts !== undefined && pred.btts === actualBtts) xp += 75;
+          const actualTotal = hs + as;
+          const actualBucket = actualTotal >= 5 ? 5 : actualTotal;
+          const predBucket = (pred.totalGoals ?? -1) >= 5 ? 5 : (pred.totalGoals ?? -1);
+          if (pred.totalGoals !== null && pred.totalGoals !== undefined && predBucket === actualBucket) xp += 75;
+          if (pred.isDouble && xp > 0) xp *= 2;
+
+          const newStreak = correctResult ? pred.user.streak + 1 : 0;
+          const newBest   = Math.max(pred.user.bestStreak, newStreak);
+          const newPredCount = pred.user.predictionCount + 1;
+          const newCorrect   = pred.user.correctCount + (correctResult ? 1 : 0);
+          let streakBonus = 0;
+          if (correctResult) {
+            if (newStreak === 10) streakBonus = 500;
+            else if (newStreak === 5) streakBonus = 150;
+            else if (newStreak === 3) streakBonus = 50;
+          }
+          xp += streakBonus;
+
+          await prisma.prediction.update({
+            where: { id: pred.id },
+            data: { xpEarned: xp, status: correctResult ? "correct" : "wrong" },
+          });
+
+          const oldXp = pred.user.xp ?? 0;
+          const updatedUser = await prisma.user.update({
+            where: { id: pred.userId },
+            data: {
+              xp:              { increment: xp },
+              streak:          newStreak,
+              bestStreak:      newBest,
+              predictionCount: newPredCount,
+              correctCount:    newCorrect,
+            },
+            select: { email: true, name: true, xp: true },
+          });
+
+          // Send result email
+          if (updatedUser.email && !pred.emailSent) {
+            await new Promise(r => setTimeout(r, 300));
+            const emailResult = await sendEmail({
+              to: updatedUser.email,
+              subject: exactScore
+                ? `🎯 Perfect call! ${match.homeTeam} ${hs}–${as} ${match.awayTeam}`
+                : correctResult
+                ? `✅ Result correct! ${match.homeTeam} vs ${match.awayTeam}`
+                : `⚽ Match result: ${match.homeTeam} ${hs}–${as} ${match.awayTeam}`,
+              react: React.createElement(MatchResultEmail, {
+                name:           updatedUser.name ?? "there",
+                homeTeam:       match.homeTeam,
+                awayTeam:       match.awayTeam,
+                actualScore:    `${hs} – ${as}`,
+                predictedScore: `${pred.homeScore} – ${pred.awayScore}`,
+                resultCorrect:  correctResult,
+                scoreCorrect:   exactScore,
+                xpEarned:       xp,
+                newTotalXp:     updatedUser.xp,
+                firstGoalScorer: pred.firstGoalScorer ?? undefined,
+                scorerCorrect:   correctScorer || undefined,
+              }),
+            }).catch(err => { console.error(`[unsettled-sweep] Email failed for ${updatedUser.email}:`, err); return null; });
+            if (emailResult && (emailResult as any).success !== false) {
+              await prisma.prediction.update({ where: { id: pred.id }, data: { emailSent: true } });
+            }
+            // Streak milestone email
+            if (correctResult && [3, 5, 10].includes(newStreak) && streakBonus > 0) {
+              sendEmail({
+                to: updatedUser.email,
+                subject: `🔥 ${newStreak}-game streak! +${streakBonus} XP bonus earned`,
+                react: React.createElement(StreakMilestoneEmail, {
+                  name: updatedUser.name ?? "there",
+                  streak: newStreak,
+                  bonusXp: streakBonus,
+                  newTotalXp: updatedUser.xp,
+                }),
+              }).catch(err => console.error(`[unsettled-sweep] Streak email failed:`, err));
+            }
+            // Level-up email
+            const levelUp = LEVELS.find(l => oldXp < l.threshold && updatedUser.xp >= l.threshold);
+            if (levelUp) {
+              sendEmail({
+                to: updatedUser.email,
+                subject: `${levelUp.name === "Legend" ? "👑" : levelUp.name === "Platinum" ? "💎" : levelUp.name === "Gold" ? "🥇" : "🥈"} You've reached ${levelUp.name} on Matchkoo!`,
+                react: React.createElement(LevelUpEmail, {
+                  name: updatedUser.name ?? "there",
+                  newLevel: levelUp.name,
+                  newTotalXp: updatedUser.xp,
+                  nextLevel: levelUp.next,
+                  nextLevelXp: levelUp.nextXp,
+                }),
+              }).catch(err => console.error(`[unsettled-sweep] Level-up email failed:`, err));
+            }
+          }
+        }
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     // ── Email Retry Sweep: re-send result emails that failed on first attempt ──
     // Runs on every update-live cycle. Finds settled predictions where emailSent
     // is still false (email failed or was skipped) and re-attempts delivery.
     if (mode === "update-live") {
+
       const unsentPreds = await prisma.prediction.findMany({
         where: { emailSent: false, status: { not: null }, xpEarned: { not: null } },
         include: {
