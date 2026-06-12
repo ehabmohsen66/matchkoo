@@ -1588,7 +1588,7 @@ function _getScoringBreakdownHtml(pred) {
   if (p.firstGoalScorer) baseXp += correctFGS ? 150 : 0;
   let xp = Math.round(baseXp * multiplier);
   if (!correctResult) xp -= Math.round(50  * (conf / 100));
-  if (p.firstGoalScorer && !correctFGS) xp -= Math.round(150 * (conf / 100));
+  if (p.firstGoalScorer && !correctFGS) xp -= 100;
   const bttsBonus  = correctBtts ? 75 : 0;
   const tgBonus    = correctTotalGoals ? 75 : 0;
   xp += bttsBonus + tgBonus;
@@ -1671,7 +1671,7 @@ function _getScoringBreakdownHtml(pred) {
       ${p.firstGoalScorer 
         ? (correctFGS  
           ? `<div style="${rowStyle}"><span style="${labelStyle}">⚽ First goalscorer bonus</span>${tick('+150 XP')}</div>` 
-          : `<div style="${rowStyle}"><span style="${labelStyle}">⚽ Wrong goalscorer (penalty)</span>${cross('−'+Math.round(150*(conf/100))+' XP')}</div>`)
+          : `<div style="${rowStyle}"><span style="${labelStyle}">⚽ Wrong goalscorer (penalty)</span>${cross('−100 XP')}</div>`)
         : ''
       }
       ${p.btts !== null && p.btts !== undefined 
