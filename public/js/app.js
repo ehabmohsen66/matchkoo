@@ -3995,26 +3995,17 @@ function drawWheel(angle) {
     ctx.fillStyle = gloss;
     ctx.fill();
 
-    // Label (rotated to point outward)
+    // Label — single line, smaller font for longer labels
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(mid);
     ctx.textAlign = 'right';
 
     const labelX = r - 14;
-    const parts = prize.label.split(' ');
-    if (parts.length >= 2) {
-      ctx.font = 'bold 12px "Russo One", sans-serif';
-      ctx.fillStyle = prize.textColor || '#fff';
-      ctx.fillText(parts.slice(1).join(' '), labelX, -4);
-      ctx.font = '700 10px "Nunito", sans-serif';
-      ctx.fillStyle = (prize.textColor || '#fff') + 'bb';
-      ctx.fillText(parts[0], labelX, 8);
-    } else {
-      ctx.font = 'bold 12px "Russo One", sans-serif';
-      ctx.fillStyle = prize.textColor || '#fff';
-      ctx.fillText(prize.label, labelX, 5);
-    }
+    const fontSize = prize.label.length > 7 ? 10 : 12;
+    ctx.font = `bold ${fontSize}px "Russo One", sans-serif`;
+    ctx.fillStyle = prize.textColor || '#fff';
+    ctx.fillText(prize.label, labelX, 5);
     ctx.restore();
   });
 
