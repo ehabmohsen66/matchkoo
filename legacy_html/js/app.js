@@ -92,6 +92,47 @@ function renderMiniLeaderboard() {
   const container = document.getElementById('mini-leaderboard');
   if (!container) return;
 
+  // Try to fetch real leaderboard data first
+  fetch('/api/leaderboard')
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (!data || !data.length) {
+        renderMiniLeaderboardStatic(container);
+        return;
+      }
+      const top5 = data.slice(0, 5);
+      container.innerHTML = top5.map((u, idx) => {
+        const rank = idx + 1;
+        const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '#' + rank;
+        const avatarContent = u.image
+          ? `<img src="${u.image}" alt="${u.name}" width="36" height="36" style="border-radius:50%;object-fit:cover;">`
+          : `<div style="width:36px;height:36px;border-radius:50%;background:rgba(60,184,46,0.2);display:flex;align-items:center;justify-content:center;font-weight:700;color:#6FE840;">${(u.name||'?')[0]}</div>`;
+        return `
+          <div class="mini-lb-row ${u.isMe ? 'you-row' : ''}" role="row"
+               onclick="goToProfile('${u.userId}')"
+               style="cursor:pointer;transition:background 0.15s;"
+               onmouseenter="this.style.background='rgba(60,184,46,0.06)'"
+               onmouseleave="this.style.background=''">
+            <div class="lb-rank">${rankIcon}</div>
+            <div class="lb-avatar">${avatarContent}</div>
+            <div class="lb-info">
+              <div class="lb-name">
+                ${u.name || 'Unknown'}
+                ${u.isMe ? '<span class="level-badge gold">YOU</span>' : ''}
+              </div>
+              <div class="lb-sub">${u.xp.toLocaleString()} XP</div>
+            </div>
+            <div class="lb-right">
+              <div class="lb-xp">${u.xp.toLocaleString()} XP</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    })
+    .catch(() => renderMiniLeaderboardStatic(container));
+}
+
+function renderMiniLeaderboardStatic(container) {
   container.innerHTML = DATA.friendsLeaderboard.map(u => {
     const rankClass = u.rank === 1 ? 'gold-rank' : u.rank === 2 ? 'silver-rank' : u.rank === 3 ? 'bronze-rank' : u.isYou ? 'you-rank' : '';
     return `
@@ -250,28 +291,92 @@ function renderPredictions(filter) {
 
 // ─── LEADERBOARD PAGE ────────────────────────────────────────────
 function initLeaderboard() {
-  renderLeaderboardTable(DATA.leaderboard);
+  const container = document.getElementById('leaderboard-table');
+  if (container) container.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);font-size:0.85rem;">Loading rankings…</div>';
+
+  fetch('/api/leaderboard')
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (!data || !data.length) {
+        renderLeaderboardTableStatic(DATA.leaderboard);
+        return;
+      }
+      renderLeaderboardTableReal(data);
+    })
+    .catch(() => renderLeaderboardTableStatic(DATA.leaderboard));
 }
 
 function setLBScope(scope) {
   state.lbScope = scope;
   document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
   document.getElementById(`lb-${scope}`).classList.add('active');
-
-  if (scope === 'friends') {
-    renderLeaderboardTable(DATA.friendsLeaderboard);
-  } else {
-    renderLeaderboardTable(DATA.leaderboard);
-  }
+  initLeaderboard();
 }
 
 function setTimePeriod(period) {
   state.lbPeriod = period;
   document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
   event.target.classList.add('active');
+  initLeaderboard();
 }
 
-function renderLeaderboardTable(entries) {
+// ── Real data renderer (with clickable rows) ──────────────────────
+function renderLeaderboardTableReal(entries) {
+  const container = document.getElementById('leaderboard-table');
+  if (!container) return;
+
+  // Top 3 podium update with real data
+  const top3 = entries.slice(0, 3);
+  top3.forEach((u, i) => {
+    const ranks = ['rank1', 'rank2', 'rank3'];
+    // Correct podium order: 2nd, 1st, 3rd
+    const podiumOrder = [1, 0, 2]; // index in top3 for each podium slot
+    const card = document.querySelectorAll('.podium-card')[i];
+    if (!card) return;
+    const nameEl = card.querySelector('.podium-name');
+    const xpEl   = card.querySelector('.podium-xp');
+    const imgEl  = card.querySelector('.podium-avatar img');
+    const user   = entries[podiumOrder[i]];
+    if (!user) return;
+    if (nameEl) nameEl.textContent = user.name || 'Unknown';
+    if (xpEl)   xpEl.textContent  = (user.xp || 0).toLocaleString() + ' XP';
+    if (imgEl && user.image) { imgEl.src = user.image; imgEl.alt = user.name; }
+    // Make podium card clickable
+    card.style.cursor = 'pointer';
+    card.onclick = () => goToProfile(user.userId);
+  });
+
+  // Rows 4+
+  container.innerHTML = entries.slice(3).map((u, i) => {
+    const displayRank = i + 4;
+    const avatarContent = u.image
+      ? `<img src="${u.image}" alt="${u.name}" width="36" height="36" style="border-radius:50%;object-fit:cover;">`
+      : `<div style="width:36px;height:36px;border-radius:50%;background:rgba(60,184,46,0.2);display:flex;align-items:center;justify-content:center;font-weight:700;color:#6FE840;font-size:0.85rem;">${(u.name||'?')[0]}</div>`;
+    return `
+      <div class="mini-lb-row ${u.isMe ? 'you-row' : ''}" role="row"
+           onclick="goToProfile('${u.userId}')"
+           style="cursor:pointer;transition:background 0.15s;"
+           onmouseenter="this.style.background='rgba(60,184,46,0.06)'"
+           onmouseleave="this.style.background=''">
+        <div class="lb-rank" style="color: var(--text-muted)">#${displayRank}</div>
+        <div class="lb-avatar">${avatarContent}</div>
+        <div class="lb-info">
+          <div class="lb-name">
+            ${u.name || 'Unknown'}
+            ${u.isMe ? '<span class="level-badge gold">YOU</span>' : ''}
+          </div>
+          <div class="lb-sub">${(u.xp || 0).toLocaleString()} XP · ${u.accuracy || 0}% acc</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-xp">${(u.xp || 0).toLocaleString()} XP</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Static fallback renderer ──────────────────────────────────────
+function renderLeaderboardTableStatic(entries) {
   const container = document.getElementById('leaderboard-table');
   if (!container) return;
 
@@ -740,6 +845,12 @@ function escapeHtml(str) {
 
 function escapeStr(str) {
   return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+// Navigate to a user's public profile page
+function goToProfile(userId) {
+  if (!userId) return;
+  window.location.href = '/profile/' + userId;
 }
 
 // ─── KEYBOARD SHORTCUTS ──────────────────────────────────────────
