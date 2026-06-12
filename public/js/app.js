@@ -1535,6 +1535,7 @@ async function renderPredictions(filter) {
         homeLogo: p.match?.homeLogo || '',
         awayLogo: p.match?.awayLogo || '',
         date: p.match?.matchDate ? new Date(p.match.matchDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '',
+        matchDateTs: p.match?.matchDate ? new Date(p.match.matchDate).getTime() : 0,
         status,
         picks,
         xpDisplay,
@@ -1728,6 +1729,9 @@ function applyLocalPredFilter(statusFilterOverride) {
   if (statusFilter === 'correct')  preds = preds.filter(p => p.status === 'correct');
   else if (statusFilter === 'wrong')    preds = preds.filter(p => p.status === 'wrong');
   else if (statusFilter === 'upcoming') preds = preds.filter(p => p.status === 'pending');
+
+  // Sort: most recently played/upcoming match first
+  preds = [...preds].sort((a, b) => (b.matchDateTs || 0) - (a.matchDateTs || 0));
 
   const select = document.getElementById('pred-league-filter');
   if (select) {
