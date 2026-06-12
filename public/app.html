@@ -855,6 +855,110 @@
 
     </div>
 
+    <!-- ════════════════ PUBLIC PROFILE PAGE ════════════════ -->
+    <div class="page hidden" id="page-public-profile">
+      <!-- Back button -->
+      <div style="padding: 0 0 16px;">
+        <button onclick="history.back()" id="pub-profile-back-btn"
+          style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:100px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Back
+        </button>
+      </div>
+
+      <!-- Loading state -->
+      <div id="pub-profile-loading" style="text-align:center;padding:80px 20px;color:rgba(255,255,255,0.4);">
+        <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:#3CB82E;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
+        Loading profile...
+      </div>
+
+      <!-- Profile content (shown after load) -->
+      <div id="pub-profile-content" style="display:none;">
+        <!-- Profile Hero -->
+        <div class="profile-hero">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:16px;">
+            <div class="profile-avatar-wrap">
+              <img src="" alt="Profile avatar" class="profile-avatar" id="pub-profile-avatar-img">
+              <div class="level-badge-lg" id="pub-profile-level-badge">...</div>
+            </div>
+            <div class="profile-flag" id="pub-profile-flag" style="font-size: 1.4rem; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">🌍</div>
+          </div>
+          <div class="profile-info">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+              <h1 class="profile-name" id="pub-profile-name" style="margin:0">—</h1>
+            </div>
+            <div class="profile-meta" style="margin-top:8px">
+              <span class="profile-global-rank" id="pub-profile-global-rank" style="opacity:0.4">Loading...</span>
+            </div>
+            <div class="xp-progress-wrap">
+              <div class="xp-label-row">
+                <span id="pub-profile-level-label">—</span>
+                <span id="pub-profile-xp">— XP</span>
+              </div>
+              <div class="xp-bar">
+                <div class="xp-fill" id="pub-xp-fill-bar" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+                <polyline points="22 4 12 14.01 9 11.01" />
+                <line x1="22" y1="4" x2="12" y2="14.01" />
+              </svg>
+            </div>
+            <div class="stat-card-num" id="pub-profile-stat-accuracy">—%</div>
+            <div class="stat-card-lbl">Accuracy</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon orange">
+              <svg viewBox="0 0 24 24" fill="#ff9914" width="22" height="22">
+                <path d="M13 2L4.09 12.97A1 1 0 0 0 4.99 14.5H11V22l8.91-10.97A1 1 0 0 0 19 9.5H13V2z" />
+              </svg>
+            </div>
+            <div class="stat-card-num" id="pub-profile-stat-preds">—</div>
+            <div class="stat-card-lbl" style="font-size:0.6rem">Predicted Matches</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon gold">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#ff9914" stroke-width="2" width="22" height="22">
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
+                <path d="M4 22h16" />
+              </svg>
+            </div>
+            <div class="stat-card-num" id="pub-profile-stat-streak">—</div>
+            <div class="stat-card-lbl">Best Streak</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#abff4f" stroke-width="2" width="22" height="22">
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+            </div>
+            <div class="stat-card-num" id="pub-profile-stat-correct">—</div>
+            <div class="stat-card-lbl">Correct Preds</div>
+          </div>
+        </div>
+
+        <!-- Completed Predictions -->
+        <section class="content-section" style="margin-top:20px;">
+          <div class="section-header" style="margin-bottom:16px;">
+            <h2 class="section-title">Match Predictions</h2>
+            <span id="pub-profile-pred-count" style="font-size:0.78rem;color:rgba(255,255,255,0.4);font-weight:600;"></span>
+          </div>
+          <div id="pub-profile-preds-list">
+            <!-- Injected by JS -->
+          </div>
+        </section>
+      </div>
+    </div>
+
     <!-- ════════════════ VOTE YOUR TEAM PAGE ════════════════ -->
     <div class="page hidden" id="page-vote">
       <div class="page-header-block">

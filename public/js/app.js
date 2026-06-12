@@ -5,9 +5,11 @@
 'use strict';
 
 // ─── STATE ──────────────────────────────────────────────────────
+// Navigate to a user's public profile page (within the app SPA shell)
 function goToProfile(userId) {
   if (!userId) return;
-  window.location.href = "/profile/" + userId;
+  state._viewingUserId = userId;
+  navigate('public-profile');
 }
 
 const state = {
@@ -93,6 +95,7 @@ function navigate(page, skipHistory = false) {
   if (page === 'league-detail') initLeagueDetail();
   if (page === 'minileague') initMiniLeagues();
   if (page === 'profile') initProfile();
+  if (page === 'public-profile') initPublicProfile();
   if (page === 'vote') initVote();
 
   // Close mobile sidebar
@@ -2880,6 +2883,153 @@ async function initProfile() {
       renderTrophies(u, statsObj, globalRankNum);
     }
   } catch(e) { console.error('initProfile error', e); }
+}
+
+// ─── PUBLIC PROFILE PAGE ─────────────────────────────────────────
+async function initPublicProfile() {
+  const userId = state._viewingUserId;
+  if (!userId) { navigate('home'); return; }
+
+  // Reset UI
+  const loading = document.getElementById('pub-profile-loading');
+  const content = document.getElementById('pub-profile-content');
+  if (loading) loading.style.display = '';
+  if (content) content.style.display = 'none';
+
+  try {
+    const data = await fetch(`/api/users/${userId}/profile`).then(r => r.ok ? r.json() : null);
+    if (!data) throw new Error('Not found');
+
+    const xp = data.xp || 0;
+    const TIERS = [
+      { name: 'Bronze',   min: 0,     max: 999,    cls: 'bronze'   },
+      { name: 'Silver',   min: 1000,  max: 9999,   cls: 'silver'   },
+      { name: 'Gold',     min: 10000, max: 19999,  cls: 'gold'     },
+      { name: 'Platinum', min: 20000, max: 49999,  cls: 'platinum' },
+      { name: 'Legend',   min: 50000, max: Infinity, cls: 'legend' },
+    ];
+    const tier = TIERS.find(t => xp >= t.min && xp <= t.max) || TIERS[0];
+    const nextTier = TIERS[TIERS.indexOf(tier) + 1];
+
+    // Avatar
+    const avatarEl = document.getElementById('pub-profile-avatar-img');
+    if (avatarEl) avatarEl.src = data.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(data.name || 'user')}`;
+
+    // Flag
+    const flagEl = document.getElementById('pub-profile-flag');
+    if (flagEl) flagEl.textContent = _getFlagEmoji(data.country || '');
+
+    // Name
+    const nameEl = document.getElementById('pub-profile-name');
+    if (nameEl) nameEl.textContent = data.name || 'Player';
+
+    // Level badge
+    const badge = document.getElementById('pub-profile-level-badge');
+    if (badge) { badge.textContent = tier.name.toUpperCase(); badge.className = 'level-badge-lg ' + tier.cls; }
+
+    // Level label
+    const levelLabel = document.getElementById('pub-profile-level-label');
+    if (levelLabel) levelLabel.textContent = nextTier ? `${tier.name} → ${nextTier.name}` : `🏆 ${tier.name} (Max)`;
+
+    // XP display
+    const xpEl = document.getElementById('pub-profile-xp');
+    if (xpEl) xpEl.textContent = xp.toLocaleString() + ' XP';
+
+    // XP progress bar
+    const xpBar = document.getElementById('pub-xp-fill-bar');
+    if (xpBar) {
+      const pct = nextTier ? Math.min(100, ((xp - tier.min) / (nextTier.min - tier.min)) * 100).toFixed(1) : 100;
+      setTimeout(() => { if (xpBar) xpBar.style.width = pct + '%'; }, 150);
+    }
+
+    // Stats
+    const preds = data.completedPredictions || [];
+    const correct = preds.filter(p => (p.xpEarned || 0) > 0).length;
+    const total = preds.length || data.predictionCount || 0;
+    const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+    const accEl   = document.getElementById('pub-profile-stat-accuracy');
+    const predsEl  = document.getElementById('pub-profile-stat-preds');
+    const streakEl = document.getElementById('pub-profile-stat-streak');
+    const correctEl = document.getElementById('pub-profile-stat-correct');
+    if (accEl)    accEl.textContent    = accuracy + '%';
+    if (predsEl)  predsEl.textContent  = total.toLocaleString();
+    if (streakEl) streakEl.textContent = (data.bestStreak || 0).toLocaleString();
+    if (correctEl) correctEl.textContent = correct.toLocaleString();
+
+    // Global rank from leaderboard
+    try {
+      const lbRes = await fetch('/api/leaderboard?period=alltime&limit=5000');
+      if (lbRes.ok) {
+        const lbData = await lbRes.json();
+        const entries = Array.isArray(lbData) ? lbData : (lbData.entries || []);
+        const entry = entries.find(e => e.userId === userId || e.id === userId);
+        const rankEl = document.getElementById('pub-profile-global-rank');
+        if (rankEl) { rankEl.textContent = entry ? '#' + (entry.rank || '—') + ' Globally' : 'Unranked'; rankEl.style.opacity = '1'; }
+      }
+    } catch(e) {}
+
+    // Render predictions list
+    const predCount = document.getElementById('pub-profile-pred-count');
+    if (predCount) predCount.textContent = preds.length + ' completed';
+
+    const predsList = document.getElementById('pub-profile-preds-list');
+    if (predsList) {
+      if (!preds.length) {
+        predsList.innerHTML = '<div style="text-align:center;padding:60px 24px;border:1px dashed rgba(255,255,255,0.08);border-radius:16px;"><div style="font-size:2.5rem;margin-bottom:12px;">📭</div><p style="color:rgba(255,255,255,0.25);font-size:0.9rem;margin:0;">No completed predictions yet.</p></div>';
+      } else {
+        predsList.innerHTML = preds.map(pred => {
+          const won = (pred.xpEarned || 0) > 0;
+          const exactScore = pred.homeScore === pred.match.homeScore && pred.awayScore === pred.match.awayScore;
+          const outcomeIcon = won ? (exactScore ? '🌟' : '✅') : '❌';
+          const outcome = exactScore ? 'Exact Score!' : won ? 'Result Correct' : 'Wrong Prediction';
+          const outcomeColor = exactScore ? '#FBBF24' : won ? '#6FE840' : 'rgba(255,255,255,0.3)';
+          const homeLogo = pred.match.homeLogo ? `<img src="${pred.match.homeLogo}" width="22" height="22" style="object-fit:contain;">` : '';
+          const awayLogo = pred.match.awayLogo ? `<img src="${pred.match.awayLogo}" width="22" height="22" style="object-fit:contain;">` : '';
+          const matchDate = new Date(pred.match.matchDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+          return `
+            <div style="background:rgba(255,255,255,0.03);border:1px solid ${won ? 'rgba(60,184,46,0.12)' : 'rgba(255,255,255,0.06)'};border-radius:14px;padding:16px 20px;margin-bottom:10px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4);">${pred.match.tournament.type.toUpperCase()}</span>
+                  <span style="font-size:0.78rem;color:rgba(255,255,255,0.5);font-weight:600;">${pred.match.tournament.name}</span>
+                </div>
+                <span style="font-size:0.7rem;color:rgba(255,255,255,0.3);">${matchDate}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end;">
+                  <span style="font-size:0.88rem;font-weight:700;text-align:right;">${pred.match.homeTeam}</span>${homeLogo}
+                </div>
+                <div style="text-align:center;flex-shrink:0;">
+                  <div style="font-size:1.1rem;font-weight:800;font-family:'Russo One',sans-serif;color:#fff;">${pred.match.homeScore ?? '?'} – ${pred.match.awayScore ?? '?'}</div>
+                  <div style="font-size:0.58rem;color:rgba(255,255,255,0.25);margin-bottom:3px;">ACTUAL</div>
+                  <div style="font-size:0.82rem;font-weight:700;color:${exactScore ? '#FBBF24' : won ? '#6FE840' : 'rgba(255,255,255,0.4)'};background:${exactScore ? 'rgba(251,191,36,0.1)' : won ? 'rgba(60,184,46,0.1)' : 'rgba(255,255,255,0.04)'};border:1px solid ${exactScore ? 'rgba(251,191,36,0.25)' : won ? 'rgba(60,184,46,0.2)' : 'rgba(255,255,255,0.08)'};border-radius:6px;padding:2px 8px;">${pred.homeScore} – ${pred.awayScore}</div>
+                  <div style="font-size:0.58rem;color:rgba(255,255,255,0.25);margin-top:3px;">PREDICTED</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;flex:1;">${awayLogo}<span style="font-size:0.88rem;font-weight:700;">${pred.match.awayTeam}</span></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                  <span>${outcomeIcon}</span>
+                  <span style="font-size:0.75rem;font-weight:600;color:${outcomeColor};">${outcome}</span>
+                  ${pred.isDouble ? '<span style="font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#A78BFA;">🃏 JOKER 2×</span>' : ''}
+                  ${pred.isShield ? '<span style="font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:#60A5FA;">🛡️ SHIELD</span>' : ''}
+                </div>
+                <div style="font-size:0.85rem;font-weight:800;color:${won ? '#6FE840' : 'rgba(255,255,255,0.25)'};background:${won ? 'rgba(60,184,46,0.1)' : 'rgba(255,255,255,0.04)'};border:1px solid ${won ? 'rgba(60,184,46,0.25)' : 'rgba(255,255,255,0.08)'};border-radius:100px;padding:4px 12px;font-family:'Russo One',sans-serif;">${won ? '+' + pred.xpEarned : '0'} XP</div>
+              </div>
+            </div>`;
+        }).join('');
+      }
+    }
+
+    // Show content
+    if (loading) loading.style.display = 'none';
+    if (content) content.style.display = '';
+
+  } catch(e) {
+    const loading = document.getElementById('pub-profile-loading');
+    if (loading) loading.innerHTML = '<div style="color:rgba(255,100,100,0.7);font-size:0.9rem;">Failed to load profile.</div>';
+  }
 }
 
 function _renderInviteCard(userId, userName) {
