@@ -181,7 +181,7 @@ export async function GET(req: NextRequest) {
       });
       const userIds = rows.map((r) => r.userId);
       const users   = await prisma.user.findMany({
-        where: { id: { in: userIds }, role: "USER" },
+        where: { id: { in: userIds } },
         select: { id: true, name: true, image: true, streak: true, correctCount: true, predictionCount: true, country: true },
       });
       const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
@@ -204,7 +204,7 @@ export async function GET(req: NextRequest) {
 
     // ── Global all-time leaderboard ───────────────────────────────────
     const users = await prisma.user.findMany({
-      where: { role: "USER" },
+      where: {},
       select: { id: true, name: true, image: true, xp: true, streak: true, correctCount: true, predictionCount: true, country: true },
       orderBy: { xp: "desc" },
       take: 100,
