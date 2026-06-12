@@ -2973,12 +2973,15 @@ async function initPublicProfile() {
     const predCount = document.getElementById('pub-profile-pred-count');
     if (predCount) predCount.textContent = preds.length + ' completed';
 
+    // Store for breakdown popup
+    state._pubProfilePreds = preds;
+
     const predsList = document.getElementById('pub-profile-preds-list');
     if (predsList) {
       if (!preds.length) {
         predsList.innerHTML = '<div style="text-align:center;padding:60px 24px;border:1px dashed rgba(255,255,255,0.08);border-radius:16px;"><div style="font-size:2.5rem;margin-bottom:12px;">📭</div><p style="color:rgba(255,255,255,0.25);font-size:0.9rem;margin:0;">No completed predictions yet.</p></div>';
       } else {
-        predsList.innerHTML = preds.map(pred => {
+        predsList.innerHTML = preds.map((pred, idx) => {
           const won = (pred.xpEarned || 0) > 0;
           const exactScore = pred.homeScore === pred.match.homeScore && pred.awayScore === pred.match.awayScore;
           const outcomeIcon = won ? (exactScore ? '🌟' : '✅') : '❌';
@@ -2988,13 +2991,16 @@ async function initPublicProfile() {
           const awayLogo = pred.match.awayLogo ? `<img src="${pred.match.awayLogo}" width="22" height="22" style="object-fit:contain;">` : '';
           const matchDate = new Date(pred.match.matchDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
           return `
-            <div style="background:rgba(255,255,255,0.03);border:1px solid ${won ? 'rgba(60,184,46,0.12)' : 'rgba(255,255,255,0.06)'};border-radius:14px;padding:16px 20px;margin-bottom:10px;">
+            <div onclick="openPubProfileBreakdown(${idx})" style="cursor:pointer;background:rgba(255,255,255,0.03);border:1px solid ${won ? 'rgba(60,184,46,0.12)' : 'rgba(255,255,255,0.06)'};border-radius:14px;padding:16px 20px;margin-bottom:10px;transition:background 0.15s,border-color 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.06)';this.style.borderColor='${won ? 'rgba(60,184,46,0.25)' : 'rgba(255,255,255,0.12)'}'" onmouseleave="this.style.background='rgba(255,255,255,0.03)';this.style.borderColor='${won ? 'rgba(60,184,46,0.12)' : 'rgba(255,255,255,0.06)'}'">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
                 <div style="display:flex;align-items:center;gap:8px;">
                   <span style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4);">${pred.match.tournament.type.toUpperCase()}</span>
                   <span style="font-size:0.78rem;color:rgba(255,255,255,0.5);font-weight:600;">${pred.match.tournament.name}</span>
                 </div>
-                <span style="font-size:0.7rem;color:rgba(255,255,255,0.3);">${matchDate}</span>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:0.7rem;color:rgba(255,255,255,0.3);">${matchDate}</span>
+                  <span style="font-size:0.65rem;font-weight:700;padding:2px 10px;border-radius:100px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);">📊 Points</span>
+                </div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
                 <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end;">
@@ -3031,6 +3037,49 @@ async function initPublicProfile() {
     if (loading) loading.innerHTML = '<div style="color:rgba(255,100,100,0.7);font-size:0.9rem;">Failed to load profile.</div>';
   }
 }
+
+// Open the scoring breakdown modal for a public profile prediction card
+function openPubProfileBreakdown(idx) {
+  const pred = (state._pubProfilePreds || [])[idx];
+  if (!pred) return;
+
+  // Build the shape that _getScoringBreakdownHtml expects
+  const matchDate = new Date(pred.match.matchDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const wrapped = {
+    league: pred.match.tournament.name,
+    date: matchDate,
+    _raw: {
+      homeScore: pred.homeScore,
+      awayScore: pred.awayScore,
+      firstGoalScorer: pred.firstGoalScorer || null,
+      btts: pred.btts ?? null,
+      totalGoals: pred.totalGoals ?? null,
+      xpEarned: pred.xpEarned ?? null,
+      isDouble: pred.isDouble || false,
+      isShield: pred.isShield || false,
+      confidence: pred.confidence || 70,
+      match: {
+        homeTeam: pred.match.homeTeam,
+        awayTeam: pred.match.awayTeam,
+        homeLogo: pred.match.homeLogo || null,
+        awayLogo: pred.match.awayLogo || null,
+        homeScore: pred.match.homeScore,
+        awayScore: pred.match.awayScore,
+        firstGoalScorer: pred.match.firstGoalScorer || null,
+      },
+    },
+  };
+
+  const overlay = document.getElementById('scoring-breakdown-modal');
+  const body    = document.getElementById('scoring-breakdown-body');
+  if (!overlay || !body) return;
+
+  body.innerHTML = _getScoringBreakdownHtml(wrapped);
+
+  if (window.animateModalEnter) window.animateModalEnter(overlay, overlay.querySelector('.modal-sheet'));
+  overlay.classList.remove('hidden');
+}
+
 
 function _renderInviteCard(userId, userName) {
   // Remove existing card if any (prevents duplicates on re-nav)

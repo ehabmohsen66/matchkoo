@@ -53,6 +53,7 @@ export async function GET(
         isShield: true,
         btts: true,
         totalGoals: true,
+        confidence: true,
         match: {
           select: {
             homeTeam: true,
@@ -63,6 +64,7 @@ export async function GET(
             awayScore: true,
             matchDate: true,
             round: true,
+            firstGoalScorer: true,
             tournament: {
               select: { id: true, name: true, type: true },
             },
