@@ -500,6 +500,33 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
       
       // ── XP Engine: fires when match transitions to COMPLETED ──────────────
       if (status === "COMPLETED" && existing.status !== "COMPLETED" && homeScore !== null && awayScore !== null) {
+
+        // ── Auto-derive firstGoalScorer from API events ───────────────────
+        let derivedScorer: string | null = existing.firstGoalScorer ?? null;
+        if (!derivedScorer && externalId.startsWith("apif-")) {
+          try {
+            const fixtureId = externalId.replace("apif-", "");
+            const eventsRes = await fetch(
+              `https://v3.football.api-sports.io/fixtures/events?fixture=${fixtureId}`,
+              { headers: { "x-apisports-key": process.env.FOOTBALL_API_KEY! } }
+            );
+            const eventsData = await eventsRes.json();
+            const firstGoalEvent = (eventsData.response ?? []).find(
+              (e: any) => e.type === "Goal" && e.detail !== "Own Goal"
+            );
+            if (firstGoalEvent?.player?.name) {
+              derivedScorer = firstGoalEvent.player.name;
+              await prisma.match.update({
+                where: { id: existing.id },
+                data: { firstGoalScorer: derivedScorer },
+              });
+              console.log(`[sync] Auto-set firstGoalScorer for ${existing.id}: ${derivedScorer}`);
+            }
+          } catch (e) {
+            console.error(`[sync] Failed to fetch events for ${externalId}:`, e);
+          }
+        }
+
         const predictions = await prisma.prediction.findMany({
           where: {
             matchId: existing.id,
@@ -517,8 +544,8 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
           const trueExactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
           const exactScore    = trueExactScore || (pred.isShield && correctResult);
           const correctScorer = !!pred.firstGoalScorer &&
-            !!existing.firstGoalScorer &&
-            pred.firstGoalScorer.trim().toLowerCase() === existing.firstGoalScorer.trim().toLowerCase();
+            !!derivedScorer &&
+            pred.firstGoalScorer.trim().toLowerCase() === derivedScorer.trim().toLowerCase();
 
           const predStatus = correctResult ? "correct" : "wrong";
 

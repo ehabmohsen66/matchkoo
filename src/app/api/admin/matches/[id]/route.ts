@@ -18,12 +18,43 @@ export async function PATCH(
   const { id } = await params;
   const { homeScore, awayScore, firstGoalScorer, status } = await req.json();
 
+  // Auto-fetch firstGoalScorer from API if not provided manually
+  let resolvedScorer = firstGoalScorer ?? null;
+  if (status === "COMPLETED" && !resolvedScorer) {
+    try {
+      const matchForScorer = await prisma.match.findUnique({
+        where: { id },
+        select: { externalId: true, firstGoalScorer: true },
+      });
+      // Use existing if already set
+      if (matchForScorer?.firstGoalScorer) {
+        resolvedScorer = matchForScorer.firstGoalScorer;
+      } else if (matchForScorer?.externalId?.startsWith("apif-")) {
+        const fixtureId = matchForScorer.externalId.replace("apif-", "");
+        const eventsRes = await fetch(
+          `https://v3.football.api-sports.io/fixtures/events?fixture=${fixtureId}`,
+          { headers: { "x-apisports-key": process.env.FOOTBALL_API_KEY! } }
+        );
+        const eventsData = await eventsRes.json();
+        const firstGoalEvent = (eventsData.response ?? []).find(
+          (e: any) => e.type === "Goal" && e.detail !== "Own Goal"
+        );
+        if (firstGoalEvent?.player?.name) {
+          resolvedScorer = firstGoalEvent.player.name;
+          console.log(`[admin] Auto-set firstGoalScorer for ${id}: ${resolvedScorer}`);
+        }
+      }
+    } catch (e) {
+      console.error("[admin] Failed to auto-fetch firstGoalScorer:", e);
+    }
+  }
+
   const match = await prisma.match.update({
     where: { id },
     data: {
       ...(homeScore !== undefined && { homeScore }),
       ...(awayScore !== undefined && { awayScore }),
-      ...(firstGoalScorer !== undefined && { firstGoalScorer }),
+      ...(resolvedScorer !== undefined && { firstGoalScorer: resolvedScorer }),
       ...(status && { status }),
     },
   });
@@ -46,7 +77,7 @@ export async function PATCH(
         (pred.homeScore === pred.awayScore && homeScore === awayScore);
       const trueExactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
       const exactScore = trueExactScore || (pred.isShield && correctResult);
-      const correctFGS = !!(firstGoalScorer && pred.firstGoalScorer?.toLowerCase() === firstGoalScorer.toLowerCase());
+      const correctFGS = !!(resolvedScorer && pred.firstGoalScorer?.toLowerCase() === resolvedScorer.toLowerCase());
 
       // Base XP
       let baseXp = 0;
