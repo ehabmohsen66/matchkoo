@@ -2985,24 +2985,57 @@ async function initPublicProfile() {
         predsList.innerHTML = '<div style="text-align:center;padding:60px 24px;border:1px dashed rgba(255,255,255,0.08);border-radius:16px;"><div style="font-size:2.5rem;margin-bottom:12px;">📭</div><p style="color:rgba(255,255,255,0.25);font-size:0.9rem;margin:0;">No completed predictions yet.</p></div>';
       } else {
         predsList.innerHTML = preds.map((pred, idx) => {
-          const won = (pred.xpEarned || 0) > 0;
-          const exactScore = pred.homeScore === pred.match.homeScore && pred.awayScore === pred.match.awayScore;
-          // Derive correctResult from scores (more reliable than xpEarned when DB has stale data)
           const hs = pred.match.homeScore, as = pred.match.awayScore;
+          const exactScore = pred.homeScore === hs && pred.awayScore === as;
           const correctResult = hs != null && as != null && (
             (pred.homeScore > pred.awayScore && hs > as) ||
             (pred.homeScore < pred.awayScore && hs < as) ||
             (pred.homeScore === pred.awayScore && hs === as)
           );
-          const outcomeIcon = exactScore ? '🌟' : correctResult ? '✅' : '❌';
-          const outcome = exactScore ? 'Exact Score!' : correctResult ? 'Result Correct' : 'Wrong Prediction';
-          const outcomeColor = exactScore ? '#FBBF24' : correctResult ? '#6FE840' : 'rgba(255,255,255,0.3)';
+          const shieldExact = pred.isShield && correctResult;
+          const effectiveExact = exactScore || shieldExact;
+
+          // ── Compute XP from scores (same formula as breakdown popup) ──
+          let baseXp = 0;
+          if (correctResult)   baseXp += 50;
+          if (effectiveExact)  baseXp += 150;
+          const conf = pred.confidence || 70;
+          const multiplier = 1 + ((conf - 50) / 50);
+          let calcXp = Math.round(baseXp * multiplier);
+          if (!correctResult) calcXp -= Math.round(50 * (conf / 100));
+          if (pred.firstGoalScorer) {
+            const fgsMatch = pred.match.firstGoalScorer &&
+              pred.firstGoalScorer.trim().toLowerCase() === pred.match.firstGoalScorer.trim().toLowerCase();
+            if (fgsMatch) calcXp += 150;
+            else calcXp -= 100;
+          }
+          const actualBtts = hs > 0 && as > 0;
+          if (pred.btts !== null && pred.btts !== undefined && pred.btts === actualBtts) calcXp += 75;
+          const actualBucket = (hs + as) >= 5 ? 5 : (hs + as);
+          const predBucket = (pred.totalGoals ?? -1) >= 5 ? 5 : (pred.totalGoals ?? -1);
+          if (pred.totalGoals !== null && pred.totalGoals !== undefined && predBucket === actualBucket) calcXp += 75;
+          if (pred.isDouble && calcXp > 0) calcXp *= 2;
+
+          // Use DB value if it looks correct; otherwise use our recalculated value
+          const displayXp = (pred.xpEarned !== null && pred.xpEarned !== undefined && pred.xpEarned !== 0)
+            ? pred.xpEarned
+            : calcXp;
+
+          const won = displayXp > 0;
+          const outcomeIcon = effectiveExact ? '🌟' : correctResult ? '✅' : '❌';
+          const outcome = effectiveExact ? 'Exact Score!' : correctResult ? 'Result Correct' : 'Wrong Prediction';
+          const outcomeColor = effectiveExact ? '#FBBF24' : correctResult ? '#6FE840' : 'rgba(255,255,255,0.3)';
+          const xpColor = won ? '#6FE840' : displayXp < 0 ? '#F87171' : 'rgba(255,255,255,0.25)';
+          const xpBg = won ? 'rgba(60,184,46,0.1)' : displayXp < 0 ? 'rgba(248,113,113,0.1)' : 'rgba(255,255,255,0.04)';
+          const xpBorder = won ? 'rgba(60,184,46,0.25)' : displayXp < 0 ? 'rgba(248,113,113,0.25)' : 'rgba(255,255,255,0.08)';
+          const cardBorder = won ? 'rgba(60,184,46,0.12)' : 'rgba(255,255,255,0.06)';
+          const cardBorderHover = won ? 'rgba(60,184,46,0.25)' : 'rgba(255,255,255,0.12)';
 
           const homeLogo = pred.match.homeLogo ? `<img src="${pred.match.homeLogo}" width="22" height="22" style="object-fit:contain;">` : '';
           const awayLogo = pred.match.awayLogo ? `<img src="${pred.match.awayLogo}" width="22" height="22" style="object-fit:contain;">` : '';
           const matchDate = new Date(pred.match.matchDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
           return `
-            <div onclick="openPubProfileBreakdown(${idx})" style="cursor:pointer;background:rgba(255,255,255,0.03);border:1px solid ${won ? 'rgba(60,184,46,0.12)' : 'rgba(255,255,255,0.06)'};border-radius:14px;padding:16px 20px;margin-bottom:10px;transition:background 0.15s,border-color 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.06)';this.style.borderColor='${won ? 'rgba(60,184,46,0.25)' : 'rgba(255,255,255,0.12)'}'" onmouseleave="this.style.background='rgba(255,255,255,0.03)';this.style.borderColor='${won ? 'rgba(60,184,46,0.12)' : 'rgba(255,255,255,0.06)'}'">
+            <div onclick="openPubProfileBreakdown(${idx})" style="cursor:pointer;background:rgba(255,255,255,0.03);border:1px solid ${cardBorder};border-radius:14px;padding:16px 20px;margin-bottom:10px;transition:background 0.15s,border-color 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.06)';this.style.borderColor='${cardBorderHover}'" onmouseleave="this.style.background='rgba(255,255,255,0.03)';this.style.borderColor='${cardBorder}'">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
                 <div style="display:flex;align-items:center;gap:8px;">
                   <span style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4);">${pred.match.tournament.type.toUpperCase()}</span>
@@ -3018,9 +3051,9 @@ async function initPublicProfile() {
                   <span style="font-size:0.88rem;font-weight:700;text-align:right;">${pred.match.homeTeam}</span>${homeLogo}
                 </div>
                 <div style="text-align:center;flex-shrink:0;">
-                  <div style="font-size:1.1rem;font-weight:800;font-family:'Russo One',sans-serif;color:#fff;">${pred.match.homeScore ?? '?'} – ${pred.match.awayScore ?? '?'}</div>
+                  <div style="font-size:1.1rem;font-weight:800;font-family:'Russo One',sans-serif;color:#fff;">${hs ?? '?'} – ${as ?? '?'}</div>
                   <div style="font-size:0.58rem;color:rgba(255,255,255,0.25);margin-bottom:3px;">ACTUAL</div>
-                  <div style="font-size:0.82rem;font-weight:700;color:${exactScore ? '#FBBF24' : won ? '#6FE840' : 'rgba(255,255,255,0.4)'};background:${exactScore ? 'rgba(251,191,36,0.1)' : won ? 'rgba(60,184,46,0.1)' : 'rgba(255,255,255,0.04)'};border:1px solid ${exactScore ? 'rgba(251,191,36,0.25)' : won ? 'rgba(60,184,46,0.2)' : 'rgba(255,255,255,0.08)'};border-radius:6px;padding:2px 8px;">${pred.homeScore} – ${pred.awayScore}</div>
+                  <div style="font-size:0.82rem;font-weight:700;color:${effectiveExact ? '#FBBF24' : correctResult ? '#6FE840' : 'rgba(255,255,255,0.4)'};background:${effectiveExact ? 'rgba(251,191,36,0.1)' : correctResult ? 'rgba(60,184,46,0.1)' : 'rgba(255,255,255,0.04)'};border:1px solid ${effectiveExact ? 'rgba(251,191,36,0.25)' : correctResult ? 'rgba(60,184,46,0.2)' : 'rgba(255,255,255,0.08)'};border-radius:6px;padding:2px 8px;">${pred.homeScore} – ${pred.awayScore}</div>
                   <div style="font-size:0.58rem;color:rgba(255,255,255,0.25);margin-top:3px;">PREDICTED</div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;flex:1;">${awayLogo}<span style="font-size:0.88rem;font-weight:700;">${pred.match.awayTeam}</span></div>
@@ -3032,7 +3065,7 @@ async function initPublicProfile() {
                   ${pred.isDouble ? '<span style="font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#A78BFA;">🃏 JOKER 2×</span>' : ''}
                   ${pred.isShield ? '<span style="font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:#60A5FA;">🛡️ SHIELD</span>' : ''}
                 </div>
-                <div style="font-size:0.85rem;font-weight:800;color:${won ? '#6FE840' : (pred.xpEarned || 0) < 0 ? '#F87171' : 'rgba(255,255,255,0.25)'};background:${won ? 'rgba(60,184,46,0.1)' : (pred.xpEarned || 0) < 0 ? 'rgba(248,113,113,0.1)' : 'rgba(255,255,255,0.04)'};border:1px solid ${won ? 'rgba(60,184,46,0.25)' : (pred.xpEarned || 0) < 0 ? 'rgba(248,113,113,0.25)' : 'rgba(255,255,255,0.08)'};border-radius:100px;padding:4px 12px;font-family:'Russo One',sans-serif;">${won ? '+' + pred.xpEarned : (pred.xpEarned || 0) < 0 ? pred.xpEarned : '0'} XP</div>
+                <div style="font-size:0.85rem;font-weight:800;color:${xpColor};background:${xpBg};border:1px solid ${xpBorder};border-radius:100px;padding:4px 12px;font-family:'Russo One',sans-serif;">${won ? '+' + displayXp : displayXp < 0 ? displayXp : '0'} XP</div>
               </div>
             </div>`;
         }).join('');
