@@ -5,6 +5,11 @@
 'use strict';
 
 // ─── STATE ──────────────────────────────────────────────────────
+function goToProfile(userId) {
+  if (!userId) return;
+  window.location.href = "/profile/" + userId;
+}
+
 const state = {
   currentPage: 'home',
   currentContinent: 'europe',
@@ -795,7 +800,7 @@ async function renderMiniLeaderboard() {
     container.innerHTML = lb.slice(0, 5).map((u, i) => {
       const rankIcon = i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
       const avatar = u.image || ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name || 'user'));
-      return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:' + (u.isMe?'rgba(60,184,46,0.08)':'rgba(255,255,255,0.03)') + ';border-radius:12px;border:1px solid ' + (u.isMe?'rgba(60,184,46,0.2)':'rgba(255,255,255,0.05)') + '">' +
+      return '<div onclick="goToProfile(\'' + (u.userId || u.id || '') + '\')" style="cursor:pointer;display:flex;align-items:center;gap:12px;padding:10px 14px;background:' + (u.isMe?'rgba(60,184,46,0.08)':'rgba(255,255,255,0.03)') + ';border-radius:12px;border:1px solid ' + (u.isMe?'rgba(60,184,46,0.2)':'rgba(255,255,255,0.05)') + ';transition:background 0.15s;" onmouseenter="this.style.background=\'' + (u.isMe?'rgba(60,184,46,0.12)':'rgba(255,255,255,0.06)') + '\'" onmouseleave="this.style.background=\'' + (u.isMe?'rgba(60,184,46,0.08)':'rgba(255,255,255,0.03)') + '\'">' +
         '<div style="font-weight:800;min-width:28px;color:' + (i===0?'#ffd700':i===1?'#c0c0c0':i===2?'#cd7f32':'rgba(255,255,255,0.4)') + ';text-align:center">' + rankIcon + '</div>' +
         '<img src="' + avatar + '" width="32" height="32" style="border-radius:50%;border:2px solid rgba(255,255,255,0.1)">' +
         '<div style="flex:1"><div style="font-weight:700;color:#fff;font-size:0.85rem">' + (u.name||'Player') + (u.isMe?' <span style="font-size:0.65rem;color:var(--green)">YOU</span>':'') + '</div></div>' +
@@ -1843,6 +1848,8 @@ async function initLeaderboard(period) {
         badgeEl.textContent = lvl.badge;
         badgeEl.className   = 'level-badge ' + lvl.cls;
       }
+      card.style.cursor = 'pointer';
+      card.onclick = () => goToProfile(u.userId || u.id);
     });
 
 
@@ -2103,7 +2110,7 @@ async function initLeagueDetail() {
       <div class="podium-section" style="margin-top:20px;">
         <div class="podium-row">
           ${top3[1] ? `
-          <div class="podium-card rank2">
+          <div class="podium-card rank2" onclick="goToProfile('${top3[1].userId || top3[1].id || ''}')" style="cursor:pointer;transition:transform 0.15s" onmouseenter="this.style.transform='scale(1.05)'" onmouseleave="this.style.transform='scale(1)'">
             <div class="podium-avatar">
               <img src="${top3[1].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[1].name || 'player')}" alt="${top3[1].name}">
               <div class="level-badge ${_xpToLevel(top3[1].xp||0).cls}">${_xpToLevel(top3[1].xp||0).badge}</div>
@@ -2115,7 +2122,7 @@ async function initLeagueDetail() {
           </div>` : '<div class="podium-card rank2" style="visibility:hidden"></div>'}
 
           ${top3[0] ? `
-          <div class="podium-card rank1">
+          <div class="podium-card rank1" onclick="goToProfile('${top3[0].userId || top3[0].id || ''}')" style="cursor:pointer;transition:transform 0.15s" onmouseenter="this.style.transform='scale(1.05)'" onmouseleave="this.style.transform='scale(1)'">
             <div class="crown-icon">
               <svg viewBox="0 0 24 24" fill="#ff9914" width="30" height="30"><path d="M2 20h20l-2-10-6 5-2-8-2 8-6-5-2 10z" /></svg>
             </div>
@@ -2130,7 +2137,7 @@ async function initLeagueDetail() {
           </div>` : '<div class="podium-card rank1" style="visibility:hidden"></div>'}
 
           ${top3[2] ? `
-          <div class="podium-card rank3">
+          <div class="podium-card rank3" onclick="goToProfile('${top3[2].userId || top3[2].id || ''}')" style="cursor:pointer;transition:transform 0.15s" onmouseenter="this.style.transform='scale(1.05)'" onmouseleave="this.style.transform='scale(1)'">
             <div class="podium-avatar">
               <img src="${top3[2].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[2].name || 'player')}" alt="${top3[2].name}">
               <div class="level-badge ${_xpToLevel(top3[2].xp||0).cls}">${_xpToLevel(top3[2].xp||0).badge}</div>
@@ -2361,7 +2368,7 @@ function renderLeaderboardTable(entries) {
     const streak = u.streak || 0;
     const acc    = u.accuracy != null ? u.accuracy + '%' : '';
     return `
-      <div class="mini-lb-row ${u.isMe ? 'you-row' : ''}" role="row">
+      <div class="mini-lb-row ${u.isMe ? 'you-row' : ''}" role="row" style="cursor:pointer;transition:background 0.15s;" onclick="goToProfile('${u.userId || u.id || ''}')" onmouseenter="this.style.background='rgba(255,255,255,0.03)'" onmouseleave="this.style.background=''">
         <div class="lb-rank" style="color:var(--text-muted);font-weight:800">#${u.rank}</div>
         <div class="lb-avatar">
           <img src="${avatar}" alt="${u.name || 'Player'}" width="36" height="36" style="border-radius:50%">
@@ -2518,7 +2525,7 @@ async function openMiniLeagueDetail(leagueId) {
       <div class="podium-section" style="margin-top:10px;">
         <div class="podium-row">
           ${top3[1] ? `
-          <div class="podium-card rank2">
+          <div class="podium-card rank2" onclick="goToProfile('${top3[1].userId || top3[1].id || ''}')" style="cursor:pointer;transition:transform 0.15s" onmouseenter="this.style.transform='scale(1.05)'" onmouseleave="this.style.transform='scale(1)'">
             <div class="podium-avatar">
               <img src="${top3[1].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[1].name || 'player')}" alt="${top3[1].name}">
               <div class="level-badge ${_xpToLevel(top3[1].xp||0).cls}">${_xpToLevel(top3[1].xp||0).badge}</div>
@@ -2530,7 +2537,7 @@ async function openMiniLeagueDetail(leagueId) {
           </div>` : '<div class="podium-card rank2" style="visibility:hidden"></div>'}
 
           ${top3[0] ? `
-          <div class="podium-card rank1">
+          <div class="podium-card rank1" onclick="goToProfile('${top3[0].userId || top3[0].id || ''}')" style="cursor:pointer;transition:transform 0.15s" onmouseenter="this.style.transform='scale(1.05)'" onmouseleave="this.style.transform='scale(1)'">
             <div class="crown-icon">
               <svg viewBox="0 0 24 24" fill="#ff9914" width="30" height="30"><path d="M2 20h20l-2-10-6 5-2-8-2 8-6-5-2 10z" /></svg>
             </div>
@@ -2545,7 +2552,7 @@ async function openMiniLeagueDetail(leagueId) {
           </div>` : '<div class="podium-card rank1" style="visibility:hidden"></div>'}
 
           ${top3[2] ? `
-          <div class="podium-card rank3">
+          <div class="podium-card rank3" onclick="goToProfile('${top3[2].userId || top3[2].id || ''}')" style="cursor:pointer;transition:transform 0.15s" onmouseenter="this.style.transform='scale(1.05)'" onmouseleave="this.style.transform='scale(1)'">
             <div class="podium-avatar">
               <img src="${top3[2].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[2].name || 'player')}" alt="${top3[2].name}">
               <div class="level-badge ${_xpToLevel(top3[2].xp||0).cls}">${_xpToLevel(top3[2].xp||0).badge}</div>
