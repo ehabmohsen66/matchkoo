@@ -682,8 +682,8 @@ async function renderFixturesList() {
             '</div>' +
             '<div style="display:flex;align-items:center;gap:8px;margin-left:16px">' +
               (hasPred ? '<span style="color:var(--green);font-size:1.1rem;font-weight:900" title="Predicted">&#10003;</span>' : '') +
-              (m.status === 'LIVE' ? '<span class="live-badge" style="color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE ' + liveScore + '</span>' : '') +
-              '<div class="fixture-time live-score-val" style="min-width:110px;text-align:right">' + (m.status === 'LIVE' ? '' : timeStr) + '</div>' +
+              (m.status === 'LIVE' ? '<span class="live-badge" style="color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE</span>' : '') +
+              '<div class="fixture-time live-score-val" style="min-width:110px;text-align:right;' + (m.status === 'LIVE' ? 'color:#f21b3f' : '') + '">' + (m.status === 'LIVE' ? liveScore : timeStr) + '</div>' +
             '</div>' +
           '</div>'
         );
