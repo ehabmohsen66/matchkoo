@@ -23,13 +23,24 @@ export async function GET() {
   weekEnd.setDate(weekStart.getDate() + 7);
 
   // ── Challenge 1: Scoreline Sniper — 3 exact correct scorelines this week ──
-  const sniper = await prisma.prediction.count({
+  const sniperPreds = await prisma.prediction.findMany({
     where: {
       userId,
       createdAt: { gte: weekStart },
-      xpEarned: { gte: 30 }, // exact score = 30+ XP
+      status: "correct",
+    },
+    include: {
+      match: { select: { homeScore: true, awayScore: true } },
     },
   });
+
+  const sniper = sniperPreds.filter(
+    (p) =>
+      p.match.homeScore !== null &&
+      p.match.awayScore !== null &&
+      p.homeScore === p.match.homeScore &&
+      p.awayScore === p.match.awayScore
+  ).length;
 
   // ── Challenge 2: Confidence King — 5 correct outcomes with 100% confidence ──
   // Fetch week predictions that are settled correct AND had confidence=100
