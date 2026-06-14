@@ -156,14 +156,50 @@ function initHome() {
   initLiveTicker();         // live events ticker strip
 }
 
-// ─── LIVE EVENTS TICKER ──────────────────────────────────────────
+// ─── LIVE TICKER rAF ENGINE ──────────────────────────────────
+// Drives the ticker via requestAnimationFrame — works on all mobile
+// browsers including iOS Safari where CSS transform animations on
+// children of overflow:hidden or mask containers can silently freeze.
 let _tickerInterval = null;
+let _tickerRaf      = null;   // rAF handle
+let _tickerPos      = 0;      // current translateX offset (px, negative)
+let _tickerSpeed    = 0.5;    // px per frame (~30px/s at 60fps)
+let _tickerPaused   = false;
+
+function _startTickerRaf() {
+  if (_tickerRaf) cancelAnimationFrame(_tickerRaf);
+  const track = document.getElementById('ticker-track');
+  if (!track) return;
+
+  function step() {
+    if (!_tickerPaused) {
+      _tickerPos -= _tickerSpeed;
+      // Half-width of track = the non-duplicated content width
+      const half = track.scrollWidth / 2;
+      if (half > 0 && Math.abs(_tickerPos) >= half) {
+        _tickerPos = 0; // seamless loop reset
+      }
+      track.style.transform = 'translateX(' + _tickerPos + 'px)';
+    }
+    _tickerRaf = requestAnimationFrame(step);
+  }
+
+  // Pause on desktop hover; on mobile touch never pauses
+  track.addEventListener('mouseenter', () => { _tickerPaused = true;  });
+  track.addEventListener('mouseleave', () => { _tickerPaused = false; });
+
+  _tickerRaf = requestAnimationFrame(step);
+}
 
 async function initLiveTicker() {
   await _refreshTicker();
-  // Refresh every 90 seconds
+  _startTickerRaf();
+  // Refresh content every 90 seconds
   if (_tickerInterval) clearInterval(_tickerInterval);
-  _tickerInterval = setInterval(_refreshTicker, 90000);
+  _tickerInterval = setInterval(async () => {
+    _tickerPos = 0; // reset position on content refresh
+    await _refreshTicker();
+  }, 90000);
 }
 
 async function _refreshTicker() {
@@ -214,8 +250,8 @@ async function _refreshTicker() {
 
     // Duplicate for seamless loop
     track.innerHTML = items + items;
-    const duration = Math.max(18, Math.min(60, filtered.length * 5));
-    track.style.animationDuration = duration + 's';
+    // Adjust scroll speed based on item count (more items = faster)
+    _tickerSpeed = Math.max(0.4, Math.min(0.8, filtered.length * 0.08));
 
   } catch {
     // Silent fail — try to show news instead
@@ -278,9 +314,9 @@ async function _showNewsTicker(track) {
 
     // Duplicate for seamless loop
     track.innerHTML = items + items;
-    // Slower scroll for reading news (longer items)
-    const duration = Math.max(40, news.length * 6);
-    track.style.animationDuration = duration + 's';
+    // Slower scroll for reading news headlines
+    _tickerSpeed = Math.max(0.3, Math.min(0.5, news.length * 0.04));
+
   } catch {
     track.innerHTML = '<span class="ticker-no-live">📰 No news right now — check back soon</span>';
   }
