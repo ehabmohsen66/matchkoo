@@ -395,7 +395,7 @@ a { text-decoration: none; color: inherit; }
   animation: ticker-scroll 30s linear infinite;
   will-change: transform;
 }
-.ticker-track:hover { animation-play-state: paused; }
+@media (hover: hover) { .ticker-track:hover { animation-play-state: paused; } }
 @keyframes ticker-scroll {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
