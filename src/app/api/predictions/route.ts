@@ -70,23 +70,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "You cannot apply both Joker and Scoreline Shield to the same match" }, { status: 400 });
     }
 
-    const now = new Date();
-    const dayOfWeek = now.getUTCDay(); // 0=Sun, 1=Mon, ...
+    const matchDateObj = new Date(match.matchDate);
+    const dayOfWeek = matchDateObj.getUTCDay(); // 0=Sun, 1=Mon, ...
     const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
-    const weekStart = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate() + diffToMonday,
+    const matchWeekStart = new Date(Date.UTC(
+      matchDateObj.getUTCFullYear(),
+      matchDateObj.getUTCMonth(),
+      matchDateObj.getUTCDate() + diffToMonday,
       0, 0, 0, 0
     ));
+    const matchWeekEnd = new Date(matchWeekStart);
+    matchWeekEnd.setUTCDate(matchWeekEnd.getUTCDate() + 7);
 
     if (applyJoker) {
       const recentJoker = await prisma.prediction.findFirst({
         where: {
           userId: session.user.id,
           isDouble: true,
-          createdAt: { gte: weekStart },
           NOT: { matchId },
+          match: {
+            matchDate: {
+              gte: matchWeekStart,
+              lt: matchWeekEnd
+            }
+          }
         },
         include: { match: true }
       });
@@ -107,8 +114,13 @@ export async function POST(req: NextRequest) {
         where: {
           userId: session.user.id,
           isShield: true,
-          createdAt: { gte: weekStart },
           NOT: { matchId },
+          match: {
+            matchDate: {
+              gte: matchWeekStart,
+              lt: matchWeekEnd
+            }
+          }
         },
         include: { match: true }
       });
