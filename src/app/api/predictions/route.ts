@@ -66,20 +66,27 @@ export async function POST(req: NextRequest) {
     const applyJoker = isJoker || isDouble;
     const applyShield = isShield;
 
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const now = new Date();
+    const dayOfWeek = now.getUTCDay(); // 0=Sun, 1=Mon, ...
+    const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+    const weekStart = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + diffToMonday,
+      0, 0, 0, 0
+    ));
 
     if (applyJoker) {
       const recentJoker = await prisma.prediction.findFirst({
         where: {
           userId: session.user.id,
           isDouble: true,
-          createdAt: { gte: sevenDaysAgo },
+          createdAt: { gte: weekStart },
           NOT: { matchId },
         },
       });
       if (recentJoker) {
-        return NextResponse.json({ message: "You can only use The Joker once every 7 days" }, { status: 400 });
+        return NextResponse.json({ message: "You can only use The Joker once per week (resets every Monday)" }, { status: 400 });
       }
     }
 
@@ -88,12 +95,12 @@ export async function POST(req: NextRequest) {
         where: {
           userId: session.user.id,
           isShield: true,
-          createdAt: { gte: sevenDaysAgo },
+          createdAt: { gte: weekStart },
           NOT: { matchId },
         },
       });
       if (recentShield) {
-        return NextResponse.json({ message: "You can only use Scoreline Shield once every 7 days" }, { status: 400 });
+        return NextResponse.json({ message: "You can only use Scoreline Shield once per week (resets every Monday)" }, { status: 400 });
       }
     }
 
