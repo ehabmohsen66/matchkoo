@@ -80,13 +80,14 @@ export async function POST(req: NextRequest) {
       !!match.firstGoalScorer &&
       pred.firstGoalScorer.trim().toLowerCase() === match.firstGoalScorer.trim().toLowerCase();
 
-    let baseXp = 0;
-    if (correctResult) baseXp += 50;
-    if (exactScore)    baseXp += 150;
-    if (correctScorer) baseXp += 150;
-
+    // ── Confidence multiplier: 50%=1.0×, 100%=2.0× ─────────────────────
+    //    Multiplier applies ONLY to the 50 XP outcome — NOT to bonuses.
     const multiplier = 1 + ((pred.confidence - 50) / 50);
-    let xp = Math.round(baseXp * multiplier);
+    let xp = correctResult ? Math.round(50 * multiplier) : 0;
+
+    // ── Flat bonuses (no confidence multiplier) ──────────────────────────
+    if (exactScore)    xp += 200;  // exact scoreline: 200 XP flat
+    if (correctScorer) xp += 150;  // first goalscorer: 150 XP flat
 
     if (!correctResult)  xp -= Math.round(50  * (pred.confidence / 100));
     if (pred.firstGoalScorer && !correctScorer) xp -= 100;
