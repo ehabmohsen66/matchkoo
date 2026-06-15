@@ -21,9 +21,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "You cannot cast The Demon on yourself!" }, { status: 400 });
     }
 
-    // Verify both users are in the mini league
-    const members = await prisma.miniLeagueMember.findMany({
-      where: { miniLeagueId, userId: { in: [userId, targetUserId] } }
+    // Verify both users are in the mini league (using Tournament table)
+    const members = await prisma.tournamentRegistration.findMany({
+      where: { tournamentId: miniLeagueId, userId: { in: [userId, targetUserId] } }
     });
 
     if (members.length !== 2) {
