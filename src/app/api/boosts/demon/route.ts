@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify both users are in the mini league (using Tournament table)
-    const members = await prisma.tournamentRegistration.findMany({
+    const members = await prisma.registration.findMany({
       where: { tournamentId: miniLeagueId, userId: { in: [userId, targetUserId] } }
     });
 
