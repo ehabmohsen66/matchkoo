@@ -5750,11 +5750,13 @@ async function renderBoostMatchSelector(boostType) {
 
   content.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px;">' + matches.map(p => {
     const isApplied = (boostType === 'JOKER' && p.isDouble) || (boostType === 'SHIELD' && p.isShield);
-    const btnText = isApplied ? 'Applied' : 'Apply';
-    const btnBg = isApplied ? '#1DA1F2' : '#29bf12';
-    const btnCursor = isApplied ? 'default' : 'pointer';
-    const btnOpacity = isApplied ? '0.7' : '1';
-    const btnDisabled = isApplied ? 'disabled' : '';
+    const btnText = isApplied ? 'Remove' : 'Apply';
+    const btnBg = isApplied ? '#e01a4f' : '#29bf12';
+    const btnCursor = 'pointer';
+    const btnOpacity = '1';
+    const onClickAction = isApplied 
+      ? `removeBoostFromMatch('${p.matchId}', '${boostType}', event)` 
+      : `applyBoostToMatch('${p.matchId}', '${boostType}', event)`;
     
     return `
     <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;">
@@ -5762,10 +5764,49 @@ async function renderBoostMatchSelector(boostType) {
         <div style="font-weight:700;font-size:0.95rem;">${p.match.homeTeam} vs ${p.match.awayTeam}</div>
         <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:4px;">Your Prediction: ${p.homeScore}-${p.awayScore}</div>
       </div>
-      <button ${btnDisabled} onclick="applyBoostToMatch('${p.matchId}', '${boostType}', event)" style="background:${btnBg};color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:${btnCursor};opacity:${btnOpacity};">${btnText}</button>
+      <button onclick="${onClickAction}" style="background:${btnBg};color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:${btnCursor};opacity:${btnOpacity};">${btnText}</button>
     </div>
     `;
   }).join('') + '</div>';
+}
+
+async function removeBoostFromMatch(matchId, boostType, event) {
+  const boostName = boostType === 'JOKER' ? 'The Joker (2X XP)' : 'Scoreline Shield';
+  
+  const btn = event.currentTarget;
+  const originalText = btn.textContent;
+
+  _showBoostConfirmModal({
+    title: `Remove ${boostType === 'JOKER' ? 'The Joker' : 'Scoreline Shield'}?`,
+    subtitle: `Are you sure you want to cancel the ${boostName} boost on this match?`,
+    iconHtml: '❌',
+    color: '#e01a4f',
+    onConfirm: async () => {
+      btn.textContent = 'Removing...';
+      btn.disabled = true;
+      try {
+        const payload = { matchId };
+        if (boostType === 'JOKER') payload.isJoker = false;
+        if (boostType === 'SHIELD') payload.isShield = false;
+
+        const res = await fetch('/api/predictions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to remove boost');
+
+        showNotification('Boost successfully removed!', 'success');
+        closeBoostModal();
+      } catch (err) {
+        showNotification(err.message, 'error');
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    }
+  });
 }
 
 async function applyBoostToMatch(matchId, boostType, event) {
