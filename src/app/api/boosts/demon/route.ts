@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { sendEmail } from "@/lib/email";
+import DemonVictimEmail from "@/emails/DemonVictimEmail";
+import React from "react";
 
 export async function POST(req: NextRequest) {
   try {
@@ -67,6 +70,23 @@ export async function POST(req: NextRequest) {
         amount: 500
       }
     });
+
+    // Fetch target user and mini league details to send the email
+    const [targetUser, tournament] = await Promise.all([
+      prisma.user.findUnique({ where: { id: targetUserId }, select: { name: true, email: true } }),
+      prisma.tournament.findUnique({ where: { id: miniLeagueId }, select: { name: true } })
+    ]);
+
+    if (targetUser?.email && tournament) {
+      sendEmail({
+        to: targetUser.email,
+        subject: `Watch out! You've been hit by The Demon 😈 in ${tournament.name}`,
+        react: React.createElement(DemonVictimEmail, {
+          name: targetUser.name || "Player",
+          miniLeagueName: tournament.name,
+        }),
+      }).catch(err => console.error("[email] Demon victim email failed:", err));
+    }
 
     return NextResponse.json({ success: true, message: "Demon successfully cast" });
 
