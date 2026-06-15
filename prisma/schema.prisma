@@ -46,6 +46,7 @@ model User {
   dailySpins        DailySpin[]
   challengeRewards  ChallengeReward[]
   chatMessages      MatchChat[]
+  predictionAudits  PredictionAudit[]
   preferredLeagues  String[]           @default([]) // league names chosen at registration
 
   // Friends / followers
@@ -110,6 +111,7 @@ model Match {
 
   predictions Prediction[]
   chatMessages MatchChat[]
+  predictionAudits PredictionAudit[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -336,4 +338,26 @@ model DemonUsage {
 
   @@unique([miniLeagueId, sourceUserId])
   @@unique([miniLeagueId, targetUserId])
+}
+
+model PredictionAudit {
+  id              String   @id @default(cuid())
+  userId          String
+  matchId         String
+  action          String   // "CREATE" | "UPDATE"
+  homeScore       Int
+  awayScore       Int
+  firstGoalScorer String?
+  confidence      Int
+  isDouble        Boolean  // Double XP Joker
+  isShield        Boolean  // Scoreline Shield
+  btts            Boolean?
+  totalGoals      Int?
+  createdAt       DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([matchId, createdAt])
 }

@@ -99,6 +99,11 @@ export async function POST(req: NextRequest) {
 
     // If it's just a boost update, we don't require scores.
     const isBoostUpdate = homeScore == null && awayScore == null;
+    const existing = await prisma.prediction.findUnique({
+      where: { userId_matchId: { userId: session.user.id, matchId } }
+    });
+    const action = existing ? "UPDATE" : "CREATE";
+
     let prediction;
 
     if (isBoostUpdate) {
@@ -130,6 +135,25 @@ export async function POST(req: NextRequest) {
         },
       });
     }
+
+    // Record audit log entry
+    await prisma.predictionAudit.create({
+      data: {
+        userId: session.user.id,
+        matchId,
+        action,
+        homeScore: prediction.homeScore,
+        awayScore: prediction.awayScore,
+        firstGoalScorer: prediction.firstGoalScorer,
+        confidence: prediction.confidence,
+        isDouble: prediction.isDouble,
+        isShield: prediction.isShield,
+        btts: prediction.btts,
+        totalGoals: prediction.totalGoals,
+      }
+    }).catch(auditError => {
+      console.error("[predictions] failed to write prediction audit:", auditError);
+    });
 
     // ── Auto-join the league when a user predicts a match ──────────────
     // Runs for both new predictions and updates — idempotent everywhere.

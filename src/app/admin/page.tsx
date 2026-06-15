@@ -479,6 +479,218 @@ function UsersTab() {
   );
 }
 
+// ─── Audit Logs Tab ───────────────────────────────────────
+type AuditLog = {
+  id: string;
+  userId: string;
+  matchId: string;
+  action: string;
+  homeScore: number;
+  awayScore: number;
+  firstGoalScorer: string | null;
+  confidence: number;
+  isDouble: boolean;
+  isShield: boolean;
+  btts: boolean | null;
+  totalGoals: number | null;
+  createdAt: string;
+  user: { id: string; name: string | null; email: string | null };
+  match: { id: string; homeTeam: string; awayTeam: string; matchDate: string };
+};
+
+function AuditLogsTab() {
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/audit-logs?search=${encodeURIComponent(search)}&page=${page}&limit=20`);
+      if (res.ok) {
+        const data = await res.json();
+        setLogs(data.logs || []);
+        setTotalPages(data.pagination?.totalPages || 1);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [search, page]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    load();
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <h3 style={sectionTitle}>Prediction Audit Trail</h3>
+        <button style={btnGhost} onClick={() => { setSearch(""); setPage(1); }}>Reset Filters</button>
+      </div>
+
+      <div style={{ ...card, display: "flex", gap: 12, alignItems: "center" }}>
+        <form onSubmit={handleSearchSubmit} style={{ display: "flex", flex: 1, gap: 10 }}>
+          <input
+            style={inputStyle}
+            placeholder="Search by User (name/email) or Match (home/away team)..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <button type="submit" style={btnGreen} disabled={loading}>
+            {loading ? "Searching..." : "Search"}
+          </button>
+        </form>
+      </div>
+
+      {loading && logs.length === 0 ? (
+        <div style={{ color: "rgba(255,255,255,0.4)", padding: 40, textAlign: "center" }}>Loading audit logs...</div>
+      ) : logs.length === 0 ? (
+        <div style={{ color: "rgba(255,255,255,0.3)", padding: 40, textAlign: "center" }}>No audit logs found.</div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {logs.map(log => {
+            const dateStr = new Date(log.createdAt).toLocaleString("en-GB", {
+              day: "numeric",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            });
+            const matchDateStr = new Date(log.match.matchDate).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+            });
+
+            return (
+              <div key={log.id} style={{ ...card, position: "relative" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10 }}>
+                  <div>
+                    {/* User Info */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontWeight: 800, color: "#fff", fontSize: "0.9rem" }}>
+                        {log.user.name || "Anonymous User"}
+                      </span>
+                      <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.4)" }}>
+                        ({log.user.email || "no-email"})
+                      </span>
+                    </div>
+
+                    {/* Match & Date */}
+                    <div style={{ fontSize: "0.82rem", marginTop: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ color: "#6FE840", fontWeight: 700 }}>{log.match.homeTeam} vs {log.match.awayTeam}</span>
+                      <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.72rem" }}>({matchDateStr})</span>
+                    </div>
+                  </div>
+
+                  {/* Action Badge & Timestamp */}
+                  <div style={{ textAlign: "right" }}>
+                    <span style={{
+                      display: "inline-block",
+                      padding: "2px 8px",
+                      borderRadius: 100,
+                      fontSize: "0.62rem",
+                      fontWeight: 800,
+                      background: log.action === "CREATE" ? "rgba(16,185,129,0.15)" : "rgba(59,130,246,0.15)",
+                      color: log.action === "CREATE" ? "#34D399" : "#60A5FA",
+                      marginBottom: 4
+                    }}>
+                      {log.action}
+                    </span>
+                    <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.3)" }}>{dateStr}</div>
+                  </div>
+                </div>
+
+                {/* Prediction State details */}
+                <div style={{
+                  marginTop: 12,
+                  padding: "10px 14px",
+                  background: "rgba(0,0,0,0.2)",
+                  borderRadius: 8,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 16,
+                  fontSize: "0.78rem"
+                }}>
+                  <div>
+                    <span style={{ color: "rgba(255,255,255,0.4)", marginRight: 4 }}>Prediction:</span>
+                    <strong style={{ color: "#fff" }}>{log.homeScore} – {log.awayScore}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "rgba(255,255,255,0.4)", marginRight: 4 }}>Scorer:</span>
+                    <span style={{ color: log.firstGoalScorer ? "#fff" : "rgba(255,255,255,0.2)" }}>
+                      {log.firstGoalScorer || "None"}
+                    </span>
+                  </div>
+                  <div>
+                    <span style={{ color: "rgba(255,255,255,0.4)", marginRight: 4 }}>Confidence:</span>
+                    <span style={{ color: "#fff", fontWeight: 700 }}>{log.confidence}%</span>
+                  </div>
+                  {log.btts !== null && (
+                    <div>
+                      <span style={{ color: "rgba(255,255,255,0.4)", marginRight: 4 }}>BTTS:</span>
+                      <span style={{ color: log.btts ? "#34D399" : "#F87171" }}>{log.btts ? "Yes" : "No"}</span>
+                    </div>
+                  )}
+                  {log.totalGoals !== null && (
+                    <div>
+                      <span style={{ color: "rgba(255,255,255,0.4)", marginRight: 4 }}>Goals:</span>
+                      <span style={{ color: "#fff" }}>{log.totalGoals}</span>
+                    </div>
+                  )}
+                  {/* Chips used */}
+                  {log.isDouble && (
+                    <span style={{ color: "#FBBF24", fontWeight: 700, display: "flex", alignItems: "center", gap: 3 }}>
+                      🃏 Joker 2×
+                    </span>
+                  )}
+                  {log.isShield && (
+                    <span style={{ color: "#60A5FA", fontWeight: 700, display: "flex", alignItems: "center", gap: 3 }}>
+                      🛡️ Shield
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 14, marginTop: 14 }}>
+              <button
+                style={btnGhost}
+                disabled={page <= 1 || loading}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+              >
+                Prev
+              </button>
+              <span style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.5)" }}>
+                Page {page} of {totalPages}
+              </span>
+              <button
+                style={btnGhost}
+                disabled={page >= totalPages || loading}
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Club Requests Tab ───────────────────────────────────
 type ClubRequestRow = { id: string; clubName: string; leagueHint: string; continent: string; userId: string | null; status: string; createdAt: string };
 
@@ -695,7 +907,7 @@ function StatsTab() {
 export default function AdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [tab, setTab] = useState<"overview" | "competitions" | "matches" | "sync" | "users" | "club-requests" | "sa-logos">("overview");
+  const [tab, setTab] = useState<"overview" | "competitions" | "matches" | "sync" | "users" | "audit-logs" | "club-requests" | "sa-logos">("overview");
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -724,6 +936,7 @@ export default function AdminPage() {
             <Tab active={tab === "matches"} onClick={() => setTab("matches")}>Matches &amp; Results</Tab>
             <Tab active={tab === "sync"} onClick={() => setTab("sync")}>📡 Sync Fixtures</Tab>
             <Tab active={tab === "users"} onClick={() => setTab("users")}>Users</Tab>
+            <Tab active={tab === "audit-logs"} onClick={() => setTab("audit-logs")}>📋 Audit Logs</Tab>
             <Tab active={tab === "club-requests"} onClick={() => setTab("club-requests")}>🔍 Club Requests</Tab>
             <Tab active={tab === "sa-logos"} onClick={() => setTab("sa-logos")}>🇿🇦 SA Logos</Tab>
           </div>
@@ -737,6 +950,7 @@ export default function AdminPage() {
         {tab === "matches"       && <MatchesTab />}
         {tab === "sync"          && <SyncTab />}
         {tab === "users"         && <UsersTab />}
+        {tab === "audit-logs"    && <AuditLogsTab />}
         {tab === "club-requests" && <ClubRequestsTab />}
         {tab === "sa-logos"      && <SaLogosTab />}
       </div>
