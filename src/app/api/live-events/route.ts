@@ -47,10 +47,13 @@ export async function GET() {
         .replace(/\s*\d{4}/, "")
         .trim();
 
+      let hasNotableEvent = false;
+
       for (const evt of evts) {
         const isGoal = evt.type === "Goal";
         const isRedCard = evt.type === "Card" && evt.detail === "Red Card";
         if (isGoal || isRedCard) {
+          hasNotableEvent = true;
           allEvents.push({
             matchId: match.id,
             homeTeam: match.homeTeam,
@@ -64,6 +67,21 @@ export async function GET() {
             detail: evt.detail,
           });
         }
+      }
+
+      if (!hasNotableEvent) {
+        allEvents.push({
+          matchId: match.id,
+          homeTeam: match.homeTeam,
+          awayTeam: match.awayTeam,
+          score,
+          tournament,
+          time: 0,
+          teamName: "",
+          playerName: "Live Now",
+          type: "Live",
+          detail: "",
+        });
       }
     }
 

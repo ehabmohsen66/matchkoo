@@ -239,13 +239,14 @@ async function _refreshTicker() {
     // Build ticker items
     const items = filtered.map(evt => {
       const isGoal = evt.type === 'Goal';
-      const icon   = isGoal ? '⚽' : '🟥';
+      const icon   = isGoal ? '⚽' : (evt.type === 'Live' ? '⏱️' : '🟥');
       const extra  = evt.detail === 'Penalty' ? ' <span style="font-size:0.7rem;opacity:0.6">(P)</span>'
                    : evt.detail === 'Own Goal' ? ' <span style="font-size:0.7rem;opacity:0.6">(OG)</span>'
                    : '';
       const player = evt.playerName || evt.teamName || '';
+      const timeStr = evt.time ? `<span style="opacity:0.45">${evt.time}'</span> · ` : '';
       const score  = evt.homeTeam + ' <span class="ticker-score">' + evt.score + '</span> ' + evt.awayTeam;
-      return `<span class="ticker-item">${icon} <strong>${player}</strong>${extra} <span style="opacity:0.45">${evt.time}'</span> · ${score} <span class="ticker-sep">|</span></span>`;
+      return `<span class="ticker-item">${icon} <strong>${player}</strong>${extra} ${timeStr}${score} <span class="ticker-sep">|</span></span>`;
     }).join('');
 
     // Duplicate for seamless loop
