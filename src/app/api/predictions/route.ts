@@ -66,6 +66,10 @@ export async function POST(req: NextRequest) {
     const applyJoker = isJoker || isDouble;
     const applyShield = isShield;
 
+    if (applyJoker && applyShield) {
+      return NextResponse.json({ message: "You cannot apply both Joker and Scoreline Shield to the same match" }, { status: 400 });
+    }
+
     const now = new Date();
     const dayOfWeek = now.getUTCDay(); // 0=Sun, 1=Mon, ...
     const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
