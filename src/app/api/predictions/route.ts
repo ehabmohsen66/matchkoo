@@ -88,9 +88,17 @@ export async function POST(req: NextRequest) {
           createdAt: { gte: weekStart },
           NOT: { matchId },
         },
+        include: { match: true }
       });
       if (recentJoker) {
-        return NextResponse.json({ message: "You can only use The Joker once per week (resets every Monday)" }, { status: 400 });
+        if (recentJoker.match.status !== "UPCOMING") {
+          return NextResponse.json({ message: "You can only use The Joker once per week, and your previously selected match has already started." }, { status: 400 });
+        } else {
+          await prisma.prediction.update({
+            where: { id: recentJoker.id },
+            data: { isDouble: false }
+          });
+        }
       }
     }
 
@@ -102,9 +110,17 @@ export async function POST(req: NextRequest) {
           createdAt: { gte: weekStart },
           NOT: { matchId },
         },
+        include: { match: true }
       });
       if (recentShield) {
-        return NextResponse.json({ message: "You can only use Scoreline Shield once per week (resets every Monday)" }, { status: 400 });
+        if (recentShield.match.status !== "UPCOMING") {
+          return NextResponse.json({ message: "You can only use Scoreline Shield once per week, and your previously selected match has already started." }, { status: 400 });
+        } else {
+          await prisma.prediction.update({
+            where: { id: recentShield.id },
+            data: { isShield: false }
+          });
+        }
       }
     }
 

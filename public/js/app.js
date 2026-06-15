@@ -5748,15 +5748,24 @@ async function renderBoostMatchSelector(boostType) {
     return;
   }
 
-  content.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px;">' + matches.map(p => `
+  content.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px;">' + matches.map(p => {
+    const isApplied = (boostType === 'JOKER' && p.isDouble) || (boostType === 'SHIELD' && p.isShield);
+    const btnText = isApplied ? 'Applied' : 'Apply';
+    const btnBg = isApplied ? '#1DA1F2' : '#29bf12';
+    const btnCursor = isApplied ? 'default' : 'pointer';
+    const btnOpacity = isApplied ? '0.7' : '1';
+    const btnDisabled = isApplied ? 'disabled' : '';
+    
+    return `
     <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;">
       <div>
         <div style="font-weight:700;font-size:0.95rem;">${p.match.homeTeam} vs ${p.match.awayTeam}</div>
         <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:4px;">Your Prediction: ${p.homeScore}-${p.awayScore}</div>
       </div>
-      <button onclick="applyBoostToMatch('${p.matchId}', '${boostType}', event)" style="background:#29bf12;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;">Apply</button>
+      <button ${btnDisabled} onclick="applyBoostToMatch('${p.matchId}', '${boostType}', event)" style="background:${btnBg};color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:${btnCursor};opacity:${btnOpacity};">${btnText}</button>
     </div>
-  `).join('') + '</div>';
+    `;
+  }).join('') + '</div>';
 }
 
 async function applyBoostToMatch(matchId, boostType, event) {
