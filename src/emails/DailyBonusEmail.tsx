@@ -23,22 +23,31 @@ export default function DailyBonusEmail({
   newTotalXp,
 }: DailyBonusEmailProps) {
   const hasXp = xpAwarded > 0;
+  const isBadLuck = prize === "Bad Luck :(";
+
+  const previewText = isBadLuck 
+    ? `🎡 You hit Bad Luck on today's Daily Spin. Try again tomorrow!` 
+    : `🎡 You won ${prize} on today's Daily Spin!`;
 
   return (
-    <BaseLayout previewText={`🎡 You won ${prize} on today's Daily Spin!`}>
+    <BaseLayout previewText={previewText}>
       {/* Hero */}
       <Section style={hero}>
-        <div style={badge}>🎡 DAILY BONUS</div>
-        <Heading style={heroTitle}>You spun. You won, {name}.</Heading>
+        <div style={badge}>🎡 DAILY SPIN</div>
+        <Heading style={heroTitle}>
+          {isBadLuck ? `Better luck next time, ${name}.` : `You spun. You won, ${name}.`}
+        </Heading>
         <Text style={heroSubtitle}>
-          The wheel has spoken. Here&apos;s what you picked up today on Matchkoo.
+          {isBadLuck 
+            ? "The wheel has spoken, and today wasn't your lucky day. Don't worry, you can always try again tomorrow!"
+            : "The wheel has spoken. Here's what you picked up today on Matchkoo."}
         </Text>
       </Section>
 
       {/* Prize card */}
       <Section style={px}>
         <Section style={prizeCard}>
-          <Text style={prizeLabel}>TODAY&apos;S PRIZE</Text>
+          <Text style={prizeLabel}>{isBadLuck ? "TODAY'S SPIN" : "TODAY'S PRIZE"}</Text>
           <div style={prizeValue}>{prize}</div>
 
           <div style={divider} />
