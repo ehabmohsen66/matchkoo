@@ -2573,7 +2573,7 @@ async function openMiniLeagueDetail(leagueId) {
               <img src="${top3[1].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[1].name || 'player')}" alt="${top3[1].name}">
               <div class="level-badge ${_xpToLevel(top3[1].xp||0).cls}">${_xpToLevel(top3[1].xp||0).badge}</div>
             </div>
-            <div class="podium-name">${top3[1].name}${top3[1].isMe ? ' (You)' : ''}</div>
+            <div class="podium-name">${top3[1].name}${top3[1].isMe ? ' (You)' : ''}${top3[1].hasDemonPenalty ? ' <span title="Hit by The Demon">😈</span>' : ''}</div>
             <div class="podium-flag">${_getFlagEmoji(top3[1].country)}</div>
             <div class="podium-xp">${(top3[1].xp||0).toLocaleString()} XP</div>
             <div class="podium-block rank2-block"><span class="rank-num">#2</span></div>
@@ -2588,7 +2588,7 @@ async function openMiniLeagueDetail(leagueId) {
               <img src="${top3[0].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[0].name || 'player')}" alt="${top3[0].name}">
               <div class="level-badge ${_xpToLevel(top3[0].xp||0).cls}">${_xpToLevel(top3[0].xp||0).badge}</div>
             </div>
-            <div class="podium-name">${top3[0].name}${top3[0].isMe ? ' (You)' : ''}</div>
+            <div class="podium-name">${top3[0].name}${top3[0].isMe ? ' (You)' : ''}${top3[0].hasDemonPenalty ? ' <span title="Hit by The Demon">😈</span>' : ''}</div>
             <div class="podium-flag">${_getFlagEmoji(top3[0].country)}</div>
             <div class="podium-xp">${(top3[0].xp||0).toLocaleString()} XP</div>
             <div class="podium-block rank1-block"><span class="rank-num">#1</span></div>
@@ -2600,7 +2600,7 @@ async function openMiniLeagueDetail(leagueId) {
               <img src="${top3[2].image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(top3[2].name || 'player')}" alt="${top3[2].name}">
               <div class="level-badge ${_xpToLevel(top3[2].xp||0).cls}">${_xpToLevel(top3[2].xp||0).badge}</div>
             </div>
-            <div class="podium-name">${top3[2].name}${top3[2].isMe ? ' (You)' : ''}</div>
+            <div class="podium-name">${top3[2].name}${top3[2].isMe ? ' (You)' : ''}${top3[2].hasDemonPenalty ? ' <span title="Hit by The Demon">😈</span>' : ''}</div>
             <div class="podium-flag">${_getFlagEmoji(top3[2].country)}</div>
             <div class="podium-xp">${(top3[2].xp||0).toLocaleString()} XP</div>
             <div class="podium-block rank3-block"><span class="rank-num">#3</span></div>
@@ -2625,6 +2625,7 @@ async function openMiniLeagueDetail(leagueId) {
           <div class="lb-name">
             ${u.name || 'Player'}
             ${u.isMe ? '<span class="level-badge ' + lvl.cls + '">YOU</span>' : ''}
+            ${u.hasDemonPenalty ? ' <span title="Hit by The Demon">😈</span>' : ''}
             ${streak >= 3 ? '<span style="font-size:0.7rem;margin-left:4px" title="' + streak + ' streak">🔥' + streak + '</span>' : ''}
           </div>
           <div class="lb-sub" style="font-size:0.7rem;color:var(--text-muted)">${lvl.label}${acc ? ' · ' + acc + ' accuracy' : ''}</div>

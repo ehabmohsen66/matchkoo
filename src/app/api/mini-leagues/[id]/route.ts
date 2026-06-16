@@ -134,6 +134,7 @@ export async function GET(
           image: user?.image ?? null,
           xp: totalXp,
           isMe: uid === userId,
+          hasDemonPenalty: penalty > 0,
         };
       })
       .sort((a, b) => b.xp - a.xp)
