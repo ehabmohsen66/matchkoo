@@ -14,6 +14,7 @@ import {
   LEAGUE_CONTINENT_MAP,
   type ApiFixture,
 } from "@/lib/football-api";
+import { scorerMatch } from "@/lib/scorer-match";
 
 /** XP level thresholds — module-level so POST handler + upsertFixtures both use it */
 const LEVELS = [
@@ -22,37 +23,6 @@ const LEVELS = [
   { name: "Platinum", threshold: 20000, next: "Legend" as string | undefined,   nextXp: 50000  as number | undefined },
   { name: "Legend",   threshold: 50000, next: undefined as string | undefined,  nextXp: undefined as number | undefined },
 ];
-
-/**
- * Smart name comparison for first goalscorer.
- * Handles abbreviated names from the API e.g. "H. Kane" vs user-predicted "Harry Kane".
- * Matches if: exact, same last name, or initial+last matches.
- */
-function scorerMatch(predicted: string, actual: string): boolean {
-  const p = predicted.trim().toLowerCase();
-  const a = actual.trim().toLowerCase();
-  if (p === a) return true;
-  const pLast = p.split(/\s+/).pop() ?? p;
-  const aLast = a.split(/\s+/).pop() ?? a;
-  if (pLast === aLast) return true;
-  // actual is abbreviated "H. Kane"
-  const aWords = a.split(/\s+/);
-  if (aWords.length >= 2 && aWords[0].endsWith('.')) {
-    const aInitial = aWords[0].charAt(0);
-    const aLastName = aWords[aWords.length - 1];
-    const pWords = p.split(/\s+/);
-    if (pWords.length >= 2 && pWords[0].charAt(0) === aInitial && pWords[pWords.length - 1] === aLastName) return true;
-  }
-  // predicted is abbreviated
-  const pWords = p.split(/\s+/);
-  if (pWords.length >= 2 && pWords[0].endsWith('.')) {
-    const pInitial = pWords[0].charAt(0);
-    const pLastName = pWords[pWords.length - 1];
-    const aWords2 = a.split(/\s+/);
-    if (aWords2.length >= 2 && aWords2[0].charAt(0) === pInitial && aWords2[aWords2.length - 1] === pLastName) return true;
-  }
-  return false;
-}
 
 
 /**

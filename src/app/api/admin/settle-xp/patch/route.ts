@@ -13,30 +13,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { scorerMatch } from "@/lib/scorer-match";
 
-function scorerMatch(predicted: string, actual: string): boolean {
-  const p = predicted.trim().toLowerCase();
-  const a = actual.trim().toLowerCase();
-  if (p === a) return true;
-  const pLast = p.split(/\s+/).pop() ?? p;
-  const aLast = a.split(/\s+/).pop() ?? a;
-  if (pLast === aLast) return true;
-  const aWords = a.split(/\s+/);
-  if (aWords.length >= 2 && aWords[0].endsWith('.')) {
-    const aInitial = aWords[0].charAt(0);
-    const aLastName = aWords[aWords.length - 1];
-    const pWords = p.split(/\s+/);
-    if (pWords.length >= 2 && pWords[0].charAt(0) === aInitial && pWords[pWords.length - 1] === aLastName) return true;
-  }
-  const pWords = p.split(/\s+/);
-  if (pWords.length >= 2 && pWords[0].endsWith('.')) {
-    const pInitial = pWords[0].charAt(0);
-    const pLastName = pWords[pWords.length - 1];
-    const aWords2 = a.split(/\s+/);
-    if (aWords2.length >= 2 && aWords2[0].charAt(0) === pInitial && aWords2[aWords2.length - 1] === pLastName) return true;
-  }
-  return false;
-}
 
 export async function POST(req: NextRequest) {
   const cronSecret = req.headers.get("x-cron-secret");
