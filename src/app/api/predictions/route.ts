@@ -20,7 +20,9 @@ export async function GET(req: NextRequest) {
       where: {
         userId: session.user.id,
         match: {
+        ...(filter === "all" ? {} : {
           status: filter === "upcoming" ? { in: ["UPCOMING", "LIVE"] } : "COMPLETED",
+        }),
         },
       },
       include: {

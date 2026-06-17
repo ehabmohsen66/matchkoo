@@ -5735,8 +5735,7 @@ function closeBoostModal() {
 }
 
 async function fetchUpcomingPredictedMatches() {
-  // Fetch upcoming matches the user has predicted, to apply Joker or Shield
-  const res = await fetch('/api/predictions?status=upcoming');
+  const res = await fetch('/api/predictions?filter=all');
   if (!res.ok) return [];
   const data = await res.json();
   return Array.isArray(data) ? data : (data.predictions || []);
