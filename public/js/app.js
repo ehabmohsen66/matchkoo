@@ -3262,6 +3262,14 @@ function renderTrophies(user, stats, globalRank) {
     { id: 't12', icon: '🌟', name: 'Superstar', desc: 'Season trophy winner', unlocked: false },
   ];
 
+  const unlockedCount = myTrophies.filter(t => t.unlocked).length;
+  const totalCount = myTrophies.length;
+  
+  const countEl = document.querySelector('.trophy-count');
+  if (countEl) {
+    countEl.textContent = `${unlockedCount} / ${totalCount}`;
+  }
+
   container.innerHTML = myTrophies.map(t =>
     '<div class="trophy-item ' + (t.unlocked ? '' : 'locked') + '" title="' + t.desc + '">' +
       '<div class="trophy-icon">' + t.icon + '</div>' +
