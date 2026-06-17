@@ -721,18 +721,37 @@ async function renderFixturesList() {
             (hidden ? 'style="display:none" ' : '') +
             'onclick="openRealMatchDetail(\'' + matchId + '\')" role="button" tabindex="0">' +
 
-            /* ── DESKTOP layout (hidden on mobile via CSS) ── */
-            '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:10px">' + hLogo + aLogo + '</div>' +
-            '<div class="fixture-teams" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">' +
-              '<div style="min-width:0">' +
-                '<div class="fixture-league-name">' + baseName + '</div>' +
-                '<div class="fixture-team-names">' + home.name + ' vs ' + away.name + '</div>' +
+            /* ── DESKTOP layout ── */
+            '<div class="fx-desktop-row">' +
+              /* Left: home team */
+              '<div class="fx-dt-team fx-dt-home">' +
+                '<span class="fx-dt-name">' + home.name + '</span>' +
+                (home.logo
+                  ? '<img src="' + home.logo + '" class="fx-dt-logo" alt="' + home.name + '">'
+                  : '<div class="fx-dt-logo fx-dt-logo-fb">' + home.name.substring(0,3).toUpperCase() + '</div>') +
               '</div>' +
-            '</div>' +
-            '<div style="display:flex;align-items:center;gap:8px;margin-left:16px">' +
-              (hasPred ? '<span style="color:var(--green);font-size:1.1rem;font-weight:900" title="Predicted">&#10003;</span>' : '') +
-              (isLive ? '<span class="live-badge" style="color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE</span>' : '') +
-              '<div class="fixture-time live-score-val" style="min-width:110px;text-align:right;' + (isLive ? 'color:#f21b3f' : '') + '">' + (isLive ? liveScore : timeStr) + '</div>' +
+              /* Centre: league + VS/score + meta */
+              '<div class="fx-dt-centre">' +
+                '<div class="fx-dt-league">' + baseName + '</div>' +
+                (isLive
+                  ? '<div class="fx-dt-score">' + (m.homeScore ?? 0) + '<span class="fx-dt-score-sep">–</span>' + (m.awayScore ?? 0) + '</div>'
+                  : '<div class="fx-dt-vs">VS</div>'
+                ) +
+                '<div class="fx-dt-meta">' +
+                  (isLive
+                    ? '<span class="fx-dt-live-badge"><span class="fx-dt-live-dot"></span>LIVE</span>'
+                    : '<span class="fx-dt-time">' + timeStr + '</span>'
+                  ) +
+                  (hasPred ? '<span class="fx-dt-pred">✓ Predicted</span>' : '') +
+                '</div>' +
+              '</div>' +
+              /* Right: away team */
+              '<div class="fx-dt-team fx-dt-away">' +
+                (away.logo
+                  ? '<img src="' + away.logo + '" class="fx-dt-logo" alt="' + away.name + '">'
+                  : '<div class="fx-dt-logo fx-dt-logo-fb">' + away.name.substring(0,3).toUpperCase() + '</div>') +
+                '<span class="fx-dt-name">' + away.name + '</span>' +
+              '</div>' +
             '</div>' +
 
             /* ── MOBILE layout (hidden on desktop via CSS, shown ≤600px) ── */
