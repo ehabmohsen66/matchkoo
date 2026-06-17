@@ -1606,7 +1606,9 @@ function _getScoringBreakdownHtml(pred) {
     (p.homeScore > p.awayScore && hs > as) ||
     (p.homeScore < p.awayScore && hs < as) ||
     (p.homeScore === p.awayScore && hs === as);
-  const exactScore   = p.homeScore === hs && p.awayScore === as;
+  const trueExactScore = p.homeScore === hs && p.awayScore === as;
+  const shieldActivated = !!(p.isShield && correctResult && !trueExactScore);
+  const exactScore   = trueExactScore || shieldActivated;
   const actualBtts   = hs > 0 && as > 0;
   const correctBtts  = p.btts !== null && p.btts !== undefined && p.btts === actualBtts;
   const actualTotal  = hs + as;
@@ -1708,7 +1710,7 @@ function _getScoringBreakdownHtml(pred) {
         ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x2705; Correct outcome <span style="font-size:0.72rem;color:rgba(255,255,255,0.3);">(${conf}% conf)</span></span>${tick('+'+Math.round(50*multiplier)+' XP')}</div>`
         : `<div style="${rowStyle}"><span style="${labelStyle}">&#x274C; Wrong outcome <span style="font-size:0.72rem;color:rgba(255,255,255,0.3);">(${conf}% conf)</span></span>${cross('\u2212'+Math.round(50*(conf/100))+' XP')}</div>`
       }
-      ${exactScore ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F3AF; Exact scoreline bonus</span>${tick('+200 XP')}</div>` : ''}
+      ${exactScore ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F3AF; Exact scoreline bonus${shieldActivated ? ' <span style="font-size:0.7rem;color:#60A5FA;">(via 🛡️ Shield)</span>' : ''}</span>${tick('+200 XP')}</div>` : ''}
       ${p.firstGoalScorer
         ? (correctFGS
           ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x26BD; First goalscorer bonus</span>${tick('+150 XP')}</div>`
@@ -1728,6 +1730,7 @@ function _getScoringBreakdownHtml(pred) {
         : ''
       }
       ${p.isDouble && beforeDouble > 0 ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F0CF; Double Joker active</span><span style="color:var(--gold);font-weight:800;">x2</span></div>` : ''}
+      ${p.isShield ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F6E1;&#xFE0F; Shield chip${shieldActivated ? ' <span style=\'font-size:0.7rem;color:rgba(255,255,255,0.35);\'>→ counted as exact score</span>' : ' <span style=\'font-size:0.7rem;color:rgba(255,255,255,0.35);\'>→ true exact score anyway</span>'}</span><span style="color:#60A5FA;font-weight:800;">${shieldActivated ? '+200 XP' : '✓'}</span></div>` : ''}
 
 
       <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 0;margin-top:8px;border-top:1px solid rgba(255,255,255,0.12);">
