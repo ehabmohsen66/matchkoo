@@ -5745,32 +5745,92 @@ async function fetchUpcomingPredictedMatches() {
 async function renderBoostMatchSelector(boostType) {
   const content = document.getElementById('boost-modal-content');
   content.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5)">Loading your upcoming predictions...</div>';
-  
-  const matches = await fetchUpcomingPredictedMatches();
+
+  const allMatches = await fetchUpcomingPredictedMatches();
+
+  // ── 1. Only show matches that haven't kicked off yet ──────────────────
+  const now = new Date();
+  const matches = allMatches.filter(p => p.match.status === 'UPCOMING' && new Date(p.match.matchDate) > now);
+
   if (matches.length === 0) {
     content.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5)">You have no upcoming predictions.<br>Make a prediction first to use this boost!</div>';
     return;
   }
 
+  // ── 2. Detect if chip already consumed this week (on a different match) ─
+  //    Week = Monday 00:00 UTC → next Monday 00:00 UTC
+  const nowUtc = new Date();
+  const dayOfWeek = nowUtc.getUTCDay(); // 0=Sun … 6=Sat
+  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const weekStart = new Date(Date.UTC(nowUtc.getUTCFullYear(), nowUtc.getUTCMonth(), nowUtc.getUTCDate() + diffToMonday));
+  const weekEnd   = new Date(weekStart); weekEnd.setUTCDate(weekEnd.getUTCDate() + 7);
+
+  // Find a prediction in this week that already has the chip applied
+  const usedOnMatch = allMatches.find(p => {
+    const md = new Date(p.match.matchDate);
+    const inThisWeek = md >= weekStart && md < weekEnd;
+    return inThisWeek && ((boostType === 'JOKER' && p.isDouble) || (boostType === 'SHIELD' && p.isShield));
+  });
+
+  // Helper: format "Resets in Xd HHh" until next Monday
+  function resetCountdown() {
+    const msLeft = weekEnd - new Date();
+    if (msLeft <= 0) return 'Resets soon';
+    const totalMins = Math.floor(msLeft / 60000);
+    const days  = Math.floor(totalMins / 1440);
+    const hours = Math.floor((totalMins % 1440) / 60);
+    return `Resets in ${days}d ${String(hours).padStart(2,'0')}h`;
+  }
+
   content.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px;">' + matches.map(p => {
     const isApplied = (boostType === 'JOKER' && p.isDouble) || (boostType === 'SHIELD' && p.isShield);
-    const btnText = isApplied ? 'Applied' : 'Apply';
-    const btnBg = isApplied ? '#1DA1F2' : '#29bf12';
-    const btnCursor = isApplied ? 'default' : 'pointer';
-    const btnOpacity = isApplied ? '0.7' : '1';
-    const btnDisabled = isApplied ? 'disabled' : '';
-    
+
+    // Chip consumed elsewhere this week — lock all non-applied rows
+    const isLockedByWeekly = !isApplied && !!usedOnMatch;
+
+    let btnText, btnBg, btnColor, btnCursor, btnDisabled, btnTitle, onclickAttr;
+
+    if (isApplied) {
+      // This is the match with the chip — show Remove (blue)
+      btnText     = 'Applied';
+      btnBg       = '#1DA1F2';
+      btnColor    = '#fff';
+      btnCursor   = 'pointer';
+      btnDisabled = '';
+      btnTitle    = 'Remove this chip';
+      onclickAttr = `onclick="removeBoostFromMatch('${p.matchId}', '${boostType}', event)"`;
+    } else if (isLockedByWeekly) {
+      // Weekly chip already used — gray out with countdown
+      btnText     = resetCountdown();
+      btnBg       = 'rgba(255,255,255,0.08)';
+      btnColor    = 'rgba(255,255,255,0.3)';
+      btnCursor   = 'not-allowed';
+      btnDisabled = 'disabled';
+      btnTitle    = 'Chip already used this week';
+      onclickAttr = '';
+    } else {
+      // Available — green Apply
+      btnText     = 'Apply';
+      btnBg       = '#29bf12';
+      btnColor    = '#fff';
+      btnCursor   = 'pointer';
+      btnDisabled = '';
+      btnTitle    = '';
+      onclickAttr = `onclick="applyBoostToMatch('${p.matchId}', '${boostType}', event)"`;
+    }
+
     return `
     <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;">
       <div>
         <div style="font-weight:700;font-size:0.95rem;">${p.match.homeTeam} vs ${p.match.awayTeam}</div>
         <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:4px;">Your Prediction: ${p.homeScore}-${p.awayScore}</div>
       </div>
-      <button ${btnDisabled} onclick="applyBoostToMatch('${p.matchId}', '${boostType}', event)" style="background:${btnBg};color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:${btnCursor};opacity:${btnOpacity};">${btnText}</button>
+      <button ${btnDisabled} ${onclickAttr} title="${btnTitle}" style="background:${btnBg};color:${btnColor};border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:${btnCursor};font-size:0.82rem;white-space:nowrap;">${btnText}</button>
     </div>
     `;
   }).join('') + '</div>';
 }
+
 
 async function applyBoostToMatch(matchId, boostType, event) {
   const boostName = boostType === 'JOKER' ? 'The Joker (2X XP)' : 'Scoreline Shield';
