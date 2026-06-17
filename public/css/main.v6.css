@@ -562,12 +562,129 @@ a { text-decoration: none; color: inherit; }
   overflow: hidden;
 }
 .match-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
-/* Live card — same as regular card, no background tint */
+/* Live card — premium redesign */
 .live-card {
-  background: var(--bg-card);
-  border-color: var(--border-card);
+  background: linear-gradient(145deg, rgba(242,27,63,0.06) 0%, var(--bg-card) 60%);
+  border-color: rgba(242,27,63,0.25) !important;
+  box-shadow: 0 4px 24px rgba(242,27,63,0.1), var(--shadow-card);
+  min-width: 320px;
 }
-.live-card:hover { box-shadow: var(--shadow-lg); }
+.live-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #f21b3f, transparent);
+}
+.live-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 36px rgba(242,27,63,0.2), var(--shadow-lg);
+  border-color: rgba(242,27,63,0.45) !important;
+}
+
+/* Live card inner layout */
+.lc-card { padding: 0; overflow: hidden; }
+
+.lc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.lc-league {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+.lc-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 100px;
+  background: rgba(242,27,63,0.15);
+  border: 1px solid rgba(242,27,63,0.4);
+  color: #f21b3f;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.lc-live-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #f21b3f;
+  flex-shrink: 0;
+  animation: pulse-live 1.2s ease-in-out infinite;
+}
+
+.lc-matchup {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 8px;
+}
+.lc-team {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.lc-home { justify-content: flex-end; text-align: right; }
+.lc-away { justify-content: flex-start; text-align: left; }
+
+.lc-logo {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.lc-logo-fb {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.4);
+  flex-shrink: 0;
+}
+.lc-team-name {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.lc-score-block {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  background: rgba(242,27,63,0.08);
+  border: 1px solid rgba(242,27,63,0.2);
+  border-radius: 12px;
+  padding: 6px 14px;
+}
+.lc-score {
+  font-family: 'Russo One', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+.lc-score-sep {
+  font-size: 1rem;
+  color: rgba(242,27,63,0.6);
+  font-weight: 900;
+}
+
 
 /* Live badge — animated pill */
 .live-badge {

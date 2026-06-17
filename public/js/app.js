@@ -501,30 +501,38 @@ async function renderLiveMatches() {
     container.innerHTML = liveMatches.map(m => {
       const matchId = m.id;
       const min = m.minute ? m.minute + "'" : '';
-      return '<div class="match-card live-card" onclick="openRealMatchDetail(\'' + matchId + '\')">' +
-        '<div class="match-card-header">' +
-          '<span class="match-league">' + (m.tournament?.name || 'Match') + '</span>' +
-          '<span class="match-minute live-badge">' + min + '</span>' +
-        '</div>' +
-        '<div class="match-teams">' +
-          '<div class="team-block">' +
-            '<div class="team-badge" style="background:#1a3a5c;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px">' +
-              (m.homeLogo ? '<img src="'+m.homeLogo+'" width="40" height="40" style="border-radius:50%">' : m.homeTeam.substring(0,3).toUpperCase()) +
-            '</div>' +
-            '<span class="team-name">' + m.homeTeam + '</span>' +
-            '<span class="team-score">' + (m.homeScore ?? 0) + '</span>' +
-          '</div>' +
-          '<div class="vs-block">VS</div>' +
-          '<div class="team-block team-block-right">' +
-            '<div class="team-badge" style="background:#3a1a2a;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px">' +
-              (m.awayLogo ? '<img src="'+m.awayLogo+'" width="40" height="40" style="border-radius:50%">' : m.awayTeam.substring(0,3).toUpperCase()) +
-            '</div>' +
-            '<span class="team-name">' + m.awayTeam + '</span>' +
-            '<span class="team-score">' + (m.awayScore ?? 0) + '</span>' +
-          '</div>' +
-        '</div>' +
-      '</div>';
+      const baseName = (m.tournament?.name || 'Match').replace(/\s+\d{4}(\s+\[\d+\])?$/, '').replace(/\s+\[\d+\]$/, '');
+      const hLogoHtml = m.homeLogo
+        ? `<img src="${m.homeLogo}" alt="${m.homeTeam}" class="lc-logo">`
+        : `<div class="lc-logo lc-logo-fb">${m.homeTeam.substring(0,3).toUpperCase()}</div>`;
+      const aLogoHtml = m.awayLogo
+        ? `<img src="${m.awayLogo}" alt="${m.awayTeam}" class="lc-logo">`
+        : `<div class="lc-logo lc-logo-fb">${m.awayTeam.substring(0,3).toUpperCase()}</div>`;
+
+      return `
+        <div class="match-card live-card lc-card" onclick="openRealMatchDetail('${matchId}')">
+          <div class="lc-header">
+            <span class="lc-league">${baseName}</span>
+            <span class="lc-live-badge"><span class="lc-live-dot"></span>LIVE${min ? ' · ' + min : ''}</span>
+          </div>
+          <div class="lc-matchup">
+            <div class="lc-team lc-home">
+              ${hLogoHtml}
+              <span class="lc-team-name">${m.homeTeam}</span>
+            </div>
+            <div class="lc-score-block">
+              <span class="lc-score">${m.homeScore ?? 0}</span>
+              <span class="lc-score-sep">–</span>
+              <span class="lc-score">${m.awayScore ?? 0}</span>
+            </div>
+            <div class="lc-team lc-away">
+              <span class="lc-team-name">${m.awayTeam}</span>
+              ${aLogoHtml}
+            </div>
+          </div>
+        </div>`;
     }).join('');
+
   } catch(e) {
     container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:20px 0;">Failed to load live matches.</div>';
   }
