@@ -159,15 +159,19 @@ export async function POST(req: NextRequest) {
         where: { userId_matchId: { userId: session.user.id, matchId } },
         update: { 
           homeScore, awayScore, firstGoalScorer, 
-          confidence: confidence ?? 50, 
-          isDouble: applyJoker ?? false, 
-          isShield: applyShield ?? false,
+          confidence: confidence ?? 50,
+          // Preserve existing chip if client didn't explicitly send a value.
+          // undefined means "not sent" — fall back to DB value so edits
+          // never silently strip a chip the user already applied.
+          isDouble: applyJoker !== undefined ? applyJoker : (existing?.isDouble ?? false),
+          isShield: applyShield !== undefined ? applyShield : (existing?.isShield ?? false),
           btts: btts ?? null, totalGoals: totalGoals ?? null, 
           updatedAt: new Date() 
         },
         create: { 
           userId: session.user.id, matchId, homeScore, awayScore, firstGoalScorer, 
           confidence: confidence ?? 50, 
+          // New prediction: default chips to false (no existing record to preserve).
           isDouble: applyJoker ?? false, 
           isShield: applyShield ?? false,
           btts: btts ?? null, totalGoals: totalGoals ?? null 

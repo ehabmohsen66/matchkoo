@@ -20,6 +20,7 @@ type Match = {
     firstGoalScorer?: string;
     confidence: number;
     isDouble: boolean;
+    isShield: boolean;
     xpEarned?: number;
   } | null;
 };
@@ -146,6 +147,7 @@ function PredictModal({ match, onClose, onSave }: { match: Match; onClose: () =>
   const [fgs, setFgs] = useState(p?.firstGoalScorer ?? "");
   const [conf, setConf] = useState(p?.confidence ?? 50);
   const [isDouble, setIsDouble] = useState(p?.isDouble ?? false);
+  const [isShield, setIsShield] = useState(p?.isShield ?? false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -154,7 +156,7 @@ function PredictModal({ match, onClose, onSave }: { match: Match; onClose: () =>
     const res = await fetch("/api/predictions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ matchId: match.id, homeScore: home, awayScore: away, firstGoalScorer: fgs, confidence: conf, isDouble }),
+      body: JSON.stringify({ matchId: match.id, homeScore: home, awayScore: away, firstGoalScorer: fgs, confidence: conf, isDouble, isShield }),
     });
     if (res.ok) { onSave(); onClose(); }
     else { const d = await res.json(); setError(d.message || "Failed to save"); }
