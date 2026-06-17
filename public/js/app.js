@@ -704,12 +704,24 @@ async function renderFixturesList() {
         const aLogo = away.logo
           ? '<img src="' + away.logo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
           : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + away.name.substring(0,3).toUpperCase() + '</div>';
+
+        const hLogoMobile = home.logo
+          ? '<img src="' + home.logo + '" alt="' + home.name + '">'
+          : '<div class="fx-logo-fallback" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:rgba(255,255,255,0.5)">' + home.name.substring(0,3).toUpperCase() + '</div>';
+        const aLogoMobile = away.logo
+          ? '<img src="' + away.logo + '" alt="' + away.name + '">'
+          : '<div class="fx-logo-fallback" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:rgba(255,255,255,0.5)">' + away.name.substring(0,3).toUpperCase() + '</div>';
+
+
+        const isLive = m.status === 'LIVE';
         parts.push(
-          '<div class="fixture-row' + (hidden ? ' fx-hidden' : '') + '" ' +
+          '<div class="fixture-row' + (hidden ? ' fx-hidden' : '') + (isLive ? ' fx-live' : '') + '" ' +
             'data-match-id="' + matchId + '" ' +
             'data-day="' + dayLabel.replace(/"/g,'') + '" ' +
             (hidden ? 'style="display:none" ' : '') +
             'onclick="openRealMatchDetail(\'' + matchId + '\')" role="button" tabindex="0">' +
+
+            /* ── DESKTOP layout (hidden on mobile via CSS) ── */
             '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:10px">' + hLogo + aLogo + '</div>' +
             '<div class="fixture-teams" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">' +
               '<div style="min-width:0">' +
@@ -719,11 +731,39 @@ async function renderFixturesList() {
             '</div>' +
             '<div style="display:flex;align-items:center;gap:8px;margin-left:16px">' +
               (hasPred ? '<span style="color:var(--green);font-size:1.1rem;font-weight:900" title="Predicted">&#10003;</span>' : '') +
-              (m.status === 'LIVE' ? '<span class="live-badge" style="color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE</span>' : '') +
-              '<div class="fixture-time live-score-val" style="min-width:110px;text-align:right;' + (m.status === 'LIVE' ? 'color:#f21b3f' : '') + '">' + (m.status === 'LIVE' ? liveScore : timeStr) + '</div>' +
+              (isLive ? '<span class="live-badge" style="color:#f21b3f;font-size:0.65rem;font-weight:800;padding:2px 7px;border-radius:100px;background:rgba(242,27,63,0.15);border:1px solid rgba(242,27,63,0.3)">LIVE</span>' : '') +
+              '<div class="fixture-time live-score-val" style="min-width:110px;text-align:right;' + (isLive ? 'color:#f21b3f' : '') + '">' + (isLive ? liveScore : timeStr) + '</div>' +
             '</div>' +
+
+            /* ── MOBILE layout (hidden on desktop via CSS, shown ≤600px) ── */
+            '<div class="fx-mobile-league">' + baseName + '</div>' +
+            '<div class="fx-mobile-matchup">' +
+              '<div class="fx-mobile-team">' +
+                hLogoMobile +
+                '<span class="fx-team-label">' + home.name + '</span>' +
+              '</div>' +
+              '<div class="fx-mobile-vs">' +
+                (isLive
+                  ? '<span class="fx-live-score">' + (m.homeScore ?? 0) + ' – ' + (m.awayScore ?? 0) + '</span>'
+                  : '<span class="fx-vs-text">VS</span>'
+                ) +
+              '</div>' +
+              '<div class="fx-mobile-team">' +
+                aLogoMobile +
+                '<span class="fx-team-label">' + away.name + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="fx-mobile-footer">' +
+              (hasPred ? '<span class="fx-pred-check">✓</span>' : '') +
+              (isLive
+                ? '<span class="fx-live-badge"><span class="fx-live-dot"></span>LIVE</span>'
+                : '<span class="fx-time">' + timeStr + '</span>'
+              ) +
+            '</div>' +
+
           '</div>'
         );
+
       });
 
       // "Show more" button if day has more than VISIBLE_PER_DAY matches

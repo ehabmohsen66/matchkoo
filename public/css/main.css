@@ -596,6 +596,10 @@ a { text-decoration: none; color: inherit; }
   animation: pulse-live 2s ease-in-out infinite;
 }
 
+/* Mobile-only fixture elements — hidden on desktop */
+.fx-mobile-league, .fx-mobile-matchup, .fx-mobile-footer { display: none; }
+
+
 /* ─── MINI LEADERBOARD ──────────────────────────────────────── */
 .mini-lb-row {
   display: flex;
@@ -2898,4 +2902,156 @@ body[data-role="admin"] .admin-only { display: block !important; }
   .ep-avatar-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .ep-avatar-btn img { width: 48px; height: 48px; }
   .edit-profile-btn { top: 14px; right: 14px; padding: 6px 10px; font-size: 0.72rem; }
+}
+
+/* ─── MOBILE MATCH CARD REDESIGN (≤600px) ─────────────────── */
+@media (max-width: 600px) {
+  .fixtures-list, .fixtures-full-list { gap: 10px; }
+
+  .fixture-row {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+    gap: 0;
+    overflow: hidden;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .fixture-row:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    border-color: rgba(8,189,189,0.25);
+  }
+
+  /* ── top accent line (green normally, red when LIVE) ── */
+  .fixture-row::before {
+    content: '';
+    display: block;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(41,191,18,0.6), transparent);
+    flex-shrink: 0;
+  }
+  .fixture-row.fx-live::before {
+    background: linear-gradient(90deg, transparent, rgba(242,27,63,0.8), transparent);
+  }
+
+  /* ── league label strip ── */
+  .fixture-row .fx-mobile-league {
+    display: block !important;
+    text-align: center;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    padding: 7px 16px 0;
+  }
+
+  /* ── matchup centre ── */
+  .fixture-row .fx-mobile-matchup {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 10px;
+    gap: 8px;
+  }
+
+  /* team column */
+  .fixture-row .fx-mobile-team {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+  .fixture-row .fx-mobile-team img,
+  .fixture-row .fx-mobile-team .fx-logo-fallback {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.12) !important;
+    flex-shrink: 0;
+  }
+  .fixture-row .fx-mobile-team .fx-team-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+  }
+
+  /* VS divider */
+  .fixture-row .fx-mobile-vs {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .fixture-row .fx-mobile-vs .fx-vs-text {
+    font-size: 0.65rem;
+    font-weight: 900;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.05em;
+  }
+  .fixture-row .fx-mobile-vs .fx-live-score {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #f21b3f;
+    font-family: 'Russo One', sans-serif;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── footer strip: time + badges ── */
+  .fixture-row .fx-mobile-footer {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 16px 12px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+  .fixture-row .fx-mobile-footer .fx-time {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.45);
+    font-family: 'Russo One', sans-serif;
+  }
+  .fixture-row .fx-mobile-footer .fx-pred-check {
+    color: #29bf12;
+    font-size: 0.9rem;
+    font-weight: 900;
+  }
+  .fixture-row .fx-mobile-footer .fx-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 100px;
+    background: rgba(242,27,63,0.15);
+    border: 1px solid rgba(242,27,63,0.35);
+    color: #f21b3f;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .fixture-row .fx-mobile-footer .fx-live-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #f21b3f;
+    animation: pulse-live 1.4s ease-in-out infinite;
+  }
+
+  /* hide the old inline desktop sub-elements on mobile */
+  .fixture-row > div:not(.fx-mobile-league):not(.fx-mobile-matchup):not(.fx-mobile-footer) {
+    display: none !important;
+  }
 }
