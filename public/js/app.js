@@ -5921,9 +5921,10 @@ async function selectDemonLeague(leagueId) {
     if (!res.ok) throw new Error('Failed to load league details');
     const data = await res.json();
     
-    const rivals = data.ranking.filter(r => !r.isMe);
+    // Filter out ourselves, and filter out users who already have a Demon penalty in this league
+    const rivals = data.ranking.filter(r => !r.isMe && !r.hasDemonPenalty);
     if (rivals.length === 0) {
-      content.innerHTML = '<button onclick="renderDemonLeagueList()" style="background:none;border:none;color:#1DA1F2;cursor:pointer;margin-bottom:16px;">← Back</button><br><div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5)">No other members in this league.</div>';
+      content.innerHTML = '<button onclick="renderDemonLeagueList()" style="background:none;border:none;color:#1DA1F2;cursor:pointer;margin-bottom:16px;">← Back</button><br><div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5)">No other targetable members in this league.</div>';
       return;
     }
 
