@@ -17,6 +17,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
     }
 
+    if (name.trim().length < 2 || name.trim().length > 35) {
+      return NextResponse.json({ message: "Name must be between 2 and 35 characters" }, { status: 400 });
+    }
+
+    // Allow only letters (including unicode/Arabic), numbers, and spaces
+    const nameRegex = /^[\p{L}\p{N}\s]+$/u;
+    if (!nameRegex.test(name.trim())) {
+      return NextResponse.json(
+        { message: "Name can only contain letters and numbers" },
+        { status: 400 }
+      );
+    }
+
     // ── Invite-only gate ────────────────────────────────────────────────────────
     const inviteOnly = process.env.INVITE_ONLY === "true";
     if (inviteOnly) {

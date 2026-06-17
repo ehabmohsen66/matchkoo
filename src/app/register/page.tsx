@@ -234,7 +234,7 @@ function RegisterForm() {
                 {error && <div style={{ background:"rgba(248,113,113,0.1)", border:"1px solid rgba(248,113,113,0.3)", color:"#F87171", padding:"10px 16px", borderRadius:10, fontSize:"0.9rem" }}>{error}</div>}
 
                 {[
-                  { id:"name",     label:"FULL NAME",     type:"text",     value:name,     set:setName,     placeholder:"Ihab Mohamed",   ac:"name" },
+                  { id:"name",     label:"FULL NAME",     type:"text",     value:name,     set:(val: string) => setName(val.replace(/[^\p{L}\p{N}\s]/gu, '')),     placeholder:"Ihab Mohamed",   ac:"name", maxLength: 35 },
                   { id:"email",    label:"EMAIL ADDRESS", type:"email",    value:email,    set:setEmail,    placeholder:"you@example.com", ac:"email" },
                   { id:"password", label:"PASSWORD",      type:"password", value:password, set:setPassword, placeholder:"••••••••",       ac:"new-password" },
                 ].map(f => (
@@ -242,6 +242,7 @@ function RegisterForm() {
                     <label htmlFor={f.id} style={{ display:"block", fontSize:"0.78rem", fontWeight:700, color:"rgba(255,255,255,0.38)", letterSpacing:"0.09em", marginBottom:7 }}>{f.label}</label>
                     <input id={f.id} type={f.type} required autoComplete={f.ac} value={f.value}
                       onChange={e => f.set(e.target.value)} placeholder={f.placeholder}
+                      maxLength={f.maxLength}
                       style={{ width:"100%", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"12px 14px", color:"#fff", fontSize:"0.92rem", fontFamily:"inherit", boxSizing:"border-box", outline:"none", transition:"border-color 0.2s" }}
                       onFocus={e=>{ e.target.style.borderColor="rgba(111,232,64,0.5)"; }}
                       onBlur={e=>{ e.target.style.borderColor="rgba(255,255,255,0.1)"; }}

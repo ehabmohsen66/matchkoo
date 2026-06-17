@@ -1577,10 +1577,10 @@
       <div style="padding:18px 20px 0;">
         <div style="font-size:0.68rem;font-weight:800;color:rgba(255,255,255,0.35);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Display Name</div>
         <div style="position:relative;">
-          <input type="text" id="ep-name-input" maxlength="40" autocomplete="off" oninput="updateNameCounter()"
-            placeholder="Your display name…"
+          <input type="text" id="ep-name-input" maxlength="35" autocomplete="off" oninput="updateNameCounter()"
+            placeholder="Your display name…" pattern="^[\p{L}\p{N}\s]+$" title="Only letters and numbers are allowed"
             style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px 48px 13px 14px;color:#fff;font-size:0.95rem;font-weight:600;font-family:inherit;outline:none;transition:border-color 0.2s;">
-          <div id="ep-name-counter" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.25);pointer-events:none;">0/40</div>
+          <div id="ep-name-counter" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.25);pointer-events:none;">0/35</div>
         </div>
       </div>
 

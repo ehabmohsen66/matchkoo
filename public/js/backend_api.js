@@ -673,8 +673,11 @@ function updateNameCounter() {
   const counter = document.getElementById('ep-name-counter');
   if (!input || !counter) return;
   const len = input.value.length;
-  counter.textContent = len + '/40';
-  counter.style.color = len > 35 ? '#ff9914' : 'rgba(255,255,255,0.25)';
+  // Use regex to restrict input dynamically to letters, numbers, and spaces
+  input.value = input.value.replace(/[^\p{L}\p{N}\s]/gu, '');
+  const cleanLen = input.value.length;
+  counter.textContent = cleanLen + '/35';
+  counter.style.color = cleanLen > 30 ? '#ff9914' : 'rgba(255,255,255,0.25)';
 }
 
 function selectEditAvatar(btn) {

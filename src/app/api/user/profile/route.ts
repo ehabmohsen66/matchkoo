@@ -15,9 +15,18 @@ export async function PATCH(req: NextRequest) {
 
   // Validate name
   if (name !== undefined) {
-    if (typeof name !== "string" || name.trim().length < 2 || name.trim().length > 40) {
+    if (typeof name !== "string" || name.trim().length < 2 || name.trim().length > 35) {
       return NextResponse.json(
-        { error: "Name must be between 2 and 40 characters" },
+        { error: "Name must be between 2 and 35 characters" },
+        { status: 400 }
+      );
+    }
+    
+    // Allow only letters (including unicode/Arabic), numbers, and spaces
+    const nameRegex = /^[\p{L}\p{N}\s]+$/u;
+    if (!nameRegex.test(name.trim())) {
+      return NextResponse.json(
+        { error: "Name can only contain letters and numbers" },
         { status: 400 }
       );
     }
