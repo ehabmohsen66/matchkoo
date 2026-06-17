@@ -15,13 +15,44 @@ import {
   type ApiFixture,
 } from "@/lib/football-api";
 
-/** XP level thresholds u2014 module-level so POST handler + upsertFixtures both use it */
+/** XP level thresholds — module-level so POST handler + upsertFixtures both use it */
 const LEVELS = [
   { name: "Silver",   threshold: 3000,  next: "Gold" as string | undefined,    nextXp: 10000  as number | undefined },
   { name: "Gold",     threshold: 10000, next: "Platinum" as string | undefined, nextXp: 20000  as number | undefined },
   { name: "Platinum", threshold: 20000, next: "Legend" as string | undefined,   nextXp: 50000  as number | undefined },
   { name: "Legend",   threshold: 50000, next: undefined as string | undefined,  nextXp: undefined as number | undefined },
 ];
+
+/**
+ * Smart name comparison for first goalscorer.
+ * Handles abbreviated names from the API e.g. "H. Kane" vs user-predicted "Harry Kane".
+ * Matches if: exact, same last name, or initial+last matches.
+ */
+function scorerMatch(predicted: string, actual: string): boolean {
+  const p = predicted.trim().toLowerCase();
+  const a = actual.trim().toLowerCase();
+  if (p === a) return true;
+  const pLast = p.split(/\s+/).pop() ?? p;
+  const aLast = a.split(/\s+/).pop() ?? a;
+  if (pLast === aLast) return true;
+  // actual is abbreviated "H. Kane"
+  const aWords = a.split(/\s+/);
+  if (aWords.length >= 2 && aWords[0].endsWith('.')) {
+    const aInitial = aWords[0].charAt(0);
+    const aLastName = aWords[aWords.length - 1];
+    const pWords = p.split(/\s+/);
+    if (pWords.length >= 2 && pWords[0].charAt(0) === aInitial && pWords[pWords.length - 1] === aLastName) return true;
+  }
+  // predicted is abbreviated
+  const pWords = p.split(/\s+/);
+  if (pWords.length >= 2 && pWords[0].endsWith('.')) {
+    const pInitial = pWords[0].charAt(0);
+    const pLastName = pWords[pWords.length - 1];
+    const aWords2 = a.split(/\s+/);
+    if (aWords2.length >= 2 && aWords2[0].charAt(0) === pInitial && aWords2[aWords2.length - 1] === pLastName) return true;
+  }
+  return false;
+}
 
 
 /**
@@ -206,7 +237,7 @@ export async function POST(req: NextRequest) {
             const trueExactScore = pred.homeScore === hs && pred.awayScore === as;
             const exactScore = trueExactScore || (pred.isShield && correctResult);
             const correctScorer = !!pred.firstGoalScorer && !!staleMatch.firstGoalScorer &&
-              pred.firstGoalScorer.trim().toLowerCase() === staleMatch.firstGoalScorer.trim().toLowerCase();
+              scorerMatch(pred.firstGoalScorer, staleMatch.firstGoalScorer);
 
             // Confidence multiplier applies ONLY to match result outcome
             const multiplier = 1 + ((pred.confidence - 50) / 50);
@@ -358,7 +389,7 @@ export async function POST(req: NextRequest) {
           const trueExactScore = pred.homeScore === hs && pred.awayScore === as;
           const exactScore = trueExactScore || (pred.isShield && correctResult);
           const correctScorer = !!pred.firstGoalScorer && !!match.firstGoalScorer &&
-            pred.firstGoalScorer.trim().toLowerCase() === match.firstGoalScorer.trim().toLowerCase();
+            scorerMatch(pred.firstGoalScorer, match.firstGoalScorer);
 
           const multiplier = 1 + ((pred.confidence - 50) / 50);
           let xp = correctResult ? Math.round(50 * multiplier) : 0;
@@ -692,8 +723,7 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
           const trueExactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
           const exactScore    = trueExactScore || (pred.isShield && correctResult);
           const correctScorer = !!pred.firstGoalScorer &&
-            !!derivedScorer &&
-            pred.firstGoalScorer.trim().toLowerCase() === derivedScorer.trim().toLowerCase();
+            !!derivedScorer && scorerMatch(pred.firstGoalScorer, derivedScorer);
 
           const predStatus = correctResult ? "correct" : "wrong";
 

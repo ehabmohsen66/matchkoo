@@ -77,7 +77,34 @@ export async function PATCH(
         (pred.homeScore === pred.awayScore && homeScore === awayScore);
       const trueExactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
       const exactScore = trueExactScore || (pred.isShield && correctResult);
-      const correctFGS = !!(resolvedScorer && pred.firstGoalScorer?.toLowerCase() === resolvedScorer.toLowerCase());
+      // Smart name comparison — handles "H. Kane" vs "Harry Kane" (abbreviated first name)
+      function scorerMatch(predicted: string, actual: string): boolean {
+        const p = predicted.trim().toLowerCase();
+        const a = actual.trim().toLowerCase();
+        if (p === a) return true;
+        // Compare last names
+        const pLast = p.split(/\s+/).pop() ?? p;
+        const aLast = a.split(/\s+/).pop() ?? a;
+        if (pLast === aLast) return true;
+        // Handle "H. Kane" style: first char of first word + last word
+        const aWords = a.split(/\s+/);
+        if (aWords.length >= 2 && aWords[0].endsWith('.')) {
+          const aInitial = aWords[0].charAt(0);
+          const aLastName = aWords[aWords.length - 1];
+          const pWords = p.split(/\s+/);
+          if (pWords.length >= 2 && pWords[0].charAt(0) === aInitial && pWords[pWords.length - 1] === aLastName) return true;
+        }
+        // Reverse: predicted is abbreviated "H. Kane"
+        const pWords = p.split(/\s+/);
+        if (pWords.length >= 2 && pWords[0].endsWith('.')) {
+          const pInitial = pWords[0].charAt(0);
+          const pLastName = pWords[pWords.length - 1];
+          const aWords2 = a.split(/\s+/);
+          if (aWords2.length >= 2 && aWords2[0].charAt(0) === pInitial && aWords2[aWords2.length - 1] === pLastName) return true;
+        }
+        return false;
+      }
+      const correctFGS = !!(resolvedScorer && pred.firstGoalScorer && scorerMatch(pred.firstGoalScorer, resolvedScorer));
 
       // Confidence multiplier applies ONLY to match result outcome
       const multiplier = 1 + ((pred.confidence - 50) / 50);
