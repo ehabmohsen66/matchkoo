@@ -5,7 +5,6 @@ import { authOptions } from "@/lib/auth";
 import * as React from "react";
 import { sendEmail } from "@/lib/email";
 import MatchResultEmail from "@/emails/MatchResultEmail";
-import { calculateXp } from "@/lib/calculate-xp";
 
 /**
  * POST /api/admin/settle-xp
@@ -76,24 +75,45 @@ export async function POST(req: NextRequest) {
     });
 
     for (const pred of unsettledPreds) {
-      // ── 1. Calculate XP using shared canonical formula ───────────────
-      const scoring = calculateXp(
-        {
-          homeScore:       pred.homeScore,
-          awayScore:       pred.awayScore,
-          confidence:      pred.confidence,
-          isShield:        pred.isShield,
-          isDouble:        pred.isDouble,
-          firstGoalScorer: pred.firstGoalScorer ?? null,
-          btts:            pred.btts ?? null,
-          totalGoals:      pred.totalGoals ?? null,
-        },
-        { homeScore, awayScore, firstGoalScorer: match.firstGoalScorer },
-      );
-      const { correctResult, exactScore } = scoring;
-      let xp = scoring.xp;
+      // ── 1. Determine outcome ─────────────────────────────────────────
+      const correctResult =
+        (pred.homeScore > pred.awayScore && homeScore > awayScore) ||
+        (pred.homeScore < pred.awayScore && homeScore < awayScore) ||
+        (pred.homeScore === pred.awayScore && homeScore === awayScore);
+      const trueExactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
+      const exactScore = trueExactScore || (pred.isShield && correctResult);
+      const correctScorer =
+        !!pred.firstGoalScorer &&
+        !!match.firstGoalScorer &&
+        pred.firstGoalScorer.trim().toLowerCase() === match.firstGoalScorer.trim().toLowerCase();
 
-      // ── 2. Streak ────────────────────────────────────────────────────
+      // ── 2. Confidence multiplier: 50%=1.0×, 100%=2.0× ──────────────
+      //       Multiplier applies ONLY to the 50 XP outcome — NOT to bonuses.
+      const multiplier = 1 + ((pred.confidence - 50) / 50);
+      let xp = correctResult ? Math.round(50 * multiplier) : 0;
+
+      // ── 3. Flat bonuses (no confidence multiplier) ───────────────────
+      if (exactScore)    xp += 200;  // exact scoreline: 200 XP flat
+      if (correctScorer) xp += 150;  // first goalscorer: 150 XP flat
+
+      // ── 4. Confidence Penalty ────────────────────────────────────────
+      if (!correctResult) xp -= Math.round(50 * (pred.confidence / 100));
+      if (pred.firstGoalScorer && !correctScorer) xp -= 100;
+
+      // ── 5. BTTS bonus ────────────────────────────────────────────────
+      const actualBtts = homeScore > 0 && awayScore > 0;
+      if (pred.btts !== null && pred.btts !== undefined && pred.btts === actualBtts) xp += 75;
+
+      // ── 6. Total Goals bucket bonus ──────────────────────────────────
+      const actualTotal  = homeScore + awayScore;
+      const actualBucket = actualTotal >= 5 ? 5 : actualTotal;
+      const predBucket   = (pred.totalGoals ?? -1) >= 5 ? 5 : (pred.totalGoals ?? -1);
+      if (pred.totalGoals !== null && pred.totalGoals !== undefined && predBucket === actualBucket) xp += 75;
+
+      // ── 7. Double joker (rewards only) ──────────────────────────────
+      if (pred.isDouble && xp > 0) xp *= 2;
+
+      // ── 8. Streak ────────────────────────────────────────────────────
       const newStreak    = correctResult ? pred.user.streak + 1 : 0;
       const newBest      = Math.max(pred.user.bestStreak, newStreak);
       const newPredCount = pred.user.predictionCount + 1;
@@ -145,7 +165,7 @@ export async function POST(req: NextRequest) {
             xpEarned:       xp,
             newTotalXp:     updatedUser.xp,
             firstGoalScorer: pred.firstGoalScorer ?? undefined,
-            scorerCorrect:   scoring.correctScorer || undefined,
+            scorerCorrect:   correctScorer || undefined,
           }),
         })
           .then(async () => {
