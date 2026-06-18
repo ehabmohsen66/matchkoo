@@ -128,8 +128,15 @@ export async function POST(req: NextRequest) {
           { headers: { "x-apisports-key": process.env.FOOTBALL_API_KEY! } }
         );
         const finishedData = await finishedRes.json();
+        // Exclude fixtures that are still live/in-progress (e.g. HT, BT).
+        // API-Football sometimes drops HT/BT matches from ?live=all temporarily,
+        // which makes the sweep above think they just finished. Re-checking the
+        // status here prevents the XP engine from firing at half-time.
+        const STILL_LIVE_STATUSES = new Set(["1H", "HT", "2H", "ET", "BT", "P", "SUSP", "INT", "LIVE"]);
         const finishedFixtures = (finishedData.response ?? []).filter(
-          (f: any) => ALLOWED_LEAGUES.has(f.league.id)
+          (f: any) =>
+            ALLOWED_LEAGUES.has(f.league.id) &&
+            !STILL_LIVE_STATUSES.has(f.fixture.status.short)
         );
 
         // Merge into the fixtures list so upsertFixtures processes them and
