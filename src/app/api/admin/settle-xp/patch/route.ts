@@ -14,6 +14,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { scorerMatch } from "@/lib/scorer-match";
+import { calculateXp } from "@/lib/calculate-xp";
 
 
 export async function POST(req: NextRequest) {
@@ -70,39 +71,22 @@ export async function POST(req: NextRequest) {
   for (const pred of allPreds) {
     const oldXp = pred.xpEarned ?? 0;
 
-    // ── Recalculate correct XP ─────────────────────────────────────
-    const correctResult =
-      (pred.homeScore > pred.awayScore && homeScore > awayScore) ||
-      (pred.homeScore < pred.awayScore && homeScore < awayScore) ||
-      (pred.homeScore === pred.awayScore && homeScore === awayScore);
-    const trueExactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
-    const exactScore = trueExactScore || (pred.isShield && correctResult);
-    const correctScorer =
-      !!pred.firstGoalScorer &&
-      !!match.firstGoalScorer &&
-      scorerMatch(pred.firstGoalScorer, match.firstGoalScorer);
-
-    // ── Confidence multiplier: 50%=1.0×, 100%=2.0× ─────────────────────
-    //    Multiplier applies ONLY to the 50 XP outcome — NOT to bonuses.
-    const multiplier = 1 + ((pred.confidence - 50) / 50);
-    let xp = correctResult ? Math.round(50 * multiplier) : 0;
-
-    // ── Flat bonuses (no confidence multiplier) ──────────────────────────
-    if (exactScore)    xp += 200;  // exact scoreline: 200 XP flat
-    if (correctScorer) xp += 150;  // first goalscorer: 150 XP flat
-
-    if (!correctResult)  xp -= Math.round(50  * (pred.confidence / 100));
-    if (pred.firstGoalScorer && !correctScorer) xp -= 100;
-
-    const actualBtts = homeScore > 0 && awayScore > 0;
-    if (pred.btts !== null && pred.btts !== undefined && pred.btts === actualBtts) xp += 75;
-
-    const actualTotal  = homeScore + awayScore;
-    const actualBucket = actualTotal >= 5 ? 5 : actualTotal;
-    const predBucket   = (pred.totalGoals ?? -1) >= 5 ? 5 : (pred.totalGoals ?? -1);
-    if (pred.totalGoals !== null && pred.totalGoals !== undefined && predBucket === actualBucket) xp += 75;
-
-    if (pred.isDouble && xp > 0) xp *= 2;
+    // ── Recalculate XP using shared canonical formula ────────────────────
+    const scoring = calculateXp(
+      {
+        homeScore:       pred.homeScore,
+        awayScore:       pred.awayScore,
+        confidence:      pred.confidence,
+        isShield:        pred.isShield,
+        isDouble:        pred.isDouble,
+        firstGoalScorer: pred.firstGoalScorer ?? null,
+        btts:            pred.btts ?? null,
+        totalGoals:      pred.totalGoals ?? null,
+      },
+      { homeScore, awayScore, firstGoalScorer: match.firstGoalScorer },
+    );
+    const { correctResult } = scoring;
+    const xp = scoring.xp;
 
     const xpDelta = xp - oldXp;
 

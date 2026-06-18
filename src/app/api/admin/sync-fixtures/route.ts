@@ -15,6 +15,7 @@ import {
   type ApiFixture,
 } from "@/lib/football-api";
 import { scorerMatch } from "@/lib/scorer-match";
+import { calculateXp } from "@/lib/calculate-xp";
 
 /** XP level thresholds — module-level so POST handler + upsertFixtures both use it */
 const LEVELS = [
@@ -207,37 +208,22 @@ export async function POST(req: NextRequest) {
           });
           for (const pred of unsettledPreds) {
             const hs = staleMatch.homeScore!, as = staleMatch.awayScore!;
-            const correctResult =
-              (pred.homeScore > pred.awayScore && hs > as) ||
-              (pred.homeScore < pred.awayScore && hs < as) ||
-              (pred.homeScore === pred.awayScore && hs === as);
-            const trueExactScore = pred.homeScore === hs && pred.awayScore === as;
-            const exactScore = trueExactScore || (pred.isShield && correctResult);
-            const correctScorer = !!pred.firstGoalScorer && !!staleMatch.firstGoalScorer &&
-              scorerMatch(pred.firstGoalScorer, staleMatch.firstGoalScorer);
-
-            // Confidence multiplier applies ONLY to match result outcome
-            const multiplier = 1 + ((pred.confidence - 50) / 50);
-            let xp = correctResult ? Math.round(50 * multiplier) : 0;
-            if (exactScore)    xp += 200;  // flat, no multiplier
-            if (correctScorer) xp += 150;  // flat, no multiplier
-
-            // Confidence Penalty
-            if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));
-            if (pred.firstGoalScorer && !correctScorer) xp -= 100;
-
-            // BTTS bonus — 75 XP flat
-            const actualBtts2 = hs > 0 && as > 0;
-            if (pred.btts !== null && pred.btts !== undefined && pred.btts === actualBtts2) xp += 75;
-
-            // Total Goals bucket bonus — 75 XP flat
-            const actualTotal2  = hs + as;
-            const actualBucket2 = actualTotal2 >= 5 ? 5 : actualTotal2;
-            const predBucket2   = (pred.totalGoals ?? -1) >= 5 ? 5 : (pred.totalGoals ?? -1);
-            if (pred.totalGoals !== null && pred.totalGoals !== undefined && predBucket2 === actualBucket2) xp += 75;
-
-            // Double joker applies to rewards only, not penalties
-            if (pred.isDouble && xp > 0) xp *= 2;
+            // ── Calculate XP using shared canonical formula ──────────────────
+            const scoring = calculateXp(
+              {
+                homeScore:       pred.homeScore,
+                awayScore:       pred.awayScore,
+                confidence:      pred.confidence,
+                isShield:        pred.isShield,
+                isDouble:        pred.isDouble,
+                firstGoalScorer: pred.firstGoalScorer ?? null,
+                btts:            pred.btts ?? null,
+                totalGoals:      pred.totalGoals ?? null,
+              },
+              { homeScore: hs, awayScore: as, firstGoalScorer: staleMatch.firstGoalScorer },
+            );
+            const { correctResult, exactScore } = scoring;
+            let xp = scoring.xp;
 
             const newStreak = correctResult ? pred.user.streak + 1 : 0;
             const newBest   = Math.max(pred.user.bestStreak, newStreak);
@@ -359,29 +345,22 @@ export async function POST(req: NextRequest) {
         console.log(`[unsettled-sweep] Settling ${unsettled.length} predictions for ${match.homeTeam} ${hs}–${as} ${match.awayTeam}`);
 
         for (const pred of unsettled) {
-          const correctResult =
-            (pred.homeScore > pred.awayScore && hs > as) ||
-            (pred.homeScore < pred.awayScore && hs < as) ||
-            (pred.homeScore === pred.awayScore && hs === as);
-          const trueExactScore = pred.homeScore === hs && pred.awayScore === as;
-          const exactScore = trueExactScore || (pred.isShield && correctResult);
-          const correctScorer = !!pred.firstGoalScorer && !!match.firstGoalScorer &&
-            scorerMatch(pred.firstGoalScorer, match.firstGoalScorer);
-
-          const multiplier = 1 + ((pred.confidence - 50) / 50);
-          let xp = correctResult ? Math.round(50 * multiplier) : 0;
-          if (exactScore)    xp += 200;
-          if (correctScorer) xp += 150;
-          if (!correctResult) xp -= Math.round(50 * (pred.confidence / 100));
-          if (pred.firstGoalScorer && !correctScorer) xp -= 100;
-
-          const actualBtts = hs > 0 && as > 0;
-          if (pred.btts !== null && pred.btts !== undefined && pred.btts === actualBtts) xp += 75;
-          const actualTotal = hs + as;
-          const actualBucket = actualTotal >= 5 ? 5 : actualTotal;
-          const predBucket = (pred.totalGoals ?? -1) >= 5 ? 5 : (pred.totalGoals ?? -1);
-          if (pred.totalGoals !== null && pred.totalGoals !== undefined && predBucket === actualBucket) xp += 75;
-          if (pred.isDouble && xp > 0) xp *= 2;
+          // ── Calculate XP using shared canonical formula ──────────────────
+          const scoring = calculateXp(
+            {
+              homeScore:       pred.homeScore,
+              awayScore:       pred.awayScore,
+              confidence:      pred.confidence,
+              isShield:        pred.isShield,
+              isDouble:        pred.isDouble,
+              firstGoalScorer: pred.firstGoalScorer ?? null,
+              btts:            pred.btts ?? null,
+              totalGoals:      pred.totalGoals ?? null,
+            },
+            { homeScore: hs, awayScore: as, firstGoalScorer: match.firstGoalScorer },
+          );
+          const { correctResult, exactScore } = scoring;
+          let xp = scoring.xp;
 
           const newStreak = correctResult ? pred.user.streak + 1 : 0;
           const newBest   = Math.max(pred.user.bestStreak, newStreak);
@@ -692,44 +671,23 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
         });
 
         for (const pred of predictions) {
-// ── 1. Determine outcome ─────────────────────────────────────────
-          const correctResult =
-            (pred.homeScore > pred.awayScore  && homeScore > awayScore)  ||
-            (pred.homeScore < pred.awayScore  && homeScore < awayScore)  ||
-            (pred.homeScore === pred.awayScore && homeScore === awayScore);
-          const trueExactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
-          const exactScore    = trueExactScore || (pred.isShield && correctResult);
-          const correctScorer = !!pred.firstGoalScorer &&
-            !!derivedScorer && scorerMatch(pred.firstGoalScorer, derivedScorer);
-
+          // ── 1. Calculate XP using shared canonical formula ────────────────
+          const scoring = calculateXp(
+            {
+              homeScore:       pred.homeScore,
+              awayScore:       pred.awayScore,
+              confidence:      pred.confidence,
+              isShield:        pred.isShield,
+              isDouble:        pred.isDouble,
+              firstGoalScorer: pred.firstGoalScorer ?? null,
+              btts:            pred.btts ?? null,
+              totalGoals:      pred.totalGoals ?? null,
+            },
+            { homeScore, awayScore, firstGoalScorer: derivedScorer },
+          );
+          const { correctResult, exactScore } = scoring;
           const predStatus = correctResult ? "correct" : "wrong";
-
-          // ── 2. BTTS (Both Teams to Score) — 75 XP flat, no confidence multiplier ─
-          const actualBtts = homeScore > 0 && awayScore > 0;
-          const correctBtts = pred.btts !== null && pred.btts !== undefined && pred.btts === actualBtts;
-
-          // ── 3. Total Goals bucket — 75 XP flat ───────────────────────────────
-          const actualTotal = homeScore + awayScore;
-          const actualBucket = actualTotal >= 5 ? 5 : actualTotal; // 5+ bucket = 5
-          const predBucket   = (pred.totalGoals ?? -1) >= 5 ? 5 : (pred.totalGoals ?? -1);
-          const correctTotalGoals = pred.totalGoals !== null && pred.totalGoals !== undefined && predBucket === actualBucket;
-
-          // ── 4. Confidence multiplier applies ONLY to match result outcome ──────
-          const multiplier = 1 + ((pred.confidence - 50) / 50);
-          let xp = correctResult ? Math.round(50 * multiplier) : 0;
-          if (exactScore)        xp += 200;  // flat, no multiplier
-          if (correctScorer)     xp += 150;  // flat, no multiplier
-
-          // ── 6. Confidence Penalty (Risk vs Reward) ───────────────────────────
-          if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));
-          if (pred.firstGoalScorer && !correctScorer) xp -= 100;
-
-          // ── 7. Bonus predictions (flat, no confidence multiplier/penalty) ────
-          if (correctBtts)       xp += 75;
-          if (correctTotalGoals) xp += 75;
-
-          // ── 8. Double marker (rewards only, never amplifies penalties) ────────
-          if (pred.isDouble && xp > 0) xp *= 2;
+          let xp = scoring.xp;
 
           // ── 9. Streak update ─────────────────────────────────────────────────
           const newStreak    = correctResult ? pred.user.streak + 1 : 0;

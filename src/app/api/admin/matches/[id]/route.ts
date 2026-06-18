@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth";
 import * as React from "react";
 import { sendEmail } from "@/lib/email";
 import MatchResultEmail from "@/emails/MatchResultEmail";
-import { scorerMatch } from "@/lib/scorer-match";
+import { calculateXp } from "@/lib/calculate-xp";
 
 // PATCH /api/admin/matches/[id] — set result and trigger XP calculation
 export async function PATCH(
@@ -71,42 +71,28 @@ export async function PATCH(
     });
 
     for (const pred of predictions) {
-      let xp = 0;
-      const correctResult =
-        (pred.homeScore > pred.awayScore && homeScore > awayScore) ||
-        (pred.homeScore < pred.awayScore && homeScore < awayScore) ||
-        (pred.homeScore === pred.awayScore && homeScore === awayScore);
-      const trueExactScore = pred.homeScore === homeScore && pred.awayScore === awayScore;
-      const exactScore = trueExactScore || (pred.isShield && correctResult);
-      const correctFGS = !!(resolvedScorer && pred.firstGoalScorer && scorerMatch(pred.firstGoalScorer, resolvedScorer));
-
-      // Confidence multiplier applies ONLY to match result outcome
-      const multiplier = 1 + ((pred.confidence - 50) / 50);
-      xp = correctResult ? Math.round(50 * multiplier) : 0;
-      if (exactScore) xp += 200;  // flat, no multiplier
-      if (correctFGS) xp += 150;  // flat, no multiplier
-
-      // Confidence Penalty (Risk vs Reward)
-      if (!correctResult) xp -= Math.round(50  * (pred.confidence / 100));
-      if (pred.firstGoalScorer && !correctFGS) xp -= 100;
-
-      // BTTS bonus — 75 XP flat (no confidence multiplier)
-      const actualBtts = homeScore > 0 && awayScore > 0;
-      if (pred.btts !== null && pred.btts !== undefined && pred.btts === actualBtts) xp += 75;
-
-      // Total Goals bucket bonus — 75 XP flat
-      const actualTotal  = homeScore + awayScore;
-      const actualBucket = actualTotal >= 5 ? 5 : actualTotal;
-      const predBucket   = (pred.totalGoals ?? -1) >= 5 ? 5 : (pred.totalGoals ?? -1);
-      if (pred.totalGoals !== null && pred.totalGoals !== undefined && predBucket === actualBucket) xp += 75;
-
-      // Double joker: rewards only, not penalties
-      if (pred.isDouble && xp > 0) xp *= 2;
+      const scoring = calculateXp(
+        {
+          homeScore:       pred.homeScore,
+          awayScore:       pred.awayScore,
+          confidence:      pred.confidence,
+          isShield:        pred.isShield,
+          isDouble:        pred.isDouble,
+          firstGoalScorer: pred.firstGoalScorer ?? null,
+          btts:            pred.btts ?? null,
+          totalGoals:      pred.totalGoals ?? null,
+        },
+        { homeScore, awayScore, firstGoalScorer: resolvedScorer },
+      );
+      const { xp, correctResult, exactScore } = scoring;
 
       // Streak
       const newStreak = correctResult ? (pred.user as any).streak + 1 : 0;
 
-      await prisma.prediction.update({ where: { id: pred.id }, data: { xpEarned: xp, status: correctResult ? "correct" : "wrong" } });
+      await prisma.prediction.update({
+        where: { id: pred.id },
+        data: { xpEarned: xp, status: correctResult ? "correct" : "wrong" },
+      });
 
       // Update user total XP + stats
       const updatedUser = await prisma.user.update({
@@ -120,8 +106,6 @@ export async function PATCH(
         },
         select: { xp: true },
       });
-
-      const newTotalXp = updatedUser.xp;
 
       // Send match result email — log failures instead of swallowing them
       if (pred.user.email) {
@@ -143,7 +127,7 @@ export async function PATCH(
             xpEarned:       xp,
             newTotalXp:     updatedUser.xp,
             firstGoalScorer: pred.firstGoalScorer ?? undefined,
-            scorerCorrect:   correctFGS || undefined,
+            scorerCorrect:   scoring.correctScorer || undefined,
           }),
         }).catch((err) => console.error(`[email] Failed to send result email to ${pred.user.email}:`, err));
       }
