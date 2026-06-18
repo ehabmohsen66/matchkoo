@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
     // ── Update prediction ─────────────────────────────────────────
     await prisma.prediction.update({
       where: { id: pred.id },
-      data: { xpEarned: xp, status: correctResult ? "correct" : "wrong" },
+      data: { xpEarned: xp, status: correctResult ? "correct" : "wrong", emailSent: false },
     });
 
     // ── Apply XP delta to user (revert old, add new) ──────────────

@@ -145,11 +145,11 @@ export async function POST(req: NextRequest) {
       }
       // ─────────────────────────────────────────────────────────────────────
     } else if (mode === "fix-stale") {
-      // Find all matches stuck in LIVE or UPCOMING past their match date
+      // Find all matches stuck in LIVE or UPCOMING past their match date (older than 6 hours)
       const stale = await prisma.match.findMany({
         where: {
           status: { in: ["LIVE", "UPCOMING"] },
-          matchDate: { lt: new Date(new Date().setHours(0, 0, 0, 0)) }, // before today midnight
+          matchDate: { lt: new Date(Date.now() - 6 * 60 * 60 * 1000) }, // more than 6 hours ago
           externalId: { startsWith: "apif-" },
         },
         select: { id: true, externalId: true },
@@ -179,13 +179,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Always close stale LIVE/UPCOMING from previous days on any sync mode
+    // Always close stale LIVE/UPCOMING from previous days on any sync mode (older than 6 hours)
     // AND run the XP+email engine for any predictions on those matches
     if (["today", "week", "month", "update-live"].includes(mode)) {
       const staleMatches = await prisma.match.findMany({
         where: {
           status: { in: ["LIVE", "UPCOMING"] },
-          matchDate: { lt: new Date(new Date().setHours(0, 0, 0, 0)) },
+          matchDate: { lt: new Date(Date.now() - 6 * 60 * 60 * 1000) },
         },
         select: { id: true, homeTeam: true, awayTeam: true, homeScore: true, awayScore: true, firstGoalScorer: true },
       });
