@@ -1663,6 +1663,25 @@ async function renderPredictions(filter) {
   applyLocalPredFilter(filter);
 }
 
+/**
+ * Smart first goalscorer name comparison — mirrors src/lib/scorer-match.ts.
+ * Handles abbreviated API names like "L. Messi" matching "Lionel Messi".
+ */
+function _scorerMatch(predicted, actual) {
+  if (!predicted || !actual) return false;
+  const p = predicted.trim().toLowerCase();
+  const a = actual.trim().toLowerCase();
+  if (p === a) return true;
+  function _abbr(full, abbr) {
+    const aw = abbr.split(/\s+/);
+    if (aw.length < 2 || !aw[0].endsWith('.')) return false;
+    const fw = full.split(/\s+/);
+    if (fw.length < 2) return false;
+    return fw[0].charAt(0) === aw[0].charAt(0) && fw[fw.length - 1] === aw[aw.length - 1];
+  }
+  return _abbr(p, a) || _abbr(a, p);
+}
+
 /** Generate a beautiful, rich XP breakdown HTML for a completed prediction in a pop-up modal */
 function _getScoringBreakdownHtml(pred) {
   const p = pred._raw;
@@ -1683,7 +1702,7 @@ function _getScoringBreakdownHtml(pred) {
   const predBucket   = (p.totalGoals ?? -1) >= 5 ? 5 : (p.totalGoals ?? -1);
   const correctTotalGoals = p.totalGoals !== null && p.totalGoals !== undefined && predBucket === actualBucket;
   const correctFGS   = !!(p.firstGoalScorer && p.match.firstGoalScorer &&
-    p.firstGoalScorer.trim().toLowerCase() === p.match.firstGoalScorer.trim().toLowerCase());
+    _scorerMatch(p.firstGoalScorer, p.match.firstGoalScorer));
 
   const conf = p.confidence || 50;
   const multiplier = 1 + ((conf - 50) / 50);
@@ -1699,8 +1718,7 @@ function _getScoringBreakdownHtml(pred) {
   xp += bttsBonus + tgBonus;
   const beforeDouble = xp;
   if (p.isDouble && xp > 0) xp *= 2;
-  const storedXp = p.xpEarned ?? null;
-  const displayXp = xp;
+
 
   const tick  = s => `<span style="color:#4ade80;font-weight:800">${s}</span>`;
   const cross = s => `<span style="color:#f87171;font-weight:800">${s}</span>`;
@@ -1800,15 +1818,9 @@ function _getScoringBreakdownHtml(pred) {
 
 
       <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 0;margin-top:8px;border-top:1px solid rgba(255,255,255,0.12);">
-        <span style="font-size:0.9rem;font-weight:800;color:#fff;">Net Score (current rules)</span>
-        <span style="font-size:1.15rem;font-weight:900;color:${displayXp >= 0 ? '#4ade80' : '#f87171'}">${displayXp >= 0 ? '+' : ''}${displayXp} XP</span>
+        <span style="font-size:0.9rem;font-weight:800;color:#fff;">Net Score</span>
+        <span style="font-size:1.15rem;font-weight:900;color:${xp >= 0 ? '#4ade80' : '#f87171'}">${xp >= 0 ? '+' : ''}${xp} XP</span>
       </div>
-      
-      ${storedXp !== null && storedXp !== displayXp ? `
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 0;font-size:0.75rem;border-top:1px dashed rgba(255,255,255,0.08);margin-top:6px;">
-        <span style="color:rgba(255,180,0,0.75);">⚠️ Account Credited</span>
-        <span style="color:rgba(255,180,0,0.9);font-weight:800;">${storedXp >= 0 ? '+' : ''}${storedXp} XP (old rules)</span>
-      </div>` : ''}
     </div>
   `;
 }
@@ -3125,7 +3137,7 @@ async function initPublicProfile() {
           if (!correctResult) calcXp -= Math.round(50 * (conf / 100));
           if (pred.firstGoalScorer) {
             const fgsMatch = pred.match.firstGoalScorer &&
-              pred.firstGoalScorer.trim().toLowerCase() === pred.match.firstGoalScorer.trim().toLowerCase();
+              _scorerMatch(pred.firstGoalScorer, pred.match.firstGoalScorer);
             if (fgsMatch) calcXp += 150;
             else calcXp -= 100;
           }
