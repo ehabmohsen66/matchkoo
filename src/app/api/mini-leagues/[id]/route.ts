@@ -101,7 +101,7 @@ export async function GET(
         matchId: { in: allCompMatchIds },
         xpEarned: { not: null },
       },
-      _sum: { xpEarned: true },
+      _sum: { xpEarned: true, streakBonusXp: true },
       orderBy: { _sum: { xpEarned: "desc" } },
     });
 
@@ -126,7 +126,9 @@ export async function GET(
         const pred = predRows.find((r) => r.userId === uid);
         const user = memberMap[uid];
         const penalty = demonMap[uid] || 0;
-        const totalXp = (pred?._sum?.xpEarned ?? 0) - penalty;
+        // Exclude streak milestone bonuses — mini-league standings reward only match XP
+        const matchXp = (pred?._sum?.xpEarned ?? 0) - (pred?._sum?.streakBonusXp ?? 0);
+        const totalXp = matchXp - penalty;
         
         return {
           userId: uid,

@@ -130,7 +130,8 @@ model Prediction {
   isShield        Boolean @default(false) // scoreline shield
   btts            Boolean?              // both teams to score
   totalGoals      Int?                  // predicted total goals in match
-  xpEarned        Int?    // populated after match result
+  xpEarned        Int?    // populated after match result (match XP + streak bonus)
+  streakBonusXp   Int     @default(0) // streak milestone bonus portion of xpEarned (excluded from mini-league rankings)
   status          String? // "pending" | "correct" | "wrong"
   emailSent       Boolean @default(false) // result email dispatched
 

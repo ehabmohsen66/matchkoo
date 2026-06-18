@@ -253,7 +253,7 @@ export async function POST(req: NextRequest) {
 
             await prisma.prediction.update({
               where: { id: pred.id },
-              data: { xpEarned: xp, status: correctResult ? "correct" : "wrong" },
+              data: { xpEarned: xp, streakBonusXp: streakBonus, status: correctResult ? "correct" : "wrong" },
             });
             const oldXp = pred.user.xp ?? 0;
             const updatedUser = await prisma.user.update({
@@ -397,7 +397,7 @@ export async function POST(req: NextRequest) {
 
           await prisma.prediction.update({
             where: { id: pred.id },
-            data: { xpEarned: xp, status: correctResult ? "correct" : "wrong" },
+            data: { xpEarned: xp, streakBonusXp: streakBonus, status: correctResult ? "correct" : "wrong" },
           });
 
           const oldXp = pred.user.xp ?? 0;
@@ -749,7 +749,7 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
           // ── 6. Persist prediction ────────────────────────────────────────
           await prisma.prediction.update({
             where: { id: pred.id },
-            data:  { xpEarned: xp, status: predStatus },
+            data:  { xpEarned: xp, streakBonusXp: streakBonus, status: predStatus },
           });
 
           // ── 7. Persist user XP + stats ───────────────────────────────────
