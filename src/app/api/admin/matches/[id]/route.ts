@@ -106,7 +106,16 @@ export async function PATCH(
       // Streak
       const newStreak = correctResult ? (pred.user as any).streak + 1 : 0;
 
-      await prisma.prediction.update({ where: { id: pred.id }, data: { xpEarned: xp, status: correctResult ? "correct" : "wrong" } });
+      // Streak bonus XP (milestone: 3, 5, 10 in a row)
+      let streakBonus = 0;
+      if (correctResult) {
+        if (newStreak === 10) streakBonus = 500;
+        else if (newStreak === 5) streakBonus = 150;
+        else if (newStreak === 3) streakBonus = 50;
+      }
+      xp += streakBonus;
+
+      await prisma.prediction.update({ where: { id: pred.id }, data: { xpEarned: xp, streakBonusXp: streakBonus, status: correctResult ? "correct" : "wrong" } });
 
       // Update user total XP + stats
       const updatedUser = await prisma.user.update({

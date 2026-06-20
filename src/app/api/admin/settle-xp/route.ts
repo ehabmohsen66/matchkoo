@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
       // ── 9. Persist ───────────────────────────────────────────────────
       await prisma.prediction.update({
         where: { id: pred.id },
-        data:  { xpEarned: xp, status: correctResult ? "correct" : "wrong" },
+        data:  { xpEarned: xp, streakBonusXp: streakBonus, status: correctResult ? "correct" : "wrong" },
       });
 
       const updatedUser = await prisma.user.update({
