@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { normaliseName } from "@/lib/ranking";
 
 // GET /api/predictions/stats — accuracy, correct/wrong counts for current user
 export async function GET() {
@@ -49,6 +50,37 @@ export async function GET() {
   const total = correct + wrong; // resolved picks only
   const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
 
-  return NextResponse.json({ total, correct, wrong, allPredictions, accuracy });
+  // Fetch unique leagues predicted in
+  const allUserPredictions = await prisma.prediction.findMany({
+    where: { userId },
+    select: {
+      match: {
+        select: {
+          tournament: {
+            select: {
+              name: true
+            }
+          }
+        }
+      }
+    }
+  });
+
+  const uniqueLeagues = new Set<string>();
+  for (const p of allUserPredictions) {
+    if (p.match?.tournament?.name) {
+      uniqueLeagues.add(normaliseName(p.match.tournament.name));
+    }
+  }
+  const uniqueLeaguesCount = uniqueLeagues.size;
+
+  return NextResponse.json({
+    total,
+    correct,
+    wrong,
+    allPredictions,
+    accuracy,
+    uniqueLeaguesCount
+  });
 }
 

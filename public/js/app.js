@@ -3347,6 +3347,7 @@ function renderTrophies(user, stats, globalRank) {
   const xp = user?.xp || 0;
   const bestStreak = user?.bestStreak || 0;
   const correctCount = stats?.correct || 0;
+  const uniqueLeaguesCount = stats?.uniqueLeaguesCount || 0;
   const isTop100 = globalRank !== null && globalRank <= 100;
 
   const myTrophies = [
@@ -3355,7 +3356,7 @@ function renderTrophies(user, stats, globalRank) {
     { id: 't3', icon: '🔥', name: 'On Fire', desc: '7-game streak', unlocked: bestStreak >= 7 },
     { id: 't4', icon: '🚀', name: 'Rocket', desc: 'Reach Gold level', unlocked: xp >= 10000 },
     { id: 't5', icon: '👑', name: 'King', desc: 'Win a mini league', unlocked: false }, // Placeholder until mini league wins are tracked
-    { id: 't6', icon: '🌍', name: 'Globetrotter', desc: 'Predict in 5 leagues', unlocked: correctCount >= 15 }, // Fallback heuristic
+    { id: 't6', icon: '🌍', name: 'Globetrotter', desc: 'Predict in 5 leagues', unlocked: uniqueLeaguesCount >= 5 },
     { id: 't7', icon: '💯', name: 'Century', desc: '100 correct predictions', unlocked: correctCount >= 100 },
     { id: 't8', icon: '🏆', name: 'Champion', desc: 'Top 100 Global', unlocked: isTop100 },
     { id: 't9', icon: '💎', name: 'Diamond', desc: 'Reach Platinum level', unlocked: xp >= 20000 },
