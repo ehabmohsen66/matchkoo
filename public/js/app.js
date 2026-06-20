@@ -1634,6 +1634,7 @@ async function renderPredictions(filter) {
       }
       if (p.firstGoalScorer) picks.push('🥅 1st: ' + p.firstGoalScorer);
       if (p.isDouble) picks.push('🃏 Double');
+      if (p.isShield) picks.push('🛡️ Shield');
       if (p.confidence && p.confidence !== 50) picks.push('📊 Conf: ' + p.confidence + '%');
 
       // XP display — split base XP from streak bonus
