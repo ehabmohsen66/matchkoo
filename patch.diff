@@ -1,0 +1,28 @@
+--- legacy_html/js/app.js
++++ legacy_html/js/app.js
+@@ -136,7 +136,7 @@
+   container.innerHTML = DATA.friendsLeaderboard.map(u => {
+     const rankClass = u.rank === 1 ? 'gold-rank' : u.rank === 2 ? 'silver-rank' : u.rank === 3 ? 'bronze-rank' : u.isYou ? 'you-rank' : '';
+     return `
+-      <div class="mini-lb-row ${u.isYou ? 'you-row' : ''}" role="row">
++      <div class="mini-lb-row ${u.isYou ? 'you-row' : ''}" role="row" style="cursor:pointer;transition:background 0.15s;" onclick="goToProfile('${u.seed}')" onmouseenter="this.style.background='rgba(60,184,46,0.06)'" onmouseleave="this.style.background=''">
+         <div class="lb-rank ${rankClass}">${u.rank === 1 ? '🥇' : u.rank === 2 ? '🥈' : u.rank === 3 ? '🥉' : '#'+u.rank}</div>
+         <div class="lb-avatar">
+           <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${u.seed}" alt="${u.name}" width="36" height="36">
+@@ -370,6 +370,8 @@
+     if (nameEl) nameEl.textContent = u.name;
+     if (xpEl)   xpEl.textContent  = u.xp + ' XP';
+     if (imgEl && u.seed) { imgEl.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.seed}`; imgEl.alt = u.name; }
++    card.style.cursor = 'pointer';
++    card.onclick = () => goToProfile(u.seed);
+   });
+ 
+   container.innerHTML = entries.slice(3).map((u, i) => {
+@@ -377,7 +379,7 @@
+     return `
+-      <div class="mini-lb-row ${u.isYou ? 'you-row' : ''}" role="row">
++      <div class="mini-lb-row ${u.isYou ? 'you-row' : ''}" role="row" style="cursor:pointer;transition:background 0.15s;" onclick="goToProfile('${u.seed}')" onmouseenter="this.style.background='rgba(60,184,46,0.06)'" onmouseleave="this.style.background=''">
+         <div class="lb-rank" style="color: var(--text-muted)">#${displayRank}</div>
+         <div class="lb-avatar">
+           <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${u.seed}" alt="${u.name}" width="36" height="36">
+           <div class="level-badge-sm ${u.level}">${u.level[0].toUpperCase()}</div>

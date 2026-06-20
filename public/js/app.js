@@ -1627,9 +1627,14 @@ async function renderPredictions(filter) {
 
       // Build picks display
       const picks = [p.homeScore + '–' + p.awayScore];
-      if (p.firstGoalScorer) picks.push('⚽ First: ' + p.firstGoalScorer);
+      if (p.btts !== null && p.btts !== undefined) picks.push('🔵 BTTS: ' + (p.btts ? 'Yes' : 'No'));
+      if (p.totalGoals !== null && p.totalGoals !== undefined) {
+        const tgLabel = p.totalGoals >= 5 ? '5+' : String(p.totalGoals);
+        picks.push('⚽ Goals: ' + tgLabel);
+      }
+      if (p.firstGoalScorer) picks.push('🥅 1st: ' + p.firstGoalScorer);
       if (p.isDouble) picks.push('🃏 Double');
-      if (p.confidence && p.confidence !== 50) picks.push('Conf: ' + p.confidence + '%');
+      if (p.confidence && p.confidence !== 50) picks.push('📊 Conf: ' + p.confidence + '%');
 
       // XP display — split base XP from streak bonus
       let xpDisplay = 'Pending';
