@@ -71,6 +71,11 @@ function navigate(page, skipHistory = false) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
 
+  // Reset mini league context if navigating away from mini league and its child pages
+  if (page !== 'public-profile' && page !== 'minileague') {
+    state._inMiniLeague = false;
+  }
+
   // Show target page
   const target = document.getElementById(`page-${page}`);
   if (target) {

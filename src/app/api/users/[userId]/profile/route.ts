@@ -49,6 +49,7 @@ export async function GET(
         awayScore: true,
         firstGoalScorer: true,
         xpEarned: true,
+        streakBonusXp: true,
         isDouble: true,
         isShield: true,
         btts: true,
