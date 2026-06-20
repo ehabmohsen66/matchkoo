@@ -2,25 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-
-export const dynamic = 'force-dynamic';
-
-// Competition key → canonical tournament name suffix for matching
-const COMP_TO_LEAGUE: Record<string, string[]> = {
-  premier_league:          ["english premier league", "premier league"],
-  la_liga:                 ["la liga"],
-  champions_league:        ["uefa champions league", "champions league"],
-  egyptian_premier_league: ["egyptian premier league"],
-  world_cup:               ["fifa world cup", "world cup"],
-};
-
-function normaliseName(raw: string): string {
-  return (raw || "")
-    .toLowerCase()
-    .replace(/\s+\d{4}(\s+\[\d+\])?$/, "")
-    .replace(/\s+\[\d+\]$/, "")
-    .trim();
-}
+import { getMiniLeagueRanking, COMP_TO_LEAGUE, normaliseName } from "@/lib/ranking";
 
 export async function GET(
   req: NextRequest,
@@ -81,68 +63,10 @@ export async function GET(
 
 
 
-    // Also include completed matches for scoring.
-    // Use the same normalised-name filter as fixtures (raw DB `in` won't match
-    // names like "UEFA Champions League 2025 [2]").
-    const allTournamentMatches = await prisma.match.findMany({
-      where: { status: { in: ["UPCOMING", "LIVE", "COMPLETED"] } },
-      include: { tournament: { select: { name: true } } },
-    });
-    const allCompMatchIds = allTournamentMatches
-      .filter((m) => validNames.includes(normaliseName(m.tournament.name)))
-      .map((m) => m.id);
-
-
-    const memberIds = league.registrations.map((r) => r.userId);
-
-    // Get predictions for each member on this competition's matches
-    const predRows = await prisma.prediction.groupBy({
-      by: ["userId"],
-      where: {
-        userId: { in: memberIds },
-        matchId: { in: allCompMatchIds },
-        xpEarned: { not: null },
-      },
-      _sum: { xpEarned: true, streakBonusXp: true },
-      orderBy: { _sum: { xpEarned: "desc" } },
-    });
-
-    // Build ranking with member info
-    const memberMap = Object.fromEntries(
-      league.registrations.map((r) => [r.userId, r.user])
-    );
-
-    // Fetch Demon Usage penalties
-    const demonRows = await prisma.demonUsage.groupBy({
-      by: ["targetUserId"],
-      where: { miniLeagueId: id },
-      _sum: { amount: true }
-    });
-    
-    const demonMap = Object.fromEntries(
-      demonRows.map(r => [r.targetUserId, r._sum.amount || 0])
-    );
-
-    const ranking = memberIds
-      .map((uid) => {
-        const pred = predRows.find((r) => r.userId === uid);
-        const user = memberMap[uid];
-        const penalty = demonMap[uid] || 0;
-        // Exclude streak milestone bonuses — mini-league standings reward only match XP
-        const matchXp = (pred?._sum?.xpEarned ?? 0) - (pred?._sum?.streakBonusXp ?? 0);
-        const totalXp = matchXp - penalty;
-        
-        return {
-          userId: uid,
-          name: user?.name ?? "Unknown",
-          image: user?.image ?? null,
-          xp: totalXp,
-          isMe: uid === userId,
-          hasDemonPenalty: penalty > 0,
-        };
-      })
-      .sort((a, b) => b.xp - a.xp)
-      .map((r, i) => ({ ...r, rank: i + 1 }));
+    const ranking = await getMiniLeagueRanking(league, userId);
+    if (!ranking) {
+      return NextResponse.json({ message: "Mini league not found" }, { status: 404 });
+    }
 
     // User's own predictions for upcoming fixtures
     let myPredictions: Record<string, any> = {};
@@ -162,6 +86,7 @@ export async function GET(
       inviteCode: league.inviteCode,
       memberCount: league.registrations.length,
       ranking,
+      targetableUsers: ranking.filter((r) => r.isTargetable),
       liveMatches: liveMatches.map((m) => ({
         id: m.id,
         homeTeam: m.homeTeam,
