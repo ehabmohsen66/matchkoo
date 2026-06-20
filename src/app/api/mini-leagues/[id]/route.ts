@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
+export const dynamic = 'force-dynamic';
+
 // Competition key → canonical tournament name suffix for matching
 const COMP_TO_LEAGUE: Record<string, string[]> = {
   premier_league:          ["english premier league", "premier league"],
