@@ -1626,10 +1626,15 @@ async function renderPredictions(filter) {
       if (p.isDouble) picks.push('🃏 Double');
       if (p.confidence && p.confidence !== 50) picks.push('Conf: ' + p.confidence + '%');
 
-      // XP display
+      // XP display — split base XP from streak bonus
       let xpDisplay = 'Pending';
       if (p.match?.status === 'COMPLETED') {
-        xpDisplay = p.xpEarned > 0 ? '+' + p.xpEarned.toLocaleString() + ' XP' : p.xpEarned < 0 ? p.xpEarned.toLocaleString() + ' XP' : '0 XP';
+        const streakBonusXp = p.streakBonusXp || 0;
+        const baseXp = (p.xpEarned || 0) - streakBonusXp;
+        const baseStr = baseXp > 0 ? '+' + baseXp.toLocaleString() + ' XP' : baseXp < 0 ? baseXp.toLocaleString() + ' XP' : '0 XP';
+        xpDisplay = streakBonusXp > 0
+          ? baseStr + ' <span style="font-size:0.7em;color:#fb923c;font-weight:700;margin-left:3px;">🔥+' + streakBonusXp + ' Streak</span>'
+          : baseStr;
       }
 
       // Show actual result if completed
@@ -1816,10 +1821,14 @@ function _getScoringBreakdownHtml(pred) {
       }
       ${p.isDouble && beforeDouble > 0 ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F0CF; Double Joker active</span><span style="color:var(--gold);font-weight:800;">x2</span></div>` : ''}
 
+      ${ (p.streakBonusXp || 0) > 0 ? `<div style="${rowStyle}"><span style="${labelStyle}">&#x1F525; Streak Bonus <span style="font-size:0.7rem;color:rgba(255,255,255,0.3);">(global only — not counted in mini league rank)</span></span><span style="color:#fb923c;font-weight:800;">+${p.streakBonusXp} XP</span></div>` : '' }
 
       <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 0;margin-top:8px;border-top:1px solid rgba(255,255,255,0.12);">
         <span style="font-size:0.9rem;font-weight:800;color:#fff;">Net Score</span>
-        <span style="font-size:1.15rem;font-weight:900;color:${xp >= 0 ? '#4ade80' : '#f87171'}">${xp >= 0 ? '+' : ''}${xp} XP</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:1.15rem;font-weight:900;color:${xp >= 0 ? '#4ade80' : '#f87171'}">${xp >= 0 ? '+' : ''}${xp} XP</span>
+          ${ (p.streakBonusXp || 0) > 0 ? `<span style="font-size:0.75rem;font-weight:700;color:#fb923c;">&#x1F525; +${p.streakBonusXp} Streak</span>` : '' }
+        </div>
       </div>
     </div>
   `;
@@ -2630,6 +2639,7 @@ function openLeaguePage(id) {
 }
 
 async function openMiniLeagueDetail(leagueId) {
+  state._inMiniLeague = true;
   const panel = document.getElementById('mini-league-detail-panel');
   if (!panel) return;
   panel.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:48px;">Loading...</div>';
@@ -2820,6 +2830,7 @@ function switchMlTab(tab) {
 }
 
 function closeMiniLeagueDetail() {
+  state._inMiniLeague = false;
   document.getElementById('mini-league-detail-panel').classList.add('hidden');
   document.getElementById('mini-league-list-view').classList.remove('hidden');
 }
@@ -3149,9 +3160,12 @@ async function initPublicProfile() {
           if (pred.isDouble && calcXp > 0) calcXp *= 2;
 
           // Use DB value if it looks correct; otherwise use our recalculated value
-          const displayXp = (pred.xpEarned !== null && pred.xpEarned !== undefined && pred.xpEarned !== 0)
+          const rawStoredXp = (pred.xpEarned !== null && pred.xpEarned !== undefined && pred.xpEarned !== 0)
             ? pred.xpEarned
             : calcXp;
+          const streakBonusPub = pred.streakBonusXp || 0;
+          // In mini-league context: show only base XP (no streak bonus)
+          const displayXp = state._inMiniLeague ? (rawStoredXp - streakBonusPub) : rawStoredXp;
 
           const won = displayXp > 0;
           const outcomeIcon = effectiveExact ? '🌟' : correctResult ? '✅' : '❌';
@@ -3197,7 +3211,10 @@ async function initPublicProfile() {
                   ${pred.isDouble ? '<span style="font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#A78BFA;">🃏 JOKER 2×</span>' : ''}
                   ${pred.isShield ? '<span style="font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:#60A5FA;">🛡️ SHIELD</span>' : ''}
                 </div>
-                <div style="font-size:0.85rem;font-weight:800;color:${xpColor};background:${xpBg};border:1px solid ${xpBorder};border-radius:100px;padding:4px 12px;font-family:'Russo One',sans-serif;">${won ? '+' + displayXp : displayXp < 0 ? displayXp : '0'} XP</div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div style="font-size:0.85rem;font-weight:800;color:${xpColor};background:${xpBg};border:1px solid ${xpBorder};border-radius:100px;padding:4px 12px;font-family:'Russo One',sans-serif;">${won ? '+' + displayXp : displayXp < 0 ? displayXp : '0'} XP</div>
+                  ${!state._inMiniLeague && streakBonusPub > 0 ? `<div style="font-size:0.72rem;font-weight:700;color:#fb923c;background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.3);border-radius:100px;padding:3px 8px;">&#x1F525; +${streakBonusPub}</div>` : ''}
+                </div>
               </div>
             </div>`;
         }).join('');
@@ -3231,6 +3248,7 @@ function openPubProfileBreakdown(idx) {
       btts: pred.btts ?? null,
       totalGoals: pred.totalGoals ?? null,
       xpEarned: pred.xpEarned ?? null,
+      streakBonusXp: pred.streakBonusXp ?? 0,
       isDouble: pred.isDouble || false,
       isShield: pred.isShield || false,
       confidence: pred.confidence || 70,

@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
         tournament: { select: { id: true, name: true, type: true } },
         _count: { select: { predictions: true } },
         ...(session?.user?.id
-          ? { predictions: { where: { userId: session.user.id }, select: { id: true, homeScore: true, awayScore: true, firstGoalScorer: true, confidence: true, isDouble: true, isShield: true, xpEarned: true, btts: true, totalGoals: true } } }
+          ? { predictions: { where: { userId: session.user.id }, select: { id: true, homeScore: true, awayScore: true, firstGoalScorer: true, confidence: true, isDouble: true, isShield: true, xpEarned: true, streakBonusXp: true, btts: true, totalGoals: true } } }
           : {}),
       },
     });
