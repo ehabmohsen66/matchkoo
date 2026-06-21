@@ -1142,22 +1142,50 @@ input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
 .bonus-modal {
   background: var(--bg-card-solid);
   border-radius: var(--radius-xl);
-  padding: 48px 32px 32px; text-align: center;
-  max-width: 360px; width: 90%;
+  padding: 52px 28px 28px;
+  text-align: center;
+  max-width: 360px;
+  width: 92%;
   box-shadow: var(--shadow-lg);
-  position: relative; overflow: hidden;
+  position: relative;
+  /* NO overflow:hidden — it clips position:absolute children (close btn) in mobile browsers */
 }
 .bonus-modal .modal-close-btn {
   position: absolute;
   top: 12px;
   right: 12px;
-  z-index: 10;
+  z-index: 20;
   flex-shrink: 0;
+  /* Ensure tap target is large enough on touch devices */
+  min-width: 40px;
+  min-height: 40px;
+  width: 40px;
+  height: 40px;
 }
-.bonus-modal::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--grad-fire); border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+/* Re-create the fire stripe without needing overflow:hidden on parent */
+.bonus-modal::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--grad-fire);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  z-index: 1;
+}
 .bonus-modal-title { font-size: 1.4rem; color: var(--orange); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
 .bonus-modal-sub { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 24px; }
-#spin-wheel { border-radius: 50%; box-shadow: var(--shadow-lg); }
+#spin-wheel {
+  border-radius: 50%;
+  box-shadow: var(--shadow-lg);
+  /* Scale down the canvas on narrow screens */
+  max-width: 100%;
+  height: auto;
+}
+.wheel-wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
 .spin-btn {
   background: var(--grad-fire); color: #fff; font-weight: 800; font-size: 1rem;
   padding: 14px 32px; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;
@@ -1312,6 +1340,31 @@ input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
 @media (max-width: 480px) {
   .continent-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
   .match-card { min-width: 270px; }
+
+  /* Bonus spin modal — mobile fixes */
+  .modal-overlay {
+    align-items: flex-start;      /* modal starts at top, close btn always in viewport */
+    overflow-y: auto;
+    padding: 12px;
+  }
+  .bonus-modal {
+    width: 96%;
+    padding: 52px 16px 20px;      /* extra top clears the abs-positioned close btn */
+    margin: 0 auto;
+  }
+  .bonus-modal .modal-close-btn {
+    top: 10px;
+    right: 10px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    z-index: 30;
+  }
+  #spin-wheel {
+    width: 200px !important;
+    height: 200px !important;
+  }
 }
 
 /* ─── ADMIN ──────────────────────────────────────────────────── */
