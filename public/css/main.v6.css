@@ -1610,7 +1610,47 @@ input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
   padding: 32px; text-align: center;
   max-width: 360px; width: 100%;
   box-shadow: var(--shadow-lg);
-  position: relative; overflow: hidden;
+  position: relative;
+  /* overflow: visible so the top-right close button and layout is not cropped in mobile browsers */
+  overflow: visible !important;
+}
+
+/* Specific overlay override for Daily Bonus Spin modal to prevent it from aligning as a bottom sheet on mobile */
+#bonus-modal-overlay {
+  align-items: center !important;
+  justify-content: center !important;
+  overflow-y: auto !important;
+  padding: 40px 16px !important;
+  /* env() safe area check ensures it starts below browser notch and address bar */
+  padding-top: max(env(safe-area-inset-top, 0px) + 40px, 60px) !important;
+  padding-bottom: max(env(safe-area-inset-bottom, 0px) + 40px, 60px) !important;
+}
+
+#bonus-modal-overlay .bonus-modal {
+  margin: auto 0;
+}
+
+/* Gold rim of the spin wheel */
+.wheel-rim {
+  width: 336px;
+  height: 336px;
+  border-radius: 50%;
+  background: conic-gradient(#c8860a, #ffe066, #c8860a, #ffe066, #c8860a);
+  padding: 6px;
+  box-shadow: 0 0 0 3px rgba(255, 153, 20, 0.15), 0 8px 32px rgba(0, 0, 0, 0.6);
+  flex-shrink: 0;
+  transition: all 0.2s ease-in-out;
+}
+
+@media (max-width: 480px) {
+  .wheel-rim {
+    width: 240px !important;
+    height: 240px !important;
+    padding: 4px !important;
+  }
+  .bonus-modal {
+    padding: 36px 16px 24px !important;
+  }
 }
 .bonus-modal::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--grad-fire); border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
 .bonus-modal-title { font-size: 1.4rem; color: var(--orange); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
