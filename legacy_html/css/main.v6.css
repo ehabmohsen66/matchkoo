@@ -1343,13 +1343,18 @@ input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
 
   /* Bonus spin modal — mobile fixes */
   .modal-overlay {
-    align-items: flex-start;      /* modal starts at top, close btn always in viewport */
+    /* Stay centered, but pad enough so modal clears the browser chrome/address bar */
+    align-items: center;
     overflow-y: auto;
-    padding: 12px;
+    /* env() gives us the safe area; fallback 24px for non-supporting browsers */
+    padding-top: max(env(safe-area-inset-top, 0px) + 70px, 80px);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px) + 16px, 24px);
+    padding-left: 12px;
+    padding-right: 12px;
   }
   .bonus-modal {
     width: 96%;
-    padding: 52px 16px 20px;      /* extra top clears the abs-positioned close btn */
+    padding: 52px 16px 20px;
     margin: 0 auto;
   }
   .bonus-modal .modal-close-btn {
