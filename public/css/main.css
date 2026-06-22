@@ -3094,4 +3094,21 @@ body[data-role="admin"] .admin-only { display: block !important; }
   .fixture-row > div:not(.fx-mobile-league):not(.fx-mobile-matchup):not(.fx-mobile-footer) {
     display: none !important;
   }
+
+  /* Fix for overlapping back button and league name on mobile */
+  .league-fixtures-section .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+  .league-fixtures-section .section-header .back-btn {
+    margin-bottom: 4px;
+  }
+  .league-fixtures-section .league-fixtures-title {
+    font-size: 1.25rem;
+    line-height: 1.3;
+    color: #fff;
+    margin: 0;
+  }
 }

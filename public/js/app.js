@@ -1493,17 +1493,54 @@ function _renderRealFixtures(container, matches, leagueName) {
         const aLogo = away.logo
           ? '<img src="' + away.logo + '" width="36" height="36" style="border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1)">'
           : '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.4)">' + away.name.substring(0,3).toUpperCase() + '</div>';
-        return '<div class="fixture-row" onclick="openRealMatchDetail(\'' + m.id + '\')" role="button" tabindex="0">' +
-          '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:10px">' + hLogo + aLogo + '</div>' +
-          '<div class="fixture-teams" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">' +
-            '<div style="min-width:0">' +
-              '<div class="fixture-league-name">' + cleanLeagueName + '</div>' +
-              '<div class="fixture-team-names">' + home.name + ' vs ' + away.name + '</div>' +
+
+        const hLogoMobile = home.logo
+          ? '<img src="' + home.logo + '" alt="' + home.name + '">'
+          : '<div class="fx-logo-fallback" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:rgba(255,255,255,0.5)">' + home.name.substring(0,3).toUpperCase() + '</div>';
+        const aLogoMobile = away.logo
+          ? '<img src="' + away.logo + '" alt="' + away.name + '">'
+          : '<div class="fx-logo-fallback" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:rgba(255,255,255,0.5)">' + away.name.substring(0,3).toUpperCase() + '</div>';
+
+        return '<div class="fixture-row' + (isLive ? ' fx-live' : '') + '" onclick="openRealMatchDetail(\'' + m.id + '\')" role="button" tabindex="0">' +
+          /* ── DESKTOP layout ── */
+          '<div class="fx-desktop-row" style="display:flex;align-items:center;width:100%;padding:12px 20px;gap:0;">' +
+            '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:10px">' + hLogo + aLogo + '</div>' +
+            '<div class="fixture-teams" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">' +
+              '<div style="min-width:0">' +
+                '<div class="fixture-league-name">' + cleanLeagueName + '</div>' +
+                '<div class="fixture-team-names">' + home.name + ' vs ' + away.name + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-left:16px">' +
+              (hasPred ? '<span title="You predicted this" style="color:var(--green);font-size:1rem">\u2713</span>' : '') +
+              '<div class="fixture-time" style="min-width:110px;text-align:right;color:' + (isLive ? 'var(--red)' : isCompleted ? 'rgba(255,255,255,0.4)' : 'var(--text-secondary)') + '">' + scoreOrTime + '</div>' +
             '</div>' +
           '</div>' +
-          '<div style="display:flex;align-items:center;gap:8px;margin-left:16px">' +
-            (hasPred ? '<span title="You predicted this" style="color:var(--green);font-size:1rem">\u2713</span>' : '') +
-            '<div class="fixture-time" style="min-width:110px;text-align:right;color:' + (isLive ? 'var(--red)' : isCompleted ? 'rgba(255,255,255,0.4)' : 'var(--text-secondary)') + '">' + scoreOrTime + '</div>' +
+
+          /* ── MOBILE layout ── */
+          '<div class="fx-mobile-league">' + cleanLeagueName + '</div>' +
+          '<div class="fx-mobile-matchup">' +
+            '<div class="fx-mobile-team">' +
+              hLogoMobile +
+              '<span class="fx-team-label">' + home.name + '</span>' +
+            '</div>' +
+            '<div class="fx-mobile-vs">' +
+              (isLive || isCompleted
+                ? '<span class="fx-live-score">' + (m.homeScore ?? 0) + ' – ' + (m.awayScore ?? 0) + '</span>'
+                : '<span class="fx-vs-text">VS</span>'
+              ) +
+            '</div>' +
+            '<div class="fx-mobile-team">' +
+              aLogoMobile +
+              '<span class="fx-team-label">' + away.name + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="fx-mobile-footer">' +
+            (hasPred ? '<span class="fx-pred-check">✓</span>' : '') +
+            (isLive
+              ? '<span class="fx-live-badge"><span class="fx-live-dot"></span>LIVE</span>'
+              : '<span class="fx-time">' + (isCompleted ? 'Completed' : t.toLocaleDateString('en-GB', {day:'2-digit', month:'2-digit'}) + ' ' + t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })) + '</span>'
+            ) +
           '</div>' +
         '</div>';
       }).join('') +
