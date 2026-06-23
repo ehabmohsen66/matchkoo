@@ -2853,23 +2853,24 @@ async function openMiniLeagueDetail(leagueId) {
               : '';
 
             return `
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
-                <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
+              <div style="display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+                <!-- Line 1: User details -->
+                <div style="display:flex;align-items:center;gap:8px;min-width:0;width:100%;">
                   <img src="${avatar}" alt="${u.name}" width="28" height="28" style="border-radius:50%;flex-shrink:0;">
-                  <div style="min-width:0;">
-                    <div style="font-size:0.78rem;font-weight:700;color:${isMe ? 'var(--green)' : '#fff'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px;">
-                      ${u.name} ${_getFlagEmoji(u.country)}
-                      ${isMe ? '<span style="font-size:0.6rem;background:rgba(60,184,46,0.2);color:var(--green);padding:1px 4px;border-radius:3px;font-weight:800;">YOU</span>' : ''}
-                    </div>
-                    <div style="font-size:0.65rem;color:var(--text-muted);display:flex;align-items:center;gap:3px;margin-top:2px;">
-                      Lvl ${lvl.badge}
-                    </div>
+                  <div style="display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap;flex:1;">
+                    <span style="font-size:0.78rem;font-weight:700;color:${isMe ? 'var(--green)' : '#fff'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                      ${u.name}
+                    </span>
+                    <span style="font-size:0.8rem;line-height:1;flex-shrink:0;">${_getFlagEmoji(u.country)}</span>
+                    <span style="font-size:0.65rem;color:var(--text-muted);background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;font-weight:600;flex-shrink:0;">Lvl ${lvl.badge}</span>
+                    ${isMe ? '<span style="font-size:0.6rem;background:rgba(60,184,46,0.2);color:var(--green);padding:1px 4px;border-radius:3px;font-weight:800;flex-shrink:0;">YOU</span>' : ''}
                   </div>
                 </div>
                 
-                <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:4px;max-width:65%;flex-shrink:0;">
-                  <span style="font-size:0.75rem;font-weight:800;color:#fff;background:rgba(60,184,46,0.15);border:1px solid rgba(60,184,46,0.3);padding:2px 8px;border-radius:6px;white-space:nowrap;">
-                    ${scorelineStr} <span style="font-size:0.65rem;color:rgba(255,255,255,0.6);font-weight:500;">(${confStr})</span>
+                <!-- Line 2: Predictions list -->
+                <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:6px;padding-left:36px;width:100%;box-sizing:border-box;">
+                  <span style="font-size:0.72rem;font-weight:800;color:#fff;background:rgba(60,184,46,0.15);border:1px solid rgba(60,184,46,0.3);padding:2px 8px;border-radius:6px;white-space:nowrap;">
+                    ${scorelineStr} <span style="font-size:0.62rem;color:rgba(255,255,255,0.6);font-weight:500;">(${confStr})</span>
                   </span>
                   ${bttsHtml}
                   ${goalsHtml}
