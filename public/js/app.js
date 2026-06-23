@@ -4258,12 +4258,14 @@ async function submitPrediction() {
     const btn = document.querySelector('.submit-prediction-btn');
     if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
 
+    const existingPred = state._matchCache?.[matchId]?.userPrediction;
     const { success, message } = await Backend.submitPrediction(matchId, {
       homeScore,
       awayScore,
       firstGoalScorer: scorer || null,
       confidence,
-      isDouble: false,
+      isDouble: !!existingPred?.isDouble,
+      isShield: !!existingPred?.isShield,
       btts: state.bttsChoice === 'yes',
       totalGoals: typeof state.goalsChoice === 'number' ? state.goalsChoice : null,
     });
