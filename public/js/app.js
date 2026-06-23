@@ -3780,6 +3780,14 @@ function _applyMatchData(m) {
         state.goalsChoice = 0;
         document.querySelectorAll('.goals-btn').forEach((b, i) => b.classList.toggle('active-toggle', i === 0));
       }
+
+      // Restore Confidence
+      const confSlider = document.getElementById('confidence-slider');
+      if (confSlider) {
+        const confVal = pred?.confidence ?? 70;
+        confSlider.value = confVal;
+        updateConfidence(confVal);
+      }
     } else {
       // Clear previous inputs
       const hs = document.getElementById('score-home-input');
@@ -3790,6 +3798,13 @@ function _applyMatchData(m) {
       if (scorerInput) scorerInput.value = '';
       document.querySelectorAll('.result-btn').forEach(b => b.classList.remove('selected-result'));
       state.selectedResult = null;
+
+      // Reset Confidence to default 70%
+      const confSlider = document.getElementById('confidence-slider');
+      if (confSlider) {
+        confSlider.value = 70;
+        updateConfidence(70);
+      }
     }
   }
 }
