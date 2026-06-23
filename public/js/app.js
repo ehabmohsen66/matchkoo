@@ -6092,7 +6092,8 @@ async function renderBoostMatchSelector(boostType) {
 
   content.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px;">' + matches.map(p => {
     const isApplied = (boostType === 'JOKER' && p.isDouble) || (boostType === 'SHIELD' && p.isShield);
-    const isLockedByWeekly = !isApplied && !!usedOnMatch;
+    const hasStarted = usedOnMatch && (usedOnMatch.match.status !== 'UPCOMING' || new Date(usedOnMatch.match.matchDate) <= new Date());
+    const isLockedByWeekly = !isApplied && !!usedOnMatch && hasStarted;
 
     let btnText, btnBg, btnColor, btnCursor, btnDisabled, btnTitle, onclickAttr;
 
@@ -6105,8 +6106,11 @@ async function renderBoostMatchSelector(boostType) {
       btnCursor = 'not-allowed'; btnDisabled = 'disabled'; btnTitle = 'Chip already used this week';
       onclickAttr = '';
     } else {
-      btnText = 'Apply'; btnBg = '#29bf12'; btnColor = '#fff';
-      btnCursor = 'pointer'; btnDisabled = ''; btnTitle = '';
+      const hasActiveUpcoming = !!usedOnMatch && !hasStarted;
+      btnText = hasActiveUpcoming ? 'Switch' : 'Apply';
+      btnBg = hasActiveUpcoming ? '#ff9914' : '#29bf12';
+      btnColor = '#fff';
+      btnCursor = 'pointer'; btnDisabled = ''; btnTitle = hasActiveUpcoming ? 'Switch your chip to this match' : 'Apply chip to this match';
       onclickAttr = `onclick="applyBoostToMatch('${p.matchId}', '${boostType}', event)"`;
     }
 
@@ -6130,10 +6134,13 @@ async function applyBoostToMatch(matchId, boostType, event) {
   
   const btn = event.currentTarget;
   const originalText = btn.textContent;
+  const isSwitch = originalText.trim() === 'Switch';
 
   _showBoostConfirmModal({
-    title: `Apply ${boostType === 'JOKER' ? 'The Joker' : 'Scoreline Shield'}?`,
-    subtitle: `You are applying ${boostName} to this match. You can only use this once per week.`,
+    title: isSwitch ? `Switch ${boostType === 'JOKER' ? 'The Joker' : 'Scoreline Shield'}?` : `Apply ${boostType === 'JOKER' ? 'The Joker' : 'Scoreline Shield'}?`,
+    subtitle: isSwitch
+      ? `You are moving ${boostName} to this match. It will be removed from your previously selected match.`
+      : `You are applying ${boostName} to this match. You can only use this once per week.`,
     iconHtml: icon,
     color: color,
     onConfirm: async () => {
@@ -6155,6 +6162,7 @@ async function applyBoostToMatch(matchId, boostType, event) {
 
         showNotification('Boost successfully applied!', 'success');
         closeBoostModal();
+        if (typeof initPredictions === 'function') initPredictions();
       } catch (err) {
         showNotification(err.message, 'error');
         btn.textContent = originalText;
@@ -6163,6 +6171,37 @@ async function applyBoostToMatch(matchId, boostType, event) {
     }
   });
 }
+
+async function removeBoostFromMatch(matchId, boostType, event) {
+  const btn = event.currentTarget;
+  const originalText = btn.textContent;
+  btn.textContent = 'Removing...';
+  btn.disabled = true;
+
+  try {
+    const payload = { matchId };
+    if (boostType === 'JOKER') payload.isJoker = false;
+    if (boostType === 'SHIELD') payload.isShield = false;
+
+    const res = await fetch('/api/predictions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to remove boost');
+
+    showNotification('Boost successfully removed!', 'success');
+    closeBoostModal();
+    if (typeof initPredictions === 'function') initPredictions();
+  } catch (err) {
+    showNotification(err.message, 'error');
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
 
 function openJokerModal() {
   document.getElementById('boost-modal-title').textContent = 'The Joker';
