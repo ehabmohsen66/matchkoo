@@ -4032,6 +4032,17 @@ async function _loadLineup(matchId, matchStatus) {
   const noMsgReset = document.getElementById('no-lineup-msg');
   if (noMsgReset) noMsgReset.style.display = 'none';
 
+  // Clear previous match squads and labels immediately
+  const homePlayers = document.getElementById('lineup-home-players');
+  const homeSubs    = document.getElementById('lineup-home-subs');
+  const awayPlayers = document.getElementById('lineup-away-players');
+  const awaySubs    = document.getElementById('lineup-away-subs');
+  const homeLabel   = document.getElementById('lineup-home-label');
+  const awayLabel   = document.getElementById('lineup-away-label');
+  [homePlayers, homeSubs, awayPlayers, awaySubs].forEach(el => { if (el) el.innerHTML = ''; });
+  if (homeLabel) homeLabel.textContent = '';
+  if (awayLabel) awayLabel.textContent = '';
+
   // Show loading spinner
   const loading = document.getElementById('lineup-loading');
   const picker  = document.getElementById('player-picker');
