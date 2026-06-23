@@ -2882,19 +2882,22 @@ async function openMiniLeagueDetail(leagueId) {
         }
 
         return `
-          <div style="margin-bottom:20px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:12px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:8px;margin-bottom:8px;">
+          <div style="margin-bottom:12px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:12px;">
+            <!-- Clickable header to toggle collapse -->
+            <div onclick="toggleLivePredsCollapse('${m.id}', this)" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;">
               <div style="display:flex;align-items:center;gap:6px;">
                 ${homeLogo}
                 <span style="font-size:0.75rem;font-weight:800;color:#fff;">${m.homeTeam} vs ${m.awayTeam}</span>
                 ${awayLogo}
               </div>
-              <div style="display:flex;align-items:center;gap:6px;">
+              <div style="display:flex;align-items:center;gap:8px;">
                 <span style="font-size:0.7rem;font-weight:800;color:var(--red);background:rgba(255,50,50,0.1);padding:2px 6px;border-radius:4px;">${min}</span>
                 <span style="font-family:'Russo One',sans-serif;font-size:0.85rem;color:#fff;font-weight:900;">${m.homeScore??0}–${m.awayScore??0}</span>
+                <span class="collapse-arrow" style="font-size:0.6rem;color:rgba(255,255,255,0.4);transition:transform 0.2s;margin-left:4px;">▼</span>
               </div>
             </div>
-            <div>
+            <!-- Collapsible predictions container (hidden by default) -->
+            <div id="live-preds-list-${m.id}" class="hidden" style="border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:4px;">
               ${predsListHtml}
             </div>
           </div>
@@ -2989,6 +2992,17 @@ function switchMlTab(tab) {
   
   document.getElementById('ml-tab-fix').style.borderBottomColor = tab === 'fix' ? 'var(--cyan)' : 'transparent';
   document.getElementById('ml-tab-fix').style.color = tab === 'fix' ? 'var(--cyan)' : 'rgba(255,255,255,0.4)';
+}
+
+function toggleLivePredsCollapse(matchId, headerEl) {
+  const container = document.getElementById('live-preds-list-' + matchId);
+  if (!container) return;
+  const isHidden = container.classList.contains('hidden');
+  container.classList.toggle('hidden');
+  const arrow = headerEl.querySelector('.collapse-arrow');
+  if (arrow) {
+    arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
 }
 
 function closeMiniLeagueDetail() {
