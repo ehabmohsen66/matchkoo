@@ -61,7 +61,39 @@ export async function GET(
       return validNames.includes(normalised) && m.status === "LIVE";
     });
 
+    const memberUserIds = league.registrations.map((r) => r.userId);
+    const liveMatchIds = liveMatches.map((m) => m.id);
 
+    let livePredictions: any[] = [];
+    if (liveMatchIds.length > 0 && memberUserIds.length > 0) {
+      livePredictions = await prisma.prediction.findMany({
+        where: {
+          matchId: { in: liveMatchIds },
+          userId: { in: memberUserIds },
+        },
+        select: {
+          id: true,
+          matchId: true,
+          userId: true,
+          homeScore: true,
+          awayScore: true,
+          confidence: true,
+          btts: true,
+          totalGoals: true,
+          firstGoalScorer: true,
+          isDouble: true,
+          isShield: true,
+          user: {
+            select: {
+              name: true,
+              image: true,
+              xp: true,
+              country: true,
+            },
+          },
+        },
+      });
+    }
 
     const ranking = await getMiniLeagueRanking(league, userId);
     if (!ranking) {
@@ -97,6 +129,7 @@ export async function GET(
         awayScore: m.awayScore,
         minute: (m as any).minute ?? null,
       })),
+      livePredictions,
       fixtures: fixtures.map((m) => ({
         id: m.id,
         homeTeam: m.homeTeam,

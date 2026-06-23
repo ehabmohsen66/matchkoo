@@ -2803,6 +2803,104 @@ async function openMiniLeagueDetail(leagueId) {
           <div style="font-size:0.68rem;color:var(--text-muted);text-align:right;flex-shrink:0;">${timeStr}</div>
         </div>`;
     }).join('') : '<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:0.82rem;">No upcoming fixtures.</div>';
+ 
+    // ── Build live predictions tab content ──
+    let livePredsHtml = '';
+    if (!data.liveMatches || data.liveMatches.length === 0) {
+      livePredsHtml = `
+        <div style="text-align:center;color:var(--text-muted);padding:32px;font-size:0.85rem;">
+          No matches are currently live.
+          <br>
+          <span style="font-size:0.75rem;margin-top:4px;display:block;">Predictions are revealed once a match starts!</span>
+        </div>`;
+    } else {
+      livePredsHtml = data.liveMatches.map(m => {
+        const matchPreds = (data.livePredictions || []).filter(p => p.matchId === m.id);
+        
+        const homeLogo = m.homeLogo ? `<img src="${m.homeLogo}" width="24" height="24" style="border-radius:50%">` : '';
+        const awayLogo = m.awayLogo ? `<img src="${m.awayLogo}" width="24" height="24" style="border-radius:50%">` : '';
+        const min = m.minute ? m.minute + "'" : 'LIVE';
+        
+        let predsListHtml = '';
+        if (matchPreds.length === 0) {
+          predsListHtml = `<div style="font-size:0.75rem;color:var(--text-muted);text-align:center;padding:12px 0;">No predictions submitted for this match.</div>`;
+        } else {
+          predsListHtml = matchPreds.map(p => {
+            const u = p.user;
+            const lvl = _xpToLevel(u.xp || 0);
+            const avatar = u.image || ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(u.name || 'player'));
+            const isMe = p.userId === window._myUserId;
+            
+            let chipsHtml = '';
+            if (p.isDouble) {
+              chipsHtml += `<span style="background:rgba(255,153,20,0.15);color:#ff9914;font-size:0.6rem;font-weight:800;padding:2px 6px;border-radius:100px;border:1px solid rgba(255,153,20,0.3);margin-left:4px;white-space:nowrap;">⚡ Double</span>`;
+            }
+            if (p.isShield) {
+              chipsHtml += `<span style="background:rgba(8,189,189,0.15);color:var(--cyan);font-size:0.6rem;font-weight:800;padding:2px 6px;border-radius:100px;border:1px solid rgba(8,189,189,0.3);margin-left:4px;white-space:nowrap;">🛡️ Shield</span>`;
+            }
+
+            const scorelineStr = `${p.homeScore}–${p.awayScore}`;
+            const confStr = `${p.confidence}%`;
+            
+            const bttsVal = p.btts === true ? 'Yes' : p.btts === false ? 'No' : '—';
+            const bttsHtml = `<span style="font-size:0.7rem;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;white-space:nowrap;">BTTS: <strong style="color:#fff">${bttsVal}</strong></span>`;
+            
+            const goalsVal = p.totalGoals !== null && p.totalGoals !== undefined ? p.totalGoals : '—';
+            const goalsHtml = `<span style="font-size:0.7rem;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;white-space:nowrap;">Goals: <strong style="color:#fff">${goalsVal}</strong></span>`;
+
+            const scorerHtml = p.firstGoalScorer 
+              ? `<span style="font-size:0.7rem;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;">⚽ ${p.firstGoalScorer}</span>` 
+              : '';
+
+            return `
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+                <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
+                  <img src="${avatar}" alt="${u.name}" width="28" height="28" style="border-radius:50%;flex-shrink:0;">
+                  <div style="min-width:0;">
+                    <div style="font-size:0.78rem;font-weight:700;color:${isMe ? 'var(--green)' : '#fff'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px;">
+                      ${u.name} ${_getFlagEmoji(u.country)}
+                      ${isMe ? '<span style="font-size:0.6rem;background:rgba(60,184,46,0.2);color:var(--green);padding:1px 4px;border-radius:3px;font-weight:800;">YOU</span>' : ''}
+                    </div>
+                    <div style="font-size:0.65rem;color:var(--text-muted);display:flex;align-items:center;gap:3px;margin-top:2px;">
+                      Lvl ${lvl.badge}
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:4px;max-width:65%;flex-shrink:0;">
+                  <span style="font-size:0.75rem;font-weight:800;color:#fff;background:rgba(60,184,46,0.15);border:1px solid rgba(60,184,46,0.3);padding:2px 8px;border-radius:6px;white-space:nowrap;">
+                    ${scorelineStr} <span style="font-size:0.65rem;color:rgba(255,255,255,0.6);font-weight:500;">(${confStr})</span>
+                  </span>
+                  ${bttsHtml}
+                  ${goalsHtml}
+                  ${scorerHtml}
+                  ${chipsHtml}
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        return `
+          <div style="margin-bottom:20px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:8px;margin-bottom:8px;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                ${homeLogo}
+                <span style="font-size:0.75rem;font-weight:800;color:#fff;">${m.homeTeam} vs ${m.awayTeam}</span>
+                ${awayLogo}
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:0.7rem;font-weight:800;color:var(--red);background:rgba(255,50,50,0.1);padding:2px 6px;border-radius:4px;">${min}</span>
+                <span style="font-family:'Russo One',sans-serif;font-size:0.85rem;color:#fff;font-weight:900;">${m.homeScore??0}–${m.awayScore??0}</span>
+              </div>
+            </div>
+            <div>
+              ${predsListHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
 
     panel.innerHTML = `
       <!-- Header -->
@@ -2850,12 +2948,18 @@ async function openMiniLeagueDetail(leagueId) {
       <!-- Tabs Navigation -->
       <div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:16px;">
         <div id="ml-tab-rank" onclick="switchMlTab('rank')" style="flex:1;text-align:center;padding:12px;font-size:0.85rem;font-weight:800;color:var(--cyan);border-bottom:2px solid var(--cyan);cursor:pointer;text-transform:uppercase;letter-spacing:1px;">🏆 Rankings</div>
+        <div id="ml-tab-live-preds" onclick="switchMlTab('live-preds')" style="flex:1;text-align:center;padding:12px;font-size:0.85rem;font-weight:800;color:rgba(255,255,255,0.4);border-bottom:2px solid transparent;cursor:pointer;text-transform:uppercase;letter-spacing:1px;">🔴 Live Picks</div>
         <div id="ml-tab-fix" onclick="switchMlTab('fix')" style="flex:1;text-align:center;padding:12px;font-size:0.85rem;font-weight:800;color:rgba(255,255,255,0.4);border-bottom:2px solid transparent;cursor:pointer;text-transform:uppercase;letter-spacing:1px;">📅 Fixtures</div>
       </div>
 
       <!-- Tab Content: Rankings -->
       <div id="ml-tab-content-rank" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;">
         ${rankingContent}
+      </div>
+
+      <!-- Tab Content: Live Picks -->
+      <div id="ml-tab-content-live-preds" class="hidden" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;">
+        ${livePredsHtml}
       </div>
 
       <!-- Tab Content: Fixtures -->
@@ -2870,9 +2974,19 @@ async function openMiniLeagueDetail(leagueId) {
 
 function switchMlTab(tab) {
   document.getElementById('ml-tab-content-rank').classList.toggle('hidden', tab !== 'rank');
+  const livePredsTab = document.getElementById('ml-tab-content-live-preds');
+  if (livePredsTab) livePredsTab.classList.toggle('hidden', tab !== 'live-preds');
   document.getElementById('ml-tab-content-fix').classList.toggle('hidden', tab !== 'fix');
+  
   document.getElementById('ml-tab-rank').style.borderBottomColor = tab === 'rank' ? 'var(--cyan)' : 'transparent';
   document.getElementById('ml-tab-rank').style.color = tab === 'rank' ? 'var(--cyan)' : 'rgba(255,255,255,0.4)';
+  
+  const liveTabHead = document.getElementById('ml-tab-live-preds');
+  if (liveTabHead) {
+    liveTabHead.style.borderBottomColor = tab === 'live-preds' ? 'var(--cyan)' : 'transparent';
+    liveTabHead.style.color = tab === 'live-preds' ? 'var(--cyan)' : 'rgba(255,255,255,0.4)';
+  }
+  
   document.getElementById('ml-tab-fix').style.borderBottomColor = tab === 'fix' ? 'var(--cyan)' : 'transparent';
   document.getElementById('ml-tab-fix').style.color = tab === 'fix' ? 'var(--cyan)' : 'rgba(255,255,255,0.4)';
 }
