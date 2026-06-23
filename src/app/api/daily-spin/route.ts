@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import * as React from "react";
-import { sendEmail } from "@/lib/email";
-import DailyBonusEmail from "@/emails/DailyBonusEmail";
 
 /**
  * Prize table — server is the single source of truth.
@@ -81,22 +78,6 @@ export async function POST(req: NextRequest) {
         select: { email: true, name: true, xp: true },
       });
     });
-
-    // Send daily bonus email (non-blocking)
-    if (updatedUser.email) {
-      sendEmail({
-        to: updatedUser.email,
-        subject: `🎡 You won ${selected.label} on today's Daily Spin!`,
-        react: React.createElement(DailyBonusEmail, {
-          name: updatedUser.name ?? "there",
-          prize: selected.label,
-          xpAwarded: selected.xp,
-          newTotalXp: updatedUser.xp,
-        }),
-      }).catch((err) =>
-        console.error(`[email] Failed to send daily bonus email to ${updatedUser.email}:`, err)
-      );
-    }
 
     return NextResponse.json({
       success: true,
