@@ -70,7 +70,7 @@ model Tournament {
   startDate        DateTime
   registrationMode String   @default("OPEN") // OPEN or INVITE_ONLY
   inviteCode       String?  // required when INVITE_ONLY
-  competition      String?  @default("premier_league") // mini league competition key
+  competition      String?                             // mini league competition key
   scoringMode      String?  @default("global")         // "global" | "simple"
   season           String?                             // API-Football season year e.g. "2025"
 

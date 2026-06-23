@@ -578,6 +578,13 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
       233: "Egyptian Premier League",
       1:   "FIFA World Cup",
     };
+    const COMP_KEYS: Record<number, string> = {
+      39:  "premier_league",
+      140: "la_liga",
+      2:   "champions_league",
+      233: "egyptian_premier_league",
+      1:   "world_cup",
+    };
     const leagueName = CANONICAL_NAMES[f.league.id] || f.league.name;
     const tournamentName = `${leagueName} ${f.league.season} [${f.league.id}]`;
 
@@ -604,6 +611,7 @@ async function upsertFixtures(fixtures: ApiFixture[]) {
           registrationMode: "OPEN",
           season: seasonStr,
           createdByUserId: admin.id,
+          competition: COMP_KEYS[f.league.id] || null,
         },
       });
 
