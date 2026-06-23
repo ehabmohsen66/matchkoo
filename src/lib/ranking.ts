@@ -53,9 +53,12 @@ export async function getMiniLeagueRanking(
   const competitionKey = league.competition || "premier_league";
   const validNames = COMP_TO_LEAGUE[competitionKey] || [];
 
-  // Also include completed matches for scoring.
+  // Also include completed matches for scoring, starting from the mini-league's creation/start date.
   const allTournamentMatches = await prisma.match.findMany({
-    where: { status: { in: ["UPCOMING", "LIVE", "COMPLETED"] } },
+    where: {
+      status: { in: ["UPCOMING", "LIVE", "COMPLETED"] },
+      matchDate: { gte: league.startDate },
+    },
     include: { tournament: { select: { name: true } } },
   });
   const allCompMatchIds = allTournamentMatches
