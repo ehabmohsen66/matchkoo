@@ -64,11 +64,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Predictions are locked — match has started" }, { status: 400 });
     }
 
+    const existing = await prisma.prediction.findUnique({
+      where: { userId_matchId: { userId: session.user.id, matchId } }
+    });
+
     // Map frontend's isJoker to backend's isDouble schema field
     const applyJoker = isJoker || isDouble;
     const applyShield = isShield;
 
-    if (applyJoker && applyShield) {
+    const nextJoker = applyJoker !== undefined ? applyJoker : (existing?.isDouble ?? false);
+    const nextShield = applyShield !== undefined ? applyShield : (existing?.isShield ?? false);
+
+    if (nextJoker && nextShield) {
       return NextResponse.json({ message: "You cannot apply both Joker and Scoreline Shield to the same match" }, { status: 400 });
     }
 
@@ -140,9 +147,6 @@ export async function POST(req: NextRequest) {
 
     // If it's just a boost update, we don't require scores.
     const isBoostUpdate = homeScore == null && awayScore == null;
-    const existing = await prisma.prediction.findUnique({
-      where: { userId_matchId: { userId: session.user.id, matchId } }
-    });
     const action = existing ? "UPDATE" : "CREATE";
 
     let prediction;
